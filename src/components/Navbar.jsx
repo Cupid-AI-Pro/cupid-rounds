@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { LogOut, User, ShieldAlert, Film, Download } from 'lucide-react';
 import CupidLogo from './CupidLogo';
+import DownloadApkModal from './DownloadApkModal';
 
 export default function Navbar({ currentUser, isAdminMode, setIsAdminMode, onLogout, activeState, onPlayIntroVideo }) {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isInstallable, setIsInstallable] = useState(false);
+  const [showApkModal, setShowApkModal] = useState(false);
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e) => {
@@ -18,20 +20,15 @@ export default function Navbar({ currentUser, isAdminMode, setIsAdminMode, onLog
   }, []);
 
   const handleInstallApp = async () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') {
-        setIsInstallable(false);
-      }
-      setDeferredPrompt(null);
-    } else {
-      alert("To install as an App:\n\n• On Android Chrome: Tap '⋮' menu > 'Install App' or 'Add to Home Screen'\n• On iOS Safari: Tap Share button > 'Add to Home Screen'");
-    }
+    // Open comprehensive direct APK download modal
+    setShowApkModal(true);
   };
 
   return (
     <header className="sticky top-0 z-50 w-full px-4 py-4 md:px-8">
+      {/* Direct APK Download Modal */}
+      <DownloadApkModal isOpen={showApkModal} onClose={() => setShowApkModal(false)} />
+
       <div className="mx-auto max-w-7xl glass-panel px-6 py-4 flex items-center justify-between">
         {/* Logo */}
         <div 
@@ -52,14 +49,14 @@ export default function Navbar({ currentUser, isAdminMode, setIsAdminMode, onLog
 
         {/* Actions & Profiles */}
         <div className="flex items-center gap-3">
-          {/* Install App (WebAPK) Button */}
+          {/* Download APK Button */}
           <button
             onClick={handleInstallApp}
-            className="px-3.5 py-2 text-xs font-bold rounded-full bg-gradient-to-r from-[#FF2D55] to-pink-500 text-white flex items-center gap-1.5 shadow-md shadow-rose-500/20 hover:brightness-105 transition-all active:scale-95 cursor-pointer"
-            title="Download / Install as Android APK or App"
+            className="px-3.5 py-2 text-xs font-bold rounded-full bg-gradient-to-r from-[#FF2D55] via-pink-500 to-rose-500 text-white flex items-center gap-1.5 shadow-md shadow-rose-500/25 hover:brightness-105 transition-all active:scale-95 cursor-pointer"
+            title="Direct Download Android APK"
           >
             <Download className="w-3.5 h-3.5" />
-            <span>Install App (APK)</span>
+            <span>Download APK</span>
           </button>
           {/* Replay Intro Screen Button */}
           {onPlayIntroVideo && (

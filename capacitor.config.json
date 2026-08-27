@@ -1,0 +1,9 @@
+{
+  "appId": "com.cupid.rounds",
+  "appName": "Cupid Rounds",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  }
+}
