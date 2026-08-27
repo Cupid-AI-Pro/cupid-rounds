@@ -1,38 +1,54 @@
-// Cupid Rounds Service Worker for PWA WebAPK
-const CACHE_NAME = 'cupid-rounds-v1';
+// Cupid Rounds — Live Over-The-Air (OTA) Auto-Update Service Worker
+const CACHE_NAME = 'cupid-rounds-live-v2';
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll([
-        '/',
-        '/index.html',
-        '/manifest.json'
-      ]);
-    })
-  );
+  // Immediately take over without waiting for old tabs to close
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) => {
+    caches.keys().then((cacheNames) => {
       return Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key);
+        cacheNames.map((cache) => {
+          if (cache !== CACHE_NAME) {
+            console.log('[SW] Clearing old cache for live update:', cache);
+            return caches.delete(cache);
           }
         })
       );
-    })
+    }).then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
+// Network-First Strategy for HTML/JS/CSS:
+// Always try to fetch the freshest version from the server first.
+// If offline, fallback to cached assets.
 self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET') return;
+
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      return cachedResponse || fetch(event.request);
-    })
+    fetch(event.request)
+      .then((networkResponse) => {
+        // Cache the fresh response in the background
+        if (networkResponse && networkResponse.status === 200) {
+          const responseClone = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseClone);
+          });
+        }
+        return networkResponse;
+      })
+      .catch(() => {
+        // Offline fallback
+        return caches.match(event.request);
+      })
   );
+});
+
+// Broadcast update message to connected client apps
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
