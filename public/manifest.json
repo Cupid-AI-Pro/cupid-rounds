@@ -1,0 +1,18 @@
+{
+  "short_name": "Cupid",
+  "name": "Cupid Rounds — Matchmaking & Dating",
+  "description": "10-Day Cyclic Campus Matchmaking & Dating Rounds with 100% Refund Protection",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192 512x512 any"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#ffffff",
+  "theme_color": "#FF2D55",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/"
+}
