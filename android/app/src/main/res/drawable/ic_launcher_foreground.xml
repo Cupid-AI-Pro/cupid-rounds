@@ -3,17 +3,30 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    
-    <!-- Outer Bold Circular 'C' Curve -->
+
+    <!--
+        EXACT OFFICIAL CUPID LAUNCHER ICON
+        Bold circular 'C' arc + solid heart inside - matches the official brand logo.
+        Centered at (54, 54). Background is handled by ic_launcher_background.xml (#FFFFFF).
+    -->
+
+    <!-- Bold circular 'C' — open on the right side (gap at ~1 o'clock and ~5 o'clock) -->
     <path
+        android:pathData="M 72,30 A 28,28 0,1,0 72,78"
         android:strokeColor="#FF2D55"
-        android:strokeWidth="8.4"
+        android:strokeWidth="8"
         android:strokeLineCap="round"
-        android:strokeLineJoin="round"
-        android:pathData="M 72.6,35.4 A 28,28 0 1,0 72.6,72.6" />
-        
-    <!-- Inner Centered Solid Heart -->
+        android:fillColor="@android:color/transparent"/>
+
+    <!-- Solid centered Heart -->
     <path
-        android:fillColor="#FF2D55"
-        android:pathData="M 54,66.2 C 52.8,65 42.8,55.9 42.8,48.9 C 42.8,43.8 47,40 51.9,40 C 53.5,40 54,40.7 54,41.4 C 54,40.7 54.5,40 56.1,40 C 61,40 65.2,43.8 65.2,48.9 C 65.2,55.9 55.2,65 54,66.2 Z" />
+        android:pathData="
+          M 54,70
+          C 53,69 38,55 38,46
+          C 38,40 43,36 49,36
+          C 51.5,36 53,37 54,38
+          C 55,37 56.5,36 59,36
+          C 65,36 70,40 70,46
+          C 70,55 55,69 54,70 Z"
+        android:fillColor="#FF2D55"/>
 </vector>
