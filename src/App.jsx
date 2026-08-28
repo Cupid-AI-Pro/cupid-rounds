@@ -15,19 +15,33 @@ export default function App() {
   const [showLoginInPhone, setShowLoginInPhone] = useState(false);
   const [isPlayingIntro, setIsPlayingIntro] = useState(false);
   
-  // Default to landing page for web visitors, but immediately open the internal App for installed PWA / mobile app users!
+  // Default to landing page for web visitors, but ALWAYS open the internal Matchmaking App directly inside the Native Android APK & Installed App!
   const [currentView, setCurrentView] = useState(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('view') === 'admin') return 'admin';
-    if (params.get('view') === 'app') return 'app';
     if (params.get('view') === 'landing') return 'landing';
+    if (params.get('view') === 'app') return 'app';
 
-    // Standalone / Installed App mode detection (Home Screen Icon tap)
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
-                         window.navigator.standalone === true ||
-                         document.referrer.includes('android-app://') ||
-                         params.get('source') === 'pwa';
-    if (isStandalone) return 'app';
+    // 1. Native Android APK detection (Capacitor / Android WebView / Localhost container)
+    const isCapacitorNative = Boolean(
+      (typeof window !== 'undefined' && window.Capacitor) ||
+      window.location.hostname === 'localhost' ||
+      window.location.protocol === 'capacitor:' ||
+      window.location.protocol === 'ionic:' ||
+      /wv|Capacitor/i.test(window.navigator.userAgent)
+    );
+
+    // 2. Standalone / Installed WebAPK detection (Home Screen Icon tap)
+    const isInstalledApp = Boolean(
+      window.matchMedia('(display-mode: standalone)').matches || 
+      window.navigator.standalone === true ||
+      document.referrer.includes('android-app://') ||
+      params.get('source') === 'pwa'
+    );
+
+    if (isCapacitorNative || isInstalledApp) {
+      return 'app'; // Directly open the actual internal matchmaking app
+    }
 
     const savedUser = getCurrentUser();
     if (savedUser) return 'app';

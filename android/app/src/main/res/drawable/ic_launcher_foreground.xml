@@ -1,0 +1,19 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    
+    <!-- Outer Architectural C Curve -->
+    <path
+        android:strokeColor="#FF2D55"
+        android:strokeWidth="6"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M 67.5,33.75 C 61.875,28.125 52.875,25.875 43.875,29.25 C 32.625,33.3 24.75,44.1 24.75,56.25 C 24.75,69.3 34.2,79.875 47.25,79.875 C 57.375,79.875 65.25,74.25 69.75,66.375" />
+        
+    <!-- Delicate Inner Heart Apex -->
+    <path
+        android:fillColor="#FF2D55"
+        android:pathData="M 54,41.625 C 54,41.625 59.625,36 65.25,39.375 C 70.875,42.75 70.875,50.625 64.125,57.375 L 54,67.5 L 43.875,57.375 C 37.125,50.625 37.125,42.75 42.75,39.375 C 48.375,36 54,41.625 54,41.625 Z" />
+</vector>

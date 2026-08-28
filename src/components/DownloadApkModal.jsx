@@ -17,8 +17,8 @@ export default function DownloadApkModal({ isOpen, onClose, onLaunchApp }) {
 
   if (!isOpen) return null;
 
-  // Direct APK download URL from GitHub Release
-  const APK_DOWNLOAD_URL = "https://github.com/Cupid-AI-Pro/cupid-rounds/releases/download/v1.0.0/app-debug.apk";
+  // Direct Vercel-hosted 8.04MB APK download (Zero auth needed, 1-tap download on any phone)
+  const APK_DOWNLOAD_URL = "/downloads/cupid-rounds.apk";
 
   const handleDownloadApk = () => {
     setDownloading(true);
