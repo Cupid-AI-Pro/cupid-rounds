@@ -4,7 +4,7 @@
   "webDir": "dist",
   "bundledWebRuntime": false,
   "server": {
-    "url": "https://cupid-rounds.vercel.app",
+    "url": "https://cupid-round.vercel.app",
     "cleartext": true,
     "androidScheme": "https"
   }

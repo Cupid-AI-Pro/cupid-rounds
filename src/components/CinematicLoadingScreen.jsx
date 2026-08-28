@@ -58,7 +58,7 @@ export default function CinematicLoadingScreen({ onComplete, activeState = 'Delh
   }, []);
 
   return (
-    <div className="relative w-full h-full min-h-[640px] flex flex-col justify-between p-8 select-none overflow-hidden bg-slate-950 text-white font-sans">
+    <div className="fixed inset-0 w-full h-[100dvh] min-h-screen flex flex-col justify-between p-8 select-none overflow-hidden bg-slate-950 text-white font-sans z-50">
       
       {/* 1. Couple Photos with Slow Ken-Burns Cinematic Movement */}
       {COUPLE_EDITORIAL_PHOTOS.map((slide, idx) => (
@@ -84,13 +84,13 @@ export default function CinematicLoadingScreen({ onComplete, activeState = 'Delh
         className="absolute inset-0 pointer-events-none z-0"
         style={{
           background: `
-            linear-gradient(to top, rgba(15, 23, 42, 0.94) 0%, rgba(15, 23, 42, 0.40) 50%, rgba(15, 23, 42, 0.70) 100%)
+            linear-gradient(to top, rgba(11, 17, 32, 0.96) 0%, rgba(11, 17, 32, 0.45) 50%, rgba(11, 17, 32, 0.75) 100%)
           `
         }}
       ></div>
 
       {/* 3. Top Minimal Location Header */}
-      <div className="relative z-10 flex justify-center pt-3">
+      <div className="relative z-10 flex justify-center pt-4">
         <span className="text-[10px] font-bold tracking-[0.25em] text-white/70 uppercase">
           {activeState} • ROUND 01
         </span>
@@ -105,11 +105,11 @@ export default function CinematicLoadingScreen({ onComplete, activeState = 'Delh
       </div>
 
       {/* 5. Bottom Sleek Minimal Line */}
-      <div className="relative z-10 flex flex-col items-center space-y-3 pb-4">
+      <div className="relative z-10 flex flex-col items-center space-y-3 pb-8">
         {/* Hairline 1.5px Progress Line */}
         <div className="w-40 h-[2px] bg-white/20 rounded-full overflow-hidden">
           <div
-            className="h-full bg-white rounded-full transition-all duration-100 ease-out"
+            className="h-full bg-[#FF2D55] rounded-full transition-all duration-100 ease-out"
             style={{ width: `${progress}%` }}
           ></div>
         </div>
