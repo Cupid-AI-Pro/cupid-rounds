@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
@@ -5,29 +6,32 @@
     android:viewportHeight="108">
 
     <!--
-        OFFICIAL CUPID LAUNCHER ICON FOREGROUND
-        Fitted safely within the 72dp center safe-zone of the 108dp adaptive icon canvas.
-        Center: (54, 54). Safe radius: 33dp.
+        CUPID ADAPTIVE ICON FOREGROUND
+        Safe zone: 72dp center (18dp margin each side)
+        Center: (54, 54)
+        All design fits within 18–90dp range
     -->
 
-    <!-- Outer Bold Circular 'C' arc in #FF2D55 (Crimson Pink) -->
+    <!-- ===== BOLD 'C' ARC (thick stroked path rendered as thick fill) ===== -->
+    <!-- Outer ring of C -->
     <path
-        android:pathData="M 68,36 A 21,21 0 1,0 68,72"
+        android:pathData="M 70.5,34.5
+                          A 22.5,22.5 0 1,0 70.5,73.5"
         android:strokeColor="#FF2D55"
-        android:strokeWidth="6.8"
+        android:strokeWidth="9"
         android:strokeLineCap="round"
-        android:strokeLineJoin="round"
-        android:fillColor="@android:color/transparent" />
+        android:fillColor="#00000000"/>
 
-    <!-- Center Solid Heart in #FF2D55 -->
+    <!-- ===== SOLID HEART centered at (54,54) ===== -->
     <path
+        android:fillColor="#FF2D55"
         android:pathData="
-          M 54,65
-          C 53.2,64.2 41,53.5 41,46.5
-          C 41,41.8 45,38.5 49.5,38.5
-          C 51.8,38.5 53.2,39.5 54,40.3
-          C 54.8,39.5 56.2,38.5 58.5,38.5
-          C 63,38.5 67,41.8 67,46.5
-          C 67,53.5 54.8,64.2 54,65 Z"
-        android:fillColor="#FF2D55" />
+          M 54,66
+          C 54,66 38,55 38,46
+          C 38,40.5 42.5,37 47.5,37
+          C 50.5,37 53,38.5 54,39.5
+          C 55,38.5 57.5,37 60.5,37
+          C 65.5,37 70,40.5 70,46
+          C 70,55 54,66 54,66 Z" />
+
 </vector>

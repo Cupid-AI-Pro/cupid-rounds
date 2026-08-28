@@ -6,226 +6,220 @@ using System.IO;
 
 public class MipmapItem {
     public string Folder;
-    public int IconSize;
-    public int FgSize;
-    public MipmapItem(string f, int i, int fg) { Folder = f; IconSize = i; FgSize = fg; }
-}
-
-public class SplashItem {
-    public string Folder;
-    public int W;
-    public int H;
-    public SplashItem(string f, int w, int h) { Folder = f; W = w; H = h; }
+    public int Size;
+    public MipmapItem(string f, int s) { Folder = f; Size = s; }
 }
 
 public class IconGenerator {
-    public static Bitmap CreateCupidIcon(int width, int height, bool isRound, bool isForegroundOnly) {
-        Bitmap bmp = new Bitmap(width, height);
+    // Creates the Cupid icon: White circle bg + BOLD crimson C arc + solid crimson heart
+    public static Bitmap CreateCupidIcon(int size) {
+        Bitmap bmp = new Bitmap(size, size, PixelFormat.Format32bppArgb);
         using (Graphics g = Graphics.FromImage(bmp)) {
             g.SmoothingMode = SmoothingMode.AntiAlias;
             g.InterpolationMode = InterpolationMode.HighQualityBicubic;
             g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+            g.Clear(Color.Transparent);
 
             Color crimson = ColorTranslator.FromHtml("#FF2D55");
-            Color white = Color.White;
+            float cx = size / 2f;
+            float cy = size / 2f;
+            float r = size / 2f;
 
-            if (!isForegroundOnly) {
-                g.Clear(white);
-            } else {
-                g.Clear(Color.Transparent);
+            // --- 1. White rounded square background (fills entire icon) ---
+            using (SolidBrush bgBrush = new SolidBrush(Color.White)) {
+                float corner = size * 0.22f;
+                DrawRoundedRect(g, bgBrush, 0, 0, size, size, corner);
             }
 
-            float cx = width / 2f;
-            float cy = height / 2f;
-            // Scale based on safe inner area (~60% of total icon dimension)
-            float scale = (width * 0.62f) / 100f;
+            // --- 2. Bold 'C' arc ---
+            // C arc radius: 35% of icon size
+            float arcRadius = size * 0.30f;
+            // Stroke: 14% of icon size — VERY BOLD
+            float strokeW = size * 0.13f;
 
-            // 1. Draw Outer C arc
-            float strokeW = Math.Max(2.5f, 9.5f * scale);
             using (Pen pen = new Pen(crimson, strokeW)) {
                 pen.StartCap = LineCap.Round;
                 pen.EndCap = LineCap.Round;
-                float cRadius = 30f * scale;
-                g.DrawArc(pen, cx - cRadius, cy - cRadius, cRadius * 2, cRadius * 2, 45f, 270f);
+                // Draw arc from 50° to 310° (260° sweep) = open C facing right
+                float left = cx - arcRadius;
+                float top = cy - arcRadius;
+                float diameter = arcRadius * 2f;
+                // startAngle=50, sweepAngle=260 → opens to the right like "C"
+                g.DrawArc(pen, left, top, diameter, diameter, 50f, 260f);
             }
 
-            // 2. Draw Centered Solid Heart
+            // --- 3. Solid Heart centered ---
+            float hs = size * 0.18f;  // heart half-width scale
+            float hcx = cx;
+            float hcy = cy + (size * 0.02f); // slightly below center
+
             using (SolidBrush hBrush = new SolidBrush(crimson)) {
-                using (GraphicsPath hPath = new GraphicsPath()) {
-                    float hs = scale * 1.05f;
-                    float hx = cx;
-                    float hy = cy - (2.5f * scale);
-
-                    PointF pBottom = new PointF(hx, hy + (16f * hs));
-                    PointF pLeftLobe = new PointF(hx - (16f * hs), hy - (5f * hs));
-                    PointF pCleft = new PointF(hx, hy - (7f * hs));
-                    PointF pRightLobe = new PointF(hx + (16f * hs), hy - (5f * hs));
-
-                    hPath.AddBezier(
-                        pBottom,
-                        new PointF(hx - (1f * hs), hy + (15f * hs)),
-                        new PointF(hx - (16f * hs), hy + (4f * hs)),
-                        pLeftLobe
-                    );
-                    hPath.AddBezier(
-                        pLeftLobe,
-                        new PointF(hx - (16f * hs), hy - (12f * hs)),
-                        new PointF(hx - (4f * hs), hy - (14f * hs)),
-                        pCleft
-                    );
-                    hPath.AddBezier(
-                        pCleft,
-                        new PointF(hx + (4f * hs), hy - (14f * hs)),
-                        new PointF(hx + (16f * hs), hy - (12f * hs)),
-                        pRightLobe
-                    );
-                    hPath.AddBezier(
-                        pRightLobe,
-                        new PointF(hx + (16f * hs), hy + (4f * hs)),
-                        new PointF(hx + (1f * hs), hy + (15f * hs)),
-                        pBottom
-                    );
-                    hPath.CloseFigure();
-                    g.FillPath(hBrush, hPath);
-                }
+                GraphicsPath heart = BuildHeart(hcx, hcy, hs);
+                g.FillPath(hBrush, heart);
+                heart.Dispose();
             }
         }
         return bmp;
     }
 
-    public static Bitmap CreateCupidSplash(int width, int height) {
+    static void DrawRoundedRect(Graphics g, Brush brush, float x, float y, float w, float h, float r) {
+        using (GraphicsPath path = new GraphicsPath()) {
+            path.AddArc(x, y, r * 2, r * 2, 180, 90);
+            path.AddArc(x + w - r * 2, y, r * 2, r * 2, 270, 90);
+            path.AddArc(x + w - r * 2, y + h - r * 2, r * 2, r * 2, 0, 90);
+            path.AddArc(x, y + h - r * 2, r * 2, r * 2, 90, 90);
+            path.CloseFigure();
+            g.FillPath(brush, path);
+        }
+    }
+
+    static GraphicsPath BuildHeart(float cx, float cy, float scale) {
+        GraphicsPath p = new GraphicsPath();
+        // Two bezier lobes forming a heart
+        float w = scale;
+        float h = scale;
+        // Left lobe
+        p.AddBezier(
+            new PointF(cx, cy + h * 0.9f),
+            new PointF(cx - w * 1.1f, cy + h * 0.5f),
+            new PointF(cx - w * 1.4f, cy - h * 0.5f),
+            new PointF(cx, cy - h * 0.15f)
+        );
+        // Right lobe
+        p.AddBezier(
+            new PointF(cx, cy - h * 0.15f),
+            new PointF(cx + w * 1.4f, cy - h * 0.5f),
+            new PointF(cx + w * 1.1f, cy + h * 0.5f),
+            new PointF(cx, cy + h * 0.9f)
+        );
+        p.CloseFigure();
+        return p;
+    }
+
+    public static Bitmap CreateSplash(int width, int height) {
         Bitmap bmp = new Bitmap(width, height);
         using (Graphics g = Graphics.FromImage(bmp)) {
             g.SmoothingMode = SmoothingMode.AntiAlias;
             g.InterpolationMode = InterpolationMode.HighQualityBicubic;
             g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+            g.Clear(ColorTranslator.FromHtml("#0b1120"));
 
-            Color bg = ColorTranslator.FromHtml("#0b1120");
             Color crimson = ColorTranslator.FromHtml("#FF2D55");
-            Color white = Color.White;
-
-            g.Clear(bg);
-
             float minDim = Math.Min(width, height);
             float cx = width / 2f;
-            float cy = (height / 2f) - (minDim * 0.04f);
-            float scale = minDim / 380f;
+            float cy = height / 2f - (minDim * 0.06f);
+            float iconSize = minDim * 0.32f;
 
-            // 1. Draw Outer C arc
-            float strokeW = Math.Max(3f, 10f * scale);
+            float left = cx - iconSize / 2f;
+            float top = cy - iconSize / 2f;
+
+            // White circle bg
+            using (SolidBrush wb = new SolidBrush(Color.White)) {
+                g.FillEllipse(wb, left, top, iconSize, iconSize);
+            }
+
+            // Bold C arc
+            float arcRadius = iconSize * 0.30f;
+            float strokeW = iconSize * 0.13f;
             using (Pen pen = new Pen(crimson, strokeW)) {
                 pen.StartCap = LineCap.Round;
                 pen.EndCap = LineCap.Round;
-                float cRadius = 36f * scale;
-                g.DrawArc(pen, cx - cRadius, cy - cRadius, cRadius * 2, cRadius * 2, 45f, 270f);
+                g.DrawArc(pen, cx - arcRadius, cy - arcRadius, arcRadius * 2f, arcRadius * 2f, 50f, 260f);
             }
 
-            // 2. Draw Centered Solid Heart
+            // Heart
+            float hs = iconSize * 0.18f;
             using (SolidBrush hBrush = new SolidBrush(crimson)) {
-                using (GraphicsPath hPath = new GraphicsPath()) {
-                    float hs = scale * 1.15f;
-                    float hx = cx;
-                    float hy = cy - (2f * scale);
-
-                    PointF pBottom = new PointF(hx, hy + (16f * hs));
-                    PointF pLeftLobe = new PointF(hx - (16f * hs), hy - (5f * hs));
-                    PointF pCleft = new PointF(hx, hy - (7f * hs));
-                    PointF pRightLobe = new PointF(hx + (16f * hs), hy - (5f * hs));
-
-                    hPath.AddBezier(
-                        pBottom,
-                        new PointF(hx - (1f * hs), hy + (15f * hs)),
-                        new PointF(hx - (16f * hs), hy + (4f * hs)),
-                        pLeftLobe
-                    );
-                    hPath.AddBezier(
-                        pLeftLobe,
-                        new PointF(hx - (16f * hs), hy - (12f * hs)),
-                        new PointF(hx - (4f * hs), hy - (14f * hs)),
-                        pCleft
-                    );
-                    hPath.AddBezier(
-                        pCleft,
-                        new PointF(hx + (4f * hs), hy - (14f * hs)),
-                        new PointF(hx + (16f * hs), hy - (12f * hs)),
-                        pRightLobe
-                    );
-                    hPath.AddBezier(
-                        pRightLobe,
-                        new PointF(hx + (16f * hs), hy + (4f * hs)),
-                        new PointF(hx + (1f * hs), hy + (15f * hs)),
-                        pBottom
-                    );
-                    hPath.CloseFigure();
-                    g.FillPath(hBrush, hPath);
-                }
+                GraphicsPath heart = BuildHeart(cx, cy + (iconSize * 0.02f), hs);
+                g.FillPath(hBrush, heart);
+                heart.Dispose();
             }
 
-            // 3. Draw Wordmark Text
-            float fontSize = Math.Max(14f, 32f * scale);
-            using (Font font = new Font("Arial", fontSize, FontStyle.Bold)) {
-                using (SolidBrush textBrush = new SolidBrush(white)) {
-                    using (StringFormat sf = new StringFormat()) {
-                        sf.Alignment = StringAlignment.Center;
-                        sf.LineAlignment = StringAlignment.Center;
-                        float textY = cy + (36f * scale) + (28f * scale);
-                        g.DrawString("cupid.", font, textBrush, cx, textY, sf);
-                    }
-                }
+            // "cupid." wordmark
+            float fontSize = Math.Max(12f, minDim * 0.065f);
+            using (Font font = new Font("Arial", fontSize, FontStyle.Bold))
+            using (SolidBrush tb = new SolidBrush(Color.White))
+            using (StringFormat sf = new StringFormat()) {
+                sf.Alignment = StringAlignment.Center;
+                sf.LineAlignment = StringAlignment.Center;
+                g.DrawString("cupid.", font, tb, cx, cy + iconSize * 0.7f, sf);
             }
         }
         return bmp;
     }
 
     public static void GenerateAll(string baseResDir) {
-        // 1. Mipmap Icons
         MipmapItem[] mipmaps = new MipmapItem[] {
-            new MipmapItem("mipmap-mdpi", 48, 108),
-            new MipmapItem("mipmap-hdpi", 72, 162),
-            new MipmapItem("mipmap-xhdpi", 96, 216),
-            new MipmapItem("mipmap-xxhdpi", 144, 324),
-            new MipmapItem("mipmap-xxxhdpi", 192, 432)
+            new MipmapItem("mipmap-mdpi",    48),
+            new MipmapItem("mipmap-hdpi",    72),
+            new MipmapItem("mipmap-xhdpi",   96),
+            new MipmapItem("mipmap-xxhdpi",  144),
+            new MipmapItem("mipmap-xxxhdpi", 192)
         };
 
         foreach (MipmapItem m in mipmaps) {
             string dir = Path.Combine(baseResDir, m.Folder);
             if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
 
-            using (Bitmap bmp = CreateCupidIcon(m.IconSize, m.IconSize, false, false)) {
+            // Square version
+            using (Bitmap bmp = CreateCupidIcon(m.Size)) {
                 bmp.Save(Path.Combine(dir, "ic_launcher.png"), ImageFormat.Png);
             }
-            using (Bitmap bmp = CreateCupidIcon(m.IconSize, m.IconSize, true, false)) {
+            // Round version (same design, Android clips to circle)
+            using (Bitmap bmp = CreateCupidIcon(m.Size)) {
                 bmp.Save(Path.Combine(dir, "ic_launcher_round.png"), ImageFormat.Png);
             }
-            using (Bitmap bmp = CreateCupidIcon(m.FgSize, m.FgSize, false, true)) {
+            // Foreground PNG for adaptive icon (transparent bg)
+            using (Bitmap bmp = CreateCupidIconForeground(m.Size * 2)) {
                 bmp.Save(Path.Combine(dir, "ic_launcher_foreground.png"), ImageFormat.Png);
             }
-            Console.WriteLine("Generated: " + m.Folder);
+            Console.WriteLine("Generated: " + m.Folder + " @ " + m.Size + "px");
         }
 
-        // 2. Splash Screens
-        SplashItem[] splashes = new SplashItem[] {
-            new SplashItem("drawable", 480, 800),
-            new SplashItem("drawable-port-mdpi", 320, 480),
-            new SplashItem("drawable-port-hdpi", 480, 800),
-            new SplashItem("drawable-port-xhdpi", 720, 1280),
-            new SplashItem("drawable-port-xxhdpi", 1080, 1920),
-            new SplashItem("drawable-port-xxxhdpi", 1440, 2560),
-            new SplashItem("drawable-land-mdpi", 480, 320),
-            new SplashItem("drawable-land-hdpi", 800, 480),
-            new SplashItem("drawable-land-xhdpi", 1280, 720),
-            new SplashItem("drawable-land-xxhdpi", 1920, 1080),
-            new SplashItem("drawable-land-xxxhdpi", 2560, 1440)
+        // Splash screens
+        int[][] splashes = new int[][] {
+            new int[]{480,800}, new int[]{720,1280}, new int[]{1080,1920}, new int[]{1440,2560}
         };
-
-        foreach (SplashItem s in splashes) {
-            string dir = Path.Combine(baseResDir, s.Folder);
-            if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
-
-            using (Bitmap bmp = CreateCupidSplash(s.W, s.H)) {
-                bmp.Save(Path.Combine(dir, "splash.png"), ImageFormat.Png);
-            }
-            Console.WriteLine("Generated Splash: " + s.Folder + " (" + s.W + "x" + s.H + ")");
+        string drawableDir = Path.Combine(baseResDir, "drawable");
+        if (!Directory.Exists(drawableDir)) Directory.CreateDirectory(drawableDir);
+        using (Bitmap bmp = CreateSplash(1080, 1920)) {
+            bmp.Save(Path.Combine(drawableDir, "splash.png"), ImageFormat.Png);
+            Console.WriteLine("Generated: splash.png");
         }
+        Console.WriteLine("ALL DONE!");
+    }
+
+    // Foreground-only (transparent background) for adaptive icon
+    public static Bitmap CreateCupidIconForeground(int size) {
+        Bitmap bmp = new Bitmap(size, size, PixelFormat.Format32bppArgb);
+        using (Graphics g = Graphics.FromImage(bmp)) {
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+            g.Clear(Color.Transparent);
+
+            Color crimson = ColorTranslator.FromHtml("#FF2D55");
+            float cx = size / 2f;
+            float cy = size / 2f;
+
+            // Sized to fit within 72dp safe zone (66% of 108dp canvas)
+            float safeFactor = 0.40f;
+            float arcRadius = size * safeFactor * 0.50f;
+            float strokeW = size * safeFactor * 0.22f;
+
+            using (Pen pen = new Pen(crimson, strokeW)) {
+                pen.StartCap = LineCap.Round;
+                pen.EndCap = LineCap.Round;
+                g.DrawArc(pen, cx - arcRadius, cy - arcRadius, arcRadius * 2f, arcRadius * 2f, 50f, 260f);
+            }
+
+            float hs = size * safeFactor * 0.30f;
+            using (SolidBrush hBrush = new SolidBrush(crimson)) {
+                GraphicsPath heart = BuildHeart(cx, cy + (size * 0.025f), hs);
+                g.FillPath(hBrush, heart);
+                heart.Dispose();
+            }
+        }
+        return bmp;
     }
 }
