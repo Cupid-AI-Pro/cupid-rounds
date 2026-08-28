@@ -30,47 +30,31 @@ public class IconGenerator {
             Color white = Color.White;
 
             if (!isForegroundOnly) {
-                g.Clear(Color.Transparent);
-                using (SolidBrush bgBrush = new SolidBrush(white)) {
-                    if (isRound) {
-                        g.FillEllipse(bgBrush, 1, 1, width - 2, height - 2);
-                    } else {
-                        using (GraphicsPath path = new GraphicsPath()) {
-                            int r = Math.Max(4, (int)(width * 0.22));
-                            int d = r * 2;
-                            Rectangle rect = new Rectangle(1, 1, width - 2, height - 2);
-                            path.AddArc(rect.X, rect.Y, d, d, 180, 90);
-                            path.AddArc(rect.Right - d, rect.Y, d, d, 270, 90);
-                            path.AddArc(rect.Right - d, rect.Bottom - d, d, d, 0, 90);
-                            path.AddArc(rect.X, rect.Bottom - d, d, d, 90, 90);
-                            path.CloseFigure();
-                            g.FillPath(bgBrush, path);
-                        }
-                    }
-                }
+                g.Clear(white);
             } else {
                 g.Clear(Color.Transparent);
             }
 
             float cx = width / 2f;
             float cy = height / 2f;
-            float scale = width / 100f;
+            // Scale based on safe inner area (~60% of total icon dimension)
+            float scale = (width * 0.62f) / 100f;
 
             // 1. Draw Outer C arc
-            float strokeW = Math.Max(2f, 7.5f * scale);
+            float strokeW = Math.Max(2.5f, 9.5f * scale);
             using (Pen pen = new Pen(crimson, strokeW)) {
                 pen.StartCap = LineCap.Round;
                 pen.EndCap = LineCap.Round;
-                float cRadius = 26f * scale;
+                float cRadius = 30f * scale;
                 g.DrawArc(pen, cx - cRadius, cy - cRadius, cRadius * 2, cRadius * 2, 45f, 270f);
             }
 
             // 2. Draw Centered Solid Heart
             using (SolidBrush hBrush = new SolidBrush(crimson)) {
                 using (GraphicsPath hPath = new GraphicsPath()) {
-                    float hs = scale * 0.85f;
+                    float hs = scale * 1.05f;
                     float hx = cx;
-                    float hy = cy - (2f * scale);
+                    float hy = cy - (2.5f * scale);
 
                     PointF pBottom = new PointF(hx, hy + (16f * hs));
                     PointF pLeftLobe = new PointF(hx - (16f * hs), hy - (5f * hs));
