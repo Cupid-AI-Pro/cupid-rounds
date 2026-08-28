@@ -15,8 +15,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -47,19 +45,18 @@ jobs:
           cd android
           ./gradlew assembleDebug --stacktrace
 
-      - name: Upload APK as GitHub Actions Artifact
+      - name: Upload APK as Artifact
         uses: actions/upload-artifact@v4
         with:
           name: CupidRounds-Android-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
-          retention-days: 30
 
-      - name: Create or Update GitHub Release
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v1.0.0
           name: "Cupid Rounds Official APK v1.0.0"
-          body: "Official Cupid Android APK release. Download and install directly on any Android device."
+          body: "Official Android APK release for Cupid Rounds."
           draft: false
           prerelease: false
           files: android/app/build/outputs/apk/debug/app-debug.apk
