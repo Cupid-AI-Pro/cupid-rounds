@@ -1,5 +1,5 @@
 // Cupid Rounds — Live Over-The-Air (OTA) Auto-Update Service Worker
-const CACHE_NAME = 'cupid-rounds-live-v2';
+const CACHE_NAME = 'cupid-rounds-live-v3';
 
 self.addEventListener('install', (event) => {
   // Immediately take over without waiting for old tabs to close

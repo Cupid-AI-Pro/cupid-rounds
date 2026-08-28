@@ -1,9 +1,12 @@
-name: Build Android APK & Publish to Vercel
+name: Build Android APK & Release
 
 on:
   push:
     branches: [ main, master ]
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -13,7 +16,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -44,25 +47,21 @@ jobs:
           cd android
           ./gradlew assembleDebug --stacktrace
 
-      - name: Copy APK to public/downloads for Vercel hosting
-        run: |
-          mkdir -p public/downloads
-          cp android/app/build/outputs/apk/debug/app-debug.apk public/downloads/cupid-rounds.apk
-          echo "APK size: $(du -sh public/downloads/cupid-rounds.apk)"
-
-      - name: Upload APK as GitHub Actions Artifact (backup)
+      - name: Upload APK as GitHub Actions Artifact
         uses: actions/upload-artifact@v4
         with:
           name: CupidRounds-Android-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30
 
-      - name: Commit & Push APK to repo (so Vercel auto-deploys it)
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add public/downloads/cupid-rounds.apk
-          git diff --staged --quiet || git commit -m "ci: update APK build [skip ci]"
-          git push
+      - name: Create or Update GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.0
+          name: "Cupid Rounds Official APK v1.0.0"
+          body: "Official Cupid Android APK release. Download and install directly on any Android device."
+          draft: false
+          prerelease: false
+          files: android/app/build/outputs/apk/debug/app-debug.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

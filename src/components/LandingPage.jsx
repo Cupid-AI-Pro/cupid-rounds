@@ -932,6 +932,7 @@ export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
       <DownloadApkModal 
         isOpen={downloadModalOpen} 
         onClose={() => setDownloadModalOpen(false)} 
+        onLaunchApp={onLaunchApp}
       />
 
     </div>

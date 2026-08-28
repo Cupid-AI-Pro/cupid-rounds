@@ -15,13 +15,19 @@ export default function App() {
   const [showLoginInPhone, setShowLoginInPhone] = useState(false);
   const [isPlayingIntro, setIsPlayingIntro] = useState(false);
   
-  // Default to landing page on both Mobile & Desktop!
-  // If user has query param ?view=app or is already logged in and using app, go to app view
+  // Default to landing page for web visitors, but immediately open the internal App for installed PWA / mobile app users!
   const [currentView, setCurrentView] = useState(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('view') === 'admin') return 'admin';
     if (params.get('view') === 'app') return 'app';
     if (params.get('view') === 'landing') return 'landing';
+
+    // Standalone / Installed App mode detection (Home Screen Icon tap)
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                         window.navigator.standalone === true ||
+                         document.referrer.includes('android-app://') ||
+                         params.get('source') === 'pwa';
+    if (isStandalone) return 'app';
 
     const savedUser = getCurrentUser();
     if (savedUser) return 'app';
