@@ -16,9 +16,8 @@ export default function DownloadApkModal({ isOpen, onClose }) {
 
   if (!isOpen) return null;
 
-  // Direct GitHub Release APK link — update this URL after first release build
-  const APK_DIRECT_URL = "https://github.com/Cupid-AI-Pro/cupid-rounds/releases/latest/download/app-debug.apk";
-  const GITHUB_RELEASES_URL = "https://github.com/Cupid-AI-Pro/cupid-rounds/releases";
+  // APK hosted on Vercel's public folder — works even with private GitHub repo
+  const APK_DIRECT_URL = "https://cupid-round.vercel.app/downloads/cupid-rounds.apk";
   const GITHUB_ACTIONS_URL = "https://github.com/Cupid-AI-Pro/cupid-rounds/actions";
 
   const handleDirectDownload = () => {
@@ -92,14 +91,14 @@ export default function DownloadApkModal({ isOpen, onClose }) {
           )}
         </button>
 
-        {/* ── NOTICE: If APK build isn't done yet ── */}
+        {/* ── NOTICE: If APK is not built yet ── */}
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-left space-y-2">
           <div className="flex items-start gap-2">
             <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
             <div>
-              <p className="text-xs font-black text-amber-800">If download fails or file is too small:</p>
+              <p className="text-xs font-black text-amber-800">First time? APK needs to be built once.</p>
               <p className="text-[11px] text-amber-700 font-medium mt-1 leading-relaxed">
-                The APK needs to be built first via GitHub Actions. Click the button below to trigger a build — it takes ~5 minutes and creates the real APK automatically.
+                If download fails, the APK build hasn't run yet. Go to GitHub Actions, run the <strong>"Build Android APK"</strong> workflow — it takes ~5 min and the download will work automatically after that.
               </p>
             </div>
           </div>
@@ -110,7 +109,7 @@ export default function DownloadApkModal({ isOpen, onClose }) {
             className="flex items-center gap-2 w-full py-2.5 px-4 bg-white border border-amber-300 hover:bg-amber-50 rounded-xl text-xs font-extrabold text-slate-800 transition-colors cursor-pointer"
           >
             <GitBranch className="w-4 h-4 text-slate-700" />
-            <span>View GitHub Actions → Trigger Build</span>
+            <span>GitHub Actions → Run APK Build</span>
             <ExternalLink className="w-3 h-3 text-slate-400 ml-auto" />
           </a>
         </div>
