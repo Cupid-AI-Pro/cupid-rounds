@@ -15,38 +15,12 @@ export default function App() {
   const [showLoginInPhone, setShowLoginInPhone] = useState(false);
   const [isPlayingIntro, setIsPlayingIntro] = useState(false);
   
-  // Default to landing page for web visitors, but ALWAYS open the internal Matchmaking App directly inside the Native Android APK & Installed App!
+  // Default to internal matchmaking app directly!
   const [currentView, setCurrentView] = useState(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('view') === 'admin') return 'admin';
     if (params.get('view') === 'landing') return 'landing';
-    if (params.get('view') === 'app') return 'app';
-
-    // 1. Native Android APK detection (Capacitor / Android WebView / Localhost container)
-    const isCapacitorNative = Boolean(
-      (typeof window !== 'undefined' && window.Capacitor) ||
-      window.location.hostname === 'localhost' ||
-      window.location.protocol === 'capacitor:' ||
-      window.location.protocol === 'ionic:' ||
-      /wv|Capacitor/i.test(window.navigator.userAgent)
-    );
-
-    // 2. Standalone / Installed WebAPK detection (Home Screen Icon tap)
-    const isInstalledApp = Boolean(
-      window.matchMedia('(display-mode: standalone)').matches || 
-      window.navigator.standalone === true ||
-      document.referrer.includes('android-app://') ||
-      params.get('source') === 'pwa'
-    );
-
-    if (isCapacitorNative || isInstalledApp) {
-      return 'app'; // Directly open the actual internal matchmaking app
-    }
-
-    const savedUser = getCurrentUser();
-    if (savedUser) return 'app';
-
-    return 'landing';
+    return 'app'; // Directly open the actual matchmaking app
   });
 
   useEffect(() => {
@@ -71,7 +45,7 @@ export default function App() {
     logout();
     setLocalCurrentUser(null);
     setShowLoginInPhone(false);
-    setCurrentView('landing');
+    setCurrentView('app');
   };
 
   const handleOnboardingComplete = (updatedUser) => {
@@ -117,7 +91,7 @@ export default function App() {
 
             <button
               onClick={() => setCurrentView('app')}
-              className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#FF2D55] hover:bg-rose-600 text-xs font-bold text-white shadow-sm transition-colors cursor-pointer"
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#FF2E79] hover:bg-rose-600 text-xs font-bold text-white shadow-sm transition-colors cursor-pointer"
             >
               <Phone className="w-4 h-4" />
               <span>Open User App</span>
@@ -147,7 +121,7 @@ export default function App() {
       <div className="hidden md:flex w-full max-w-md items-center justify-between py-3 px-4 text-xs font-bold text-slate-500 z-10">
         <button 
           onClick={() => setCurrentView('landing')} 
-          className="flex items-center gap-1.5 hover:text-[#FF2D55] transition-colors cursor-pointer"
+          className="flex items-center gap-1.5 hover:text-[#FF2E79] transition-colors cursor-pointer"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Landing Website</span>
@@ -165,13 +139,13 @@ export default function App() {
       {/* Main Native Screen Container:
           - On mobile: 100% full screen height and width without black frames
           - On desktop: Clean centered mobile frame with light border */}
-      <div className="w-full max-w-md min-h-screen md:min-h-[844px] md:max-h-[92vh] md:rounded-[44px] bg-slate-50 md:border-4 md:border-slate-200 shadow-2xl overflow-hidden flex flex-col relative z-10">
+      <div className="w-full max-w-[412px] h-[100dvh] md:h-[844px] md:max-h-[92vh] md:rounded-[48px] phone-screen md:border-[8px] md:border-white shadow-[0_25px_70px_-15px_rgba(255,46,121,0.18),0_15px_35px_-5px_rgba(0,0,0,0.08)] overflow-hidden flex flex-col relative z-10">
         
         {/* Dynamic Island for desktop simulation */}
-        <div className="hidden md:block absolute top-2 left-1/2 -translate-x-1/2 w-28 h-4 bg-slate-800 rounded-full z-50"></div>
+        <div className="hidden md:block absolute top-2.5 left-1/2 -translate-x-1/2 w-28 h-4 bg-slate-900 rounded-full z-50"></div>
 
-        {/* Screen Content Wrapper (Original Light App Theme) */}
-        <div className="flex-1 flex flex-col overflow-y-auto relative bg-slate-50">
+        {/* Screen Content Wrapper */}
+        <div className="flex-1 flex flex-col overflow-y-auto relative bg-transparent">
           {isPlayingIntro ? (
             <CinematicLoadingScreen 
               onComplete={() => setIsPlayingIntro(false)} 

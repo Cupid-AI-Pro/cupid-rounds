@@ -188,7 +188,7 @@ export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#FAF8F5] text-slate-900 selection:bg-[#FF2D55] selection:text-white overflow-x-hidden font-sans relative">
+    <div className="min-h-screen w-full bg-[#FAF8F5] text-slate-900 selection:bg-[#FF2E79] selection:text-white overflow-x-hidden font-sans relative">
       
       {/* ═══ SOFT PASTEL BACKGROUND ARTWORK (Subtle, Elegant & Layered) ═══ */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
@@ -227,7 +227,7 @@ export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
             rx="660" 
             ry="290" 
             fill="none" 
-            stroke="#FF2D55" 
+            stroke="#FF2E79" 
             strokeWidth="1.2" 
             strokeOpacity="0.14"
             transform="rotate(6 50% 390)"
@@ -266,7 +266,7 @@ export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
           >
             <div className="flex items-center gap-2">
               <CupidLogo size="sm" showText={true} textColor="dark" />
-              <span className="hidden sm:inline text-[9px] uppercase font-extrabold tracking-widest px-2.5 py-0.5 rounded-full bg-rose-50 text-[#FF2D55] border border-rose-200 ml-1">
+              <span className="hidden sm:inline text-[9px] uppercase font-extrabold tracking-widest px-2.5 py-0.5 rounded-full bg-rose-50 text-[#FF2E79] border border-rose-200 ml-1">
                 Rounds
               </span>
             </div>
@@ -274,10 +274,10 @@ export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-7 text-sm font-bold text-slate-600">
-            <a href="#how-it-works" className="hover:text-[#FF2D55] transition-colors">How It Works</a>
-            <a href="#plans" className="hover:text-[#FF2D55] transition-colors">Plans & Pricing</a>
-            <a href="#refund" className="hover:text-[#FF2D55] transition-colors">100% Refund Desk</a>
-            <a href="#radar" className="hover:text-[#FF2D55] transition-colors">Campus Radar</a>
+            <a href="#how-it-works" className="hover:text-[#FF2E79] transition-colors">How It Works</a>
+            <a href="#plans" className="hover:text-[#FF2E79] transition-colors">Plans & Pricing</a>
+            <a href="#refund" className="hover:text-[#FF2E79] transition-colors">100% Refund Desk</a>
+            <a href="#radar" className="hover:text-[#FF2E79] transition-colors">Campus Radar</a>
           </nav>
 
           {/* Action CTAs */}
@@ -286,13 +286,13 @@ export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
               onClick={() => setDownloadModalOpen(true)}
               className="hidden sm:flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-full shadow-sm hover:shadow transition-all active:scale-95 cursor-pointer"
             >
-              <Download className="w-3.5 h-3.5 text-[#FF2D55]" />
+              <Download className="w-3.5 h-3.5 text-[#FF2E79]" />
               <span>Install App</span>
             </button>
 
             <button
               onClick={onLaunchApp}
-              className="flex items-center gap-1.5 px-4 sm:px-5 py-2 sm:py-2.5 text-xs font-black text-white bg-gradient-to-r from-[#FF2D55] via-rose-500 to-pink-500 rounded-full shadow-lg shadow-rose-500/30 hover:brightness-105 transition-all active:scale-95 cursor-pointer"
+              className="flex items-center gap-1.5 px-4 sm:px-5 py-2 sm:py-2.5 text-xs font-black text-white bg-gradient-to-r from-[#FF2E79] via-rose-500 to-pink-500 rounded-full shadow-lg shadow-rose-500/30 hover:brightness-105 transition-all active:scale-95 cursor-pointer"
             >
               <span>Join Round</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -312,21 +312,21 @@ export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
         {/* Mobile Menu Dropdown */}
         {mobileMenuOpen && (
           <div className="md:hidden mt-3 pt-3 border-t border-slate-200 flex flex-col gap-2.5 text-sm font-bold text-slate-700 animate-slide-down">
-            <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)} className="py-2 px-2 hover:bg-rose-50 rounded-xl hover:text-[#FF2D55] transition-colors">How It Works</a>
-            <a href="#plans" onClick={() => setMobileMenuOpen(false)} className="py-2 px-2 hover:bg-rose-50 rounded-xl hover:text-[#FF2D55] transition-colors">Plans & Pricing</a>
-            <a href="#refund" onClick={() => setMobileMenuOpen(false)} className="py-2 px-2 hover:bg-rose-50 rounded-xl hover:text-[#FF2D55] transition-colors">100% Refund Desk</a>
-            <a href="#radar" onClick={() => setMobileMenuOpen(false)} className="py-2 px-2 hover:bg-rose-50 rounded-xl hover:text-[#FF2D55] transition-colors">Campus Radar</a>
+            <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)} className="py-2 px-2 hover:bg-rose-50 rounded-xl hover:text-[#FF2E79] transition-colors">How It Works</a>
+            <a href="#plans" onClick={() => setMobileMenuOpen(false)} className="py-2 px-2 hover:bg-rose-50 rounded-xl hover:text-[#FF2E79] transition-colors">Plans & Pricing</a>
+            <a href="#refund" onClick={() => setMobileMenuOpen(false)} className="py-2 px-2 hover:bg-rose-50 rounded-xl hover:text-[#FF2E79] transition-colors">100% Refund Desk</a>
+            <a href="#radar" onClick={() => setMobileMenuOpen(false)} className="py-2 px-2 hover:bg-rose-50 rounded-xl hover:text-[#FF2E79] transition-colors">Campus Radar</a>
             <div className="pt-2 flex flex-col gap-2">
               <button
                 onClick={() => { setMobileMenuOpen(false); setDownloadModalOpen(true); }}
-                className="w-full py-3 flex items-center justify-center gap-2 rounded-xl bg-white border border-rose-200 text-[#FF2D55] font-extrabold text-xs shadow-sm active:scale-95"
+                className="w-full py-3 flex items-center justify-center gap-2 rounded-xl bg-white border border-rose-200 text-[#FF2E79] font-extrabold text-xs shadow-sm active:scale-95"
               >
                 <Smartphone className="w-4 h-4" />
                 <span>Install Mobile App</span>
               </button>
               <button
                 onClick={() => { setMobileMenuOpen(false); onLaunchApp(); }}
-                className="w-full py-3 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#FF2D55] to-rose-500 text-white font-extrabold text-xs shadow-md active:scale-95"
+                className="w-full py-3 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#FF2E79] to-rose-500 text-white font-extrabold text-xs shadow-md active:scale-95"
               >
                 <span>Launch Web App</span>
                 <ArrowRight className="w-4 h-4" />
@@ -370,7 +370,7 @@ export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
               onClick={() => setDownloadModalOpen(true)}
               className="px-5 sm:px-6 py-3 sm:py-3.5 bg-white hover:bg-rose-50 border border-slate-200 text-slate-800 font-bold text-xs sm:text-sm rounded-full flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95 cursor-pointer"
             >
-              <Smartphone className="w-3.5 h-3.5 text-[#FF2D55]" />
+              <Smartphone className="w-3.5 h-3.5 text-[#FF2E79]" />
               <span>Install App</span>
             </button>
           </div>
@@ -396,7 +396,7 @@ export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
           {/* 2. Upper Right: 3D Match Compatibility Pill */}
           <div className="hidden xl:block absolute right-[6%] top-[2%] z-30 pointer-events-none animate-float-widget-2">
             <div className="bg-white/90 backdrop-blur-md border border-rose-200/80 px-3.5 py-2 rounded-2xl shadow-lg shadow-rose-500/10 flex items-center gap-2">
-              <div className="w-6 h-6 rounded-xl bg-gradient-to-tr from-[#FF2D55] to-rose-400 text-white flex items-center justify-center text-xs shadow-sm">
+              <div className="w-6 h-6 rounded-xl bg-gradient-to-tr from-[#FF2E79] to-rose-400 text-white flex items-center justify-center text-xs shadow-sm">
                 ⚡
               </div>
               <div className="text-left leading-none">
@@ -415,7 +415,7 @@ export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
               <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Delhi NCR</p>
               <h4 className="text-xs font-black text-slate-900 mt-0.5">ANANYA</h4>
               <p className="text-[9px] text-slate-500 font-medium">Near <span className="font-bold text-slate-800">1.8 Miles</span></p>
-              <button className="mt-2.5 w-full py-1.5 rounded-xl bg-slate-50 border border-slate-200/80 text-[#FF2D55] text-[10px] font-extrabold shadow-sm">
+              <button className="mt-2.5 w-full py-1.5 rounded-xl bg-slate-50 border border-slate-200/80 text-[#FF2E79] text-[10px] font-extrabold shadow-sm">
                 Say Hello
               </button>
             </div>
@@ -458,7 +458,7 @@ export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
                     onClick={() => handleSelectProfile(originalIndex)}
                     className={`relative cursor-pointer shrink-0 transition-all duration-500 rounded-[24px] sm:rounded-[30px] overflow-hidden p-1 bg-white shadow-xl ${
                       isCurrent 
-                        ? 'ring-4 ring-[#FF2D55] scale-105 z-10 opacity-100 shadow-rose-500/30' 
+                        ? 'ring-4 ring-[#FF2E79] scale-105 z-10 opacity-100 shadow-rose-500/30' 
                         : 'opacity-40 hover:opacity-85 hover:scale-95 shadow-slate-900/10'
                     }`}
                     style={{
@@ -489,7 +489,7 @@ export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
             
             {/* Dynamic Island */}
             <div className="w-20 sm:w-28 h-4 sm:h-5 bg-slate-900 rounded-full mx-auto mb-1.5 sm:mb-2 flex items-center justify-between px-2.5 sm:px-3">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#FF2D55] animate-pulse"></span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#FF2E79] animate-pulse"></span>
               <div className="w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-slate-800 border border-slate-700"></div>
             </div>
 
@@ -497,7 +497,7 @@ export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
             <div className="flex items-center justify-between px-2.5 sm:px-3 text-[9px] sm:text-[11px] font-bold text-slate-800 mb-1.5 sm:mb-2">
               <span>9:41</span>
               <div className="flex items-center gap-1">
-                <span className="text-[8px] sm:text-[9px] px-1 py-0.2 rounded bg-rose-50 text-[#FF2D55] font-black">5G</span>
+                <span className="text-[8px] sm:text-[9px] px-1 py-0.2 rounded bg-rose-50 text-[#FF2E79] font-black">5G</span>
                 <span>100%</span>
               </div>
             </div>
@@ -537,7 +537,7 @@ export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
 
               {/* Decorative Pill Icon */}
               <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center mx-auto text-slate-700 shadow-sm">
-                <IconComponent className="w-4 h-4 sm:w-5 sm:h-5 text-[#FF2D55]" />
+                <IconComponent className="w-4 h-4 sm:w-5 sm:h-5 text-[#FF2E79]" />
               </div>
 
               {/* About Me Section */}
@@ -555,7 +555,7 @@ export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
                   className={`w-full py-2.5 sm:py-3 rounded-2xl font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md ${
                     isLiked 
                       ? 'bg-emerald-500 text-white shadow-emerald-500/20' 
-                      : 'bg-gradient-to-r from-[#FF2D55] to-rose-500 text-white shadow-rose-500/30 active:scale-95'
+                      : 'bg-gradient-to-r from-[#FF2E79] to-rose-500 text-white shadow-rose-500/30 active:scale-95'
                   }`}
                 >
                   <Heart className="w-3.5 h-3.5 fill-white" />
@@ -565,11 +565,11 @@ export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
 
               {/* Next / Prev Controls */}
               <div className="flex items-center justify-between px-1 pt-0.5 text-[9px] sm:text-[11px] font-bold text-slate-400">
-                <button onClick={handlePrevProfile} className="hover:text-[#FF2D55] flex items-center gap-0.5 cursor-pointer">
+                <button onClick={handlePrevProfile} className="hover:text-[#FF2E79] flex items-center gap-0.5 cursor-pointer">
                   <ChevronLeft className="w-3 h-3" /> Prev
                 </button>
                 <span className="text-[9px] sm:text-[10px] text-slate-300 font-bold">{activeProfileIndex + 1} of {profiles.length}</span>
-                <button onClick={handleNextProfile} className="hover:text-[#FF2D55] flex items-center gap-0.5 cursor-pointer">
+                <button onClick={handleNextProfile} className="hover:text-[#FF2E79] flex items-center gap-0.5 cursor-pointer">
                   Next <ChevronRight className="w-3 h-3" />
                 </button>
               </div>
@@ -586,7 +586,7 @@ export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
       <section id="how-it-works" className="py-14 sm:py-20 px-4 sm:px-6 md:px-12 max-w-7xl mx-auto border-t border-rose-100 relative z-10">
         
         <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16 space-y-2 saas-reveal-up">
-          <span className="text-xs font-black uppercase tracking-widest text-[#FF2D55] bg-rose-50 px-3.5 py-1.5 rounded-full border border-rose-200">
+          <span className="text-xs font-black uppercase tracking-widest text-[#FF2E79] bg-rose-50 px-3.5 py-1.5 rounded-full border border-rose-200">
             How Cupid Rounds Work
           </span>
           <h2 className="text-2xl sm:text-4xl font-serif font-black text-slate-900">
@@ -610,7 +610,7 @@ export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
           </div>
 
           <div className="bg-white border border-slate-200/80 rounded-3xl p-5 sm:p-6 shadow-sm saas-card-lift saas-reveal-up saas-delay-2">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-rose-100 text-[#FF2D55] flex items-center justify-center font-black text-base sm:text-lg mb-3 sm:mb-4">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-rose-100 text-[#FF2E79] flex items-center justify-center font-black text-base sm:text-lg mb-3 sm:mb-4">
               2
             </div>
             <h3 className="text-sm sm:text-base font-black text-slate-900 mb-1 font-display">16h Spotlight Window</h3>
@@ -647,7 +647,7 @@ export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
       <section id="plans" className="py-14 sm:py-20 px-4 sm:px-6 md:px-12 max-w-7xl mx-auto border-t border-rose-100 relative z-10">
         
         <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16 space-y-2 saas-reveal-up">
-          <span className="text-xs font-black uppercase tracking-widest text-[#FF2D55] bg-rose-50 px-3.5 py-1.5 rounded-full border border-rose-200">
+          <span className="text-xs font-black uppercase tracking-widest text-[#FF2E79] bg-rose-50 px-3.5 py-1.5 rounded-full border border-rose-200">
             Transparent Pricing
           </span>
           <h2 className="text-2xl sm:text-4xl font-serif font-black text-slate-900">
@@ -688,7 +688,7 @@ export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
             </div>
             <button
               onClick={onLaunchApp}
-              className="mt-6 sm:mt-8 w-full py-3 rounded-2xl bg-pink-50 hover:bg-pink-100 text-[#FF2D55] font-black text-xs transition-colors active:scale-95 cursor-pointer"
+              className="mt-6 sm:mt-8 w-full py-3 rounded-2xl bg-pink-50 hover:bg-pink-100 text-[#FF2E79] font-black text-xs transition-colors active:scale-95 cursor-pointer"
             >
               Join Free as Female
             </button>
@@ -763,37 +763,37 @@ export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
           </div>
 
           {/* Elite Pass ₹450 (Featured Scale Zoom) */}
-          <div className="bg-gradient-to-b from-rose-50/70 via-white to-white border-2 border-[#FF2D55] rounded-3xl p-5 sm:p-6 flex flex-col justify-between shadow-xl shadow-rose-500/15 relative transform lg:-translate-y-2 saas-card-lift saas-reveal-scale saas-delay-4">
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3.5 py-0.5 rounded-full bg-gradient-to-r from-[#FF2D55] to-rose-500 text-white font-black text-[9px] uppercase tracking-widest shadow-md">
+          <div className="bg-gradient-to-b from-rose-50/70 via-white to-white border-2 border-[#FF2E79] rounded-3xl p-5 sm:p-6 flex flex-col justify-between shadow-xl shadow-rose-500/15 relative transform lg:-translate-y-2 saas-card-lift saas-reveal-scale saas-delay-4">
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3.5 py-0.5 rounded-full bg-gradient-to-r from-[#FF2E79] to-rose-500 text-white font-black text-[9px] uppercase tracking-widest shadow-md">
               Most Popular 🔥
             </div>
             <div>
-              <span className="px-3 py-1 rounded-full bg-rose-100 text-[#FF2D55] font-extrabold text-[10px] uppercase tracking-wider">
+              <span className="px-3 py-1 rounded-full bg-rose-100 text-[#FF2E79] font-extrabold text-[10px] uppercase tracking-wider">
                 16h Priority Spotlight
               </span>
               <h3 className="text-xl sm:text-2xl font-black text-slate-900 mt-2.5 font-display">Elite Pass</h3>
               <div className="mt-1.5 mb-5">
-                <span className="text-3xl sm:text-4xl font-black text-[#FF2D55]">₹450</span>
+                <span className="text-3xl sm:text-4xl font-black text-[#FF2E79]">₹450</span>
                 <span className="text-xs text-slate-400 font-bold ml-1">/ round</span>
               </div>
               <ul className="space-y-2.5 text-xs text-slate-700 font-medium">
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-[#FF2D55] shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-[#FF2E79] shrink-0" />
                   <span><strong>16h Priority Spotlight</strong> on Female Dashboards</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-[#FF2D55] shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-[#FF2E79] shrink-0" />
                   <span>Females review and like you back first</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-[#FF2D55] shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-[#FF2E79] shrink-0" />
                   <span>16h Auto-Refund Timer if unmatched</span>
                 </li>
               </ul>
             </div>
             <button
               onClick={onLaunchApp}
-              className="mt-6 sm:mt-8 w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#FF2D55] to-rose-500 text-white font-black text-xs shadow-lg shadow-rose-500/30 hover:brightness-105 transition-all active:scale-95 cursor-pointer"
+              className="mt-6 sm:mt-8 w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#FF2E79] to-rose-500 text-white font-black text-xs shadow-lg shadow-rose-500/30 hover:brightness-105 transition-all active:scale-95 cursor-pointer"
             >
               Get Elite 16h Spotlight
             </button>
@@ -822,7 +822,7 @@ export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
               </p>
               <div className="flex flex-wrap gap-2.5 sm:gap-4 pt-1 sm:pt-2 text-xs font-bold text-slate-700">
                 <div className="flex items-center gap-1.5 bg-white border border-rose-200/80 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl shadow-sm">
-                  <Clock className="w-4 h-4 text-[#FF2D55]" />
+                  <Clock className="w-4 h-4 text-[#FF2E79]" />
                   <span>16h Auto-Timer Trigger</span>
                 </div>
                 <div className="flex items-center gap-1.5 bg-white border border-rose-200/80 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl shadow-sm">
@@ -838,9 +838,9 @@ export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
 
             {/* Right 100% Badge */}
             <div className="lg:col-span-4 flex justify-center">
-              <div className="w-36 h-36 sm:w-44 sm:h-44 rounded-full bg-gradient-to-tr from-[#FF2D55] via-rose-500 to-amber-400 p-1 flex items-center justify-center shadow-xl shadow-rose-500/20 saas-card-lift">
+              <div className="w-36 h-36 sm:w-44 sm:h-44 rounded-full bg-gradient-to-tr from-[#FF2E79] via-rose-500 to-amber-400 p-1 flex items-center justify-center shadow-xl shadow-rose-500/20 saas-card-lift">
                 <div className="w-full h-full rounded-full bg-white flex flex-col items-center justify-center text-center p-3 sm:p-4">
-                  <RotateCcw className="w-7 h-7 sm:w-8 sm:h-8 text-[#FF2D55] mb-1" />
+                  <RotateCcw className="w-7 h-7 sm:w-8 sm:h-8 text-[#FF2E79] mb-1" />
                   <span className="text-2xl sm:text-3xl font-black text-slate-900 font-display">100%</span>
                   <span className="text-[9px] sm:text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">Money Back</span>
                 </div>
@@ -854,7 +854,7 @@ export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
       {/* ═══ SECTION 5: CAMPUS RADAR SCHEDULE ═══ */}
       <section id="radar" className="py-14 sm:py-20 px-4 sm:px-6 md:px-12 max-w-7xl mx-auto border-t border-rose-100 relative z-10">
         <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-12 space-y-2 saas-reveal-up">
-          <span className="text-xs font-black uppercase tracking-widest text-[#FF2D55] bg-rose-50 px-3.5 py-1.5 rounded-full border border-rose-200">
+          <span className="text-xs font-black uppercase tracking-widest text-[#FF2E79] bg-rose-50 px-3.5 py-1.5 rounded-full border border-rose-200">
             State-by-State Calendar
           </span>
           <h2 className="text-2xl sm:text-4xl font-serif font-black text-slate-900">
@@ -885,8 +885,8 @@ export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
 
       {/* ═══ SECTION 6: DIRECT APK DOWNLOAD BANNER ═══ */}
       <section className="py-12 sm:py-16 px-4 sm:px-6 md:px-12 max-w-7xl mx-auto relative z-10 text-center">
-        <div className="bg-gradient-to-r from-rose-500 via-pink-500 to-[#FF2D55] text-white rounded-3xl p-6 sm:p-10 md:p-12 space-y-4 sm:space-y-6 max-w-4xl mx-auto shadow-2xl shadow-rose-500/25 saas-reveal-scale">
-          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-3xl bg-white text-[#FF2D55] flex items-center justify-center mx-auto shadow-md">
+        <div className="bg-gradient-to-r from-rose-500 via-pink-500 to-[#FF2E79] text-white rounded-3xl p-6 sm:p-10 md:p-12 space-y-4 sm:space-y-6 max-w-4xl mx-auto shadow-2xl shadow-rose-500/25 saas-reveal-scale">
+          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-3xl bg-white text-[#FF2E79] flex items-center justify-center mx-auto shadow-md">
             <Smartphone className="w-7 h-7 sm:w-8 sm:h-8" />
           </div>
           <h2 className="text-xl sm:text-3xl md:text-4xl font-serif font-black text-white">
@@ -898,7 +898,7 @@ export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
             <button
               onClick={() => setDownloadModalOpen(true)}
-              className="w-full sm:w-auto px-7 py-3.5 bg-white hover:bg-slate-50 text-[#FF2D55] font-black text-xs sm:text-sm rounded-2xl flex items-center justify-center gap-2.5 shadow-lg transition-transform active:scale-95 cursor-pointer"
+              className="w-full sm:w-auto px-7 py-3.5 bg-white hover:bg-slate-50 text-[#FF2E79] font-black text-xs sm:text-sm rounded-2xl flex items-center justify-center gap-2.5 shadow-lg transition-transform active:scale-95 cursor-pointer"
             >
               <Smartphone className="w-4 h-4 sm:w-5 sm:h-5" />
               <span>Install Cupid App</span>
@@ -921,9 +921,9 @@ export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
             <span className="text-[10px] font-bold text-slate-500 ml-1">© 2026. All rights reserved.</span>
           </div>
           <div className="flex items-center justify-center gap-6 font-bold text-slate-600">
-            <span className="cursor-pointer hover:text-[#FF2D55]" onClick={onOpenAdmin}>Admin Console</span>
-            <span className="cursor-pointer hover:text-[#FF2D55]" onClick={onLaunchApp}>Launch App</span>
-            <span className="cursor-pointer hover:text-[#FF2D55]" onClick={() => setDownloadModalOpen(true)}>Install App</span>
+            <span className="cursor-pointer hover:text-[#FF2E79]" onClick={onOpenAdmin}>Admin Console</span>
+            <span className="cursor-pointer hover:text-[#FF2E79]" onClick={onLaunchApp}>Launch App</span>
+            <span className="cursor-pointer hover:text-[#FF2E79]" onClick={() => setDownloadModalOpen(true)}>Install App</span>
           </div>
         </div>
       </footer>

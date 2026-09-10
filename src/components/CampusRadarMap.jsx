@@ -150,7 +150,7 @@ export default function CampusRadarMap({
         {/* Header Bar */}
         <div className="flex items-center justify-between bg-white/95 backdrop-blur-xl p-3 px-4 rounded-[26px] border border-white shadow-sm">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-full bg-[#FF2D55] text-white flex items-center justify-center shadow-md shadow-rose-500/25 shrink-0">
+            <div className="w-9 h-9 rounded-full bg-[#FF2E79] text-white flex items-center justify-center shadow-md shadow-rose-500/25 shrink-0">
               <Compass className="w-5 h-5" />
             </div>
             <div>
@@ -164,7 +164,7 @@ export default function CampusRadarMap({
             </div>
           </div>
 
-          <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-rose-50 border border-rose-200/60 text-[#FF2D55]">
+          <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-rose-50 border border-rose-200/60 text-[#FF2E79]">
             <Globe className="w-3 h-3" />
             <span className="text-[10.5px] font-black">{activeRegion}</span>
           </div>
@@ -183,7 +183,7 @@ export default function CampusRadarMap({
               onClick={() => setDistanceFilter(f.id)}
               className={`px-3.5 py-1 rounded-full text-[11px] font-extrabold whitespace-nowrap transition-all cursor-pointer ${
                 distanceFilter === f.id
-                  ? 'bg-[#FF2D55] text-white shadow-xs'
+                  ? 'bg-[#FF2E79] text-white shadow-xs'
                   : 'text-slate-600 hover:bg-slate-100/80'
               }`}
             >
@@ -216,7 +216,7 @@ export default function CampusRadarMap({
 
         <button
           onClick={handleResetPosition}
-          className="interactive-btn w-10 h-10 rounded-full bg-white/95 backdrop-blur-md text-[#FF2D55] flex items-center justify-center shadow-md border border-white hover:bg-white active:scale-95 transition-all cursor-pointer"
+          className="interactive-btn w-10 h-10 rounded-full bg-white/95 backdrop-blur-md text-[#FF2E79] flex items-center justify-center shadow-md border border-white hover:bg-white active:scale-95 transition-all cursor-pointer"
           title="Recenter On Me"
         >
           <LocateFixed className="w-4 h-4 stroke-[2.5]" />
@@ -297,7 +297,7 @@ export default function CampusRadarMap({
                 className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center opacity-65"
                 style={{ left: `${landmark.x}%`, top: `${landmark.y}%` }}
               >
-                <div className="w-1.5 h-1.5 rounded-full bg-[#FF2D55]/60 mb-0.5"></div>
+                <div className="w-1.5 h-1.5 rounded-full bg-[#FF2E79]/60 mb-0.5"></div>
                 <span className="text-[8px] font-extrabold uppercase tracking-wider text-slate-500 whitespace-nowrap bg-white/80 backdrop-blur-xs px-1.5 py-0.5 rounded-md border border-white">
                   {landmark.name}
                 </span>
@@ -310,16 +310,16 @@ export default function CampusRadarMap({
             className="absolute -translate-x-1/2 -translate-y-1/2 z-10 flex flex-col items-center pointer-events-none"
             style={{ left: `${userCampusX}%`, top: `${userCampusY}%` }}
           >
-            <div className="absolute w-28 h-28 -top-7 -left-7 rounded-full bg-[#FF2D55]/20 radar-ping pointer-events-none"></div>
-            <div className="absolute w-16 h-16 -top-1 -left-1 rounded-full bg-[#FF2D55]/30 animate-pulse pointer-events-none"></div>
+            <div className="absolute w-28 h-28 -top-7 -left-7 rounded-full bg-[#FF2E79]/20 radar-ping pointer-events-none"></div>
+            <div className="absolute w-16 h-16 -top-1 -left-1 rounded-full bg-[#FF2E79]/30 animate-pulse pointer-events-none"></div>
 
-            <div className="relative w-14 h-14 rounded-full p-[2.5px] bg-gradient-to-tr from-[#FF2D55] to-purple-500 shadow-xl z-10 border-2 border-white">
+            <div className="relative w-14 h-14 rounded-full p-[2.5px] bg-gradient-to-tr from-[#FF2E79] to-purple-500 shadow-xl z-10 border-2 border-white">
               <img src={user.avatar} alt="You" className="w-full h-full object-cover rounded-full" />
               <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-400 border-2 border-white rounded-full"></span>
             </div>
 
             <div className="mt-1.5 px-3 py-1 rounded-full bg-slate-950 text-white text-[10px] font-black tracking-wide flex items-center gap-1 shadow-lg border border-white/20 whitespace-nowrap z-10">
-              <MapPin className="w-2.5 h-2.5 text-[#FF2D55]" />
+              <MapPin className="w-2.5 h-2.5 text-[#FF2E79]" />
               <span>You • {user.university?.split(' ')[0] || 'Bennett'}</span>
             </div>
           </div>
@@ -360,7 +360,7 @@ export default function CampusRadarMap({
                     </span>
                   </div>
 
-                  <span className="text-[9.5px] font-black text-[#FF2D55] bg-rose-50 px-1.5 py-0.5 rounded-full border border-rose-100 shrink-0">
+                  <span className="text-[9.5px] font-black text-[#FF2E79] bg-rose-50 px-1.5 py-0.5 rounded-full border border-rose-100 shrink-0">
                     {candidate.matchScore || 94}%
                   </span>
                 </div>
@@ -379,7 +379,7 @@ export default function CampusRadarMap({
         <div className="absolute bottom-20 inset-x-4 bg-white/95 backdrop-blur-2xl p-4 rounded-[28px] border border-white shadow-2xl z-30 animate-slide-up pointer-events-auto">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
-              <div className="w-13 h-13 rounded-full overflow-hidden border-2 border-white shadow-sm ring-2 ring-[#FF2D55]/80 shrink-0">
+              <div className="w-13 h-13 rounded-full overflow-hidden border-2 border-white shadow-sm ring-2 ring-[#FF2E79]/80 shrink-0">
                 <img src={selectedUser.avatar} alt={selectedUser.name} className="w-full h-full object-cover" />
               </div>
               <div>
@@ -387,13 +387,13 @@ export default function CampusRadarMap({
                   <h4 className="font-extrabold text-sm text-slate-900 font-display">
                     {selectedUser.name}, {selectedUser.age}
                   </h4>
-                  <BadgeCheck className="w-4 h-4 text-[#FF2D55] fill-[#FF2D55]/10" />
+                  <BadgeCheck className="w-4 h-4 text-[#FF2E79] fill-[#FF2E79]/10" />
                 </div>
                 <p className="text-[11px] text-slate-500 font-semibold">
                   {selectedUser.university || 'Campus Student'} • {selectedUser.distanceKm || 1.8} km
                 </p>
                 <div className="flex items-center gap-1 mt-1">
-                  <span className="text-[9.5px] font-black text-[#FF2D55] bg-rose-50 px-2 py-0.5 rounded-full border border-rose-100">
+                  <span className="text-[9.5px] font-black text-[#FF2E79] bg-rose-50 px-2 py-0.5 rounded-full border border-rose-100">
                     {selectedUser.matchScore || 95}% Match
                   </span>
                   <span className="text-[9.5px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full">
@@ -428,7 +428,7 @@ export default function CampusRadarMap({
                 onLikeCandidate(selectedUser);
                 setSelectedUser(null);
               }}
-              className="flex-1 h-10 rounded-full bg-[#FF2D55] hover:bg-[#E02447] text-white font-black text-xs flex items-center justify-center gap-1.5 shadow-md shadow-rose-500/25 transition-all cursor-pointer"
+              className="flex-1 h-10 rounded-full bg-[#FF2E79] hover:bg-[#E02447] text-white font-black text-xs flex items-center justify-center gap-1.5 shadow-md shadow-rose-500/25 transition-all cursor-pointer"
             >
               <Heart className="w-3.5 h-3.5 fill-white" />
               <span>Confirm Match</span>

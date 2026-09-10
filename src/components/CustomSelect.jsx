@@ -7,7 +7,7 @@ export default function CustomSelect({
   options = [],
   placeholder = 'Select an option',
   icon: Icon,
-  iconColor = 'text-[#FF2D55]',
+  iconColor = 'text-[#FF2E79]',
   className = '',
   dropdownClassName = '',
   disabled = false,
@@ -60,7 +60,7 @@ export default function CustomSelect({
         onClick={() => setIsOpen(!isOpen)}
         className={`w-full h-11 px-3.5 bg-white rounded-2xl border transition-all flex items-center justify-between text-left cursor-pointer group ${
           isOpen
-            ? 'border-[#FF2D55] ring-3 ring-[#FF2D55]/15 shadow-md shadow-pink-500/5 bg-white'
+            ? 'border-[#FF2E79] ring-3 ring-[#FF2E79]/15 shadow-md shadow-pink-500/5 bg-white'
             : 'border-slate-200/90 hover:border-pink-300 hover:bg-[#FFF9FA]/60 shadow-xs'
         } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
@@ -94,7 +94,7 @@ export default function CustomSelect({
 
         {/* Custom Chevron Indicator */}
         <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-transform duration-200 shrink-0 ${
-          isOpen ? 'bg-pink-50 text-[#FF2D55] rotate-180' : 'text-slate-400 group-hover:text-pink-500'
+          isOpen ? 'bg-pink-50 text-[#FF2E79] rotate-180' : 'text-slate-400 group-hover:text-pink-500'
         }`}>
           <ChevronDown className="w-3.5 h-3.5 stroke-[2.5]" />
         </div>
@@ -114,8 +114,8 @@ export default function CustomSelect({
                 onClick={() => handleSelect(opt.value)}
                 className={`w-full px-3.5 py-2.5 flex items-center justify-between text-left text-xs transition-all cursor-pointer group ${
                   isSelected
-                    ? 'bg-[#FF2D55] text-white font-bold shadow-xs'
-                    : 'text-slate-700 font-semibold hover:bg-pink-50/80 hover:text-[#FF2D55]'
+                    ? 'bg-[#FF2E79] text-white font-bold shadow-xs'
+                    : 'text-slate-700 font-semibold hover:bg-pink-50/80 hover:text-[#FF2E79]'
                 }`}
               >
                 <div className="flex items-center gap-2 min-w-0 flex-1 pr-2">

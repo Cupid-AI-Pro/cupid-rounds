@@ -41,7 +41,7 @@ export default function Navbar({ currentUser, isAdminMode, setIsAdminMode, onLog
 
         {/* Middle Info: Active Round Badge */}
         <div className="hidden sm:flex items-center gap-2 bg-slate-50 border border-slate-200/80 px-4 py-1.5 rounded-full">
-          <span className="w-2 h-2 rounded-full bg-[#FF2D55] animate-pulse"></span>
+          <span className="w-2 h-2 rounded-full bg-[#FF2E79] animate-pulse"></span>
           <span className="text-xs font-bold text-slate-700 tracking-wide uppercase">
             Active Round: {activeState}
           </span>
@@ -52,7 +52,7 @@ export default function Navbar({ currentUser, isAdminMode, setIsAdminMode, onLog
           {/* Download APK Button */}
           <button
             onClick={handleInstallApp}
-            className="px-3.5 py-2 text-xs font-bold rounded-full bg-gradient-to-r from-[#FF2D55] via-pink-500 to-rose-500 text-white flex items-center gap-1.5 shadow-md shadow-rose-500/25 hover:brightness-105 transition-all active:scale-95 cursor-pointer"
+            className="px-3.5 py-2 text-xs font-bold rounded-full bg-gradient-to-r from-[#FF2E79] via-pink-500 to-rose-500 text-white flex items-center gap-1.5 shadow-md shadow-rose-500/25 hover:brightness-105 transition-all active:scale-95 cursor-pointer"
             title="Direct Download Android APK"
           >
             <Download className="w-3.5 h-3.5" />

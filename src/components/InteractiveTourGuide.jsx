@@ -50,7 +50,7 @@ export default function InteractiveTourGuide({ user = {}, userId, onComplete }) 
           target: 'card_stack',
           dialogPosition: 'bottom',
           icon: Heart,
-          iconColor: 'text-[#FF2D55] bg-rose-50',
+          iconColor: 'text-[#FF2E79] bg-rose-50',
           badgeText: '💖 Mutual Match & Instant Chat',
           title: 'Swipe & Review Candidates',
           subtitle: 'Step 2 of 5 • Review Girls Who Liked You',
@@ -104,7 +104,7 @@ export default function InteractiveTourGuide({ user = {}, userId, onComplete }) 
           target: 'card_stack',
           dialogPosition: 'bottom',
           icon: Heart,
-          iconColor: 'text-[#FF2D55] bg-rose-50',
+          iconColor: 'text-[#FF2E79] bg-rose-50',
           badgeText: '💎 Premium Plan (₹250)',
           title: '8-Hour Browsing Window',
           subtitle: 'Step 1 of 4 • Remaining Girls Pool',
@@ -211,7 +211,7 @@ export default function InteractiveTourGuide({ user = {}, userId, onComplete }) 
         target: 'card_stack',
         dialogPosition: 'bottom',
         icon: Heart,
-        iconColor: 'text-[#FF2D55] bg-rose-50',
+        iconColor: 'text-[#FF2E79] bg-rose-50',
         badgeText: '💖 Max 2 Matches per Round',
         title: 'Select Up to 2 Matches',
         subtitle: 'Step 2 of 4 • Select Partner',
@@ -256,7 +256,7 @@ export default function InteractiveTourGuide({ user = {}, userId, onComplete }) 
         particleCount: 90,
         spread: 80,
         origin: { y: 0.6 },
-        colors: ['#FF2D55', '#FF6B8B', '#A855F7', '#FFD166']
+        colors: ['#FF2E79', '#FF6B8B', '#A855F7', '#FFD166']
       });
       handleFinish();
     }
@@ -275,7 +275,7 @@ export default function InteractiveTourGuide({ user = {}, userId, onComplete }) 
       {/* Top Header Row: Badge & Skip Tour */}
       <div className="flex items-center justify-between pt-1 px-1 z-20">
         <div className="flex items-center gap-1.5 bg-white/15 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
-          <Sparkles className="w-3.5 h-3.5 text-[#FF2D55]" />
+          <Sparkles className="w-3.5 h-3.5 text-[#FF2E79]" />
           <span className="text-[11px] font-extrabold text-white">
             {stepData.badgeText}
           </span>
@@ -297,19 +297,19 @@ export default function InteractiveTourGuide({ user = {}, userId, onComplete }) 
       
       {/* Target A: Center Card Stack Spotlight */}
       {stepData.target === 'card_stack' && (
-        <div className="absolute top-[135px] inset-x-4 h-[350px] rounded-[28px] border-2 border-[#FF2D55] ring-8 ring-[#FF2D55]/20 animate-pulse pointer-events-none z-10 flex items-center justify-center">
+        <div className="absolute top-[135px] inset-x-4 h-[350px] rounded-[28px] border-2 border-[#FF2E79] ring-8 ring-[#FF2E79]/20 animate-pulse pointer-events-none z-10 flex items-center justify-center">
           <div className="flex items-center gap-4 text-white font-extrabold text-[11px] bg-slate-950/80 px-4 py-2 rounded-full border border-white/20 shadow-xl">
             <span>👈 Swipe Left (Skip)</span>
-            <span className="text-[#FF2D55] font-black">•</span>
-            <span className="text-[#FF2D55]">👉 Swipe Right (Like)</span>
+            <span className="text-[#FF2E79] font-black">•</span>
+            <span className="text-[#FF2E79]">👉 Swipe Right (Like)</span>
           </div>
         </div>
       )}
 
       {/* Target B: Top-Right Round Timer Spotlight */}
       {stepData.target === 'top_timer' && (
-        <div className="absolute top-[90px] right-4 w-36 h-9 rounded-full border-2 border-[#FF2D55] ring-6 ring-[#FF2D55]/30 animate-bounce pointer-events-none z-10 flex items-center justify-center">
-          <span className="text-[9px] font-black text-white bg-[#FF2D55] px-2 py-0.5 rounded-full shadow-md">
+        <div className="absolute top-[90px] right-4 w-36 h-9 rounded-full border-2 border-[#FF2E79] ring-6 ring-[#FF2E79]/30 animate-bounce pointer-events-none z-10 flex items-center justify-center">
+          <span className="text-[9px] font-black text-white bg-[#FF2E79] px-2 py-0.5 rounded-full shadow-md">
             ⬇ Active Timer
           </span>
         </div>
@@ -317,8 +317,8 @@ export default function InteractiveTourGuide({ user = {}, userId, onComplete }) 
 
       {/* Target C: Bottom Navbar Entire Pill Spotlight */}
       {stepData.target === 'navbar' && (
-        <div className="absolute bottom-[16px] left-[18px] right-[18px] h-[64px] rounded-full border-2 border-[#FF2D55] ring-8 ring-[#FF2D55]/30 animate-pulse pointer-events-none z-10 flex items-center justify-center">
-          <span className="text-[10px] font-black text-white bg-[#FF2D55] px-3 py-1 rounded-full shadow-lg">
+        <div className="absolute bottom-[16px] left-[18px] right-[18px] h-[64px] rounded-full border-2 border-[#FF2E79] ring-8 ring-[#FF2E79]/30 animate-pulse pointer-events-none z-10 flex items-center justify-center">
+          <span className="text-[10px] font-black text-white bg-[#FF2E79] px-3 py-1 rounded-full shadow-lg">
             ⬆ 4 Floating Navigation Tabs
           </span>
         </div>
@@ -347,7 +347,7 @@ export default function InteractiveTourGuide({ user = {}, userId, onComplete }) 
               <stepData.icon className="w-5 h-5" />
             </div>
             <div>
-              <span className="text-[10px] font-black text-[#FF2D55] uppercase tracking-wider block">
+              <span className="text-[10px] font-black text-[#FF2E79] uppercase tracking-wider block">
                 {stepData.subtitle}
               </span>
               <h3 className="text-base font-black text-slate-900 font-display leading-tight">
@@ -362,7 +362,7 @@ export default function InteractiveTourGuide({ user = {}, userId, onComplete }) 
               <div
                 key={idx}
                 className={`h-1.5 rounded-full transition-all ${
-                  idx === currentStep ? 'w-5 bg-[#FF2D55]' : 'w-1.5 bg-slate-200'
+                  idx === currentStep ? 'w-5 bg-[#FF2E79]' : 'w-1.5 bg-slate-200'
                 }`}
               />
             ))}
@@ -391,7 +391,7 @@ export default function InteractiveTourGuide({ user = {}, userId, onComplete }) 
           <button
             type="button"
             onClick={handleNext}
-            className="px-5 py-2.5 bg-[#FF2D55] hover:bg-[#e02447] text-white rounded-full text-xs font-extrabold flex items-center gap-1.5 shadow-md shadow-rose-300 transition-transform active:scale-95 cursor-pointer"
+            className="px-5 py-2.5 bg-[#FF2E79] hover:bg-[#e02447] text-white rounded-full text-xs font-extrabold flex items-center gap-1.5 shadow-md shadow-rose-300 transition-transform active:scale-95 cursor-pointer"
           >
             <span>{stepData.actionText}</span>
           </button>

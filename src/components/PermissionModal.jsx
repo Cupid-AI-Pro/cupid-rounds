@@ -23,7 +23,7 @@ export default function PermissionModal({ onComplete }) {
         particleCount: 50,
         spread: 60,
         origin: { y: 0.6 },
-        colors: ['#FF2D55', '#10B981', '#EC4899']
+        colors: ['#FF2E79', '#10B981', '#EC4899']
       });
       onComplete({ location: locationAllowed, notifications: notificationAllowed });
     }, 600);
@@ -56,12 +56,12 @@ export default function PermissionModal({ onComplete }) {
             onClick={() => setLocationAllowed(!locationAllowed)}
             className={`p-3 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between ${
               locationAllowed 
-                ? 'bg-pink-50/60 border-[#FF2D55]' 
+                ? 'bg-pink-50/60 border-[#FF2E79]' 
                 : 'bg-slate-50 border-slate-200 opacity-60'
             }`}
           >
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full bg-rose-100 text-[#FF2D55] flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-full bg-rose-100 text-[#FF2E79] flex items-center justify-center shrink-0">
                 <MapPin className="w-4 h-4" />
               </div>
               <div>
@@ -72,7 +72,7 @@ export default function PermissionModal({ onComplete }) {
               </div>
             </div>
             <div className={`w-5 h-5 rounded-full flex items-center justify-center border ${
-              locationAllowed ? 'bg-[#FF2D55] border-[#FF2D55] text-white' : 'border-slate-300'
+              locationAllowed ? 'bg-[#FF2E79] border-[#FF2E79] text-white' : 'border-slate-300'
             }`}>
               {locationAllowed && <CheckCircle2 className="w-3.5 h-3.5" />}
             </div>
@@ -83,12 +83,12 @@ export default function PermissionModal({ onComplete }) {
             onClick={() => setNotificationAllowed(!notificationAllowed)}
             className={`p-3 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between ${
               notificationAllowed 
-                ? 'bg-pink-50/60 border-[#FF2D55]' 
+                ? 'bg-pink-50/60 border-[#FF2E79]' 
                 : 'bg-slate-50 border-slate-200 opacity-60'
             }`}
           >
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full bg-rose-100 text-[#FF2D55] flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-full bg-rose-100 text-[#FF2E79] flex items-center justify-center shrink-0">
                 <Bell className="w-4 h-4" />
               </div>
               <div>
@@ -99,7 +99,7 @@ export default function PermissionModal({ onComplete }) {
               </div>
             </div>
             <div className={`w-5 h-5 rounded-full flex items-center justify-center border ${
-              notificationAllowed ? 'bg-[#FF2D55] border-[#FF2D55] text-white' : 'border-slate-300'
+              notificationAllowed ? 'bg-[#FF2E79] border-[#FF2E79] text-white' : 'border-slate-300'
             }`}>
               {notificationAllowed && <CheckCircle2 className="w-3.5 h-3.5" />}
             </div>
@@ -112,7 +112,7 @@ export default function PermissionModal({ onComplete }) {
           <button
             onClick={handleGrant}
             disabled={isGranting}
-            className="w-full h-11 bg-[#FF2D55] hover:bg-[#e02447] text-white font-extrabold text-xs rounded-full flex items-center justify-center gap-1.5 shadow-md shadow-rose-200 transition-all active:scale-98 cursor-pointer"
+            className="w-full h-11 bg-[#FF2E79] hover:bg-[#e02447] text-white font-extrabold text-xs rounded-full flex items-center justify-center gap-1.5 shadow-md shadow-rose-200 transition-all active:scale-98 cursor-pointer"
           >
             {isGranting ? (
               <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin"></span>

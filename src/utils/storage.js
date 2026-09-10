@@ -1,3 +1,5 @@
+import { MOCK_USERS } from '../data/mockData';
+
 const KEYS = {
   USERS: 'cupid_users',
   ACTIVE_STATE: 'cupid_active_state',
@@ -6,9 +8,29 @@ const KEYS = {
 
 export const initializeStorage = () => {
   const existingUsersJson = localStorage.getItem(KEYS.USERS);
-  if (!existingUsersJson) {
-    localStorage.setItem(KEYS.USERS, JSON.stringify([]));
+  if (!existingUsersJson || JSON.parse(existingUsersJson).length === 0) {
+    localStorage.setItem(KEYS.USERS, JSON.stringify(MOCK_USERS));
+  } else {
+    // Ensure mock users (like girl_sophia, boy_henry, etc.) exist with updated profiles
+    try {
+      const currentList = JSON.parse(existingUsersJson);
+      let updated = false;
+      MOCK_USERS.forEach(mockU => {
+        const idx = currentList.findIndex(u => u.id === mockU.id);
+        if (idx === -1) {
+          currentList.push(mockU);
+          updated = true;
+        } else if (mockU.id === 'girl_sophia' || mockU.id === 'boy_henry') {
+          currentList[idx] = { ...mockU, ...currentList[idx], avatar: mockU.avatar, name: mockU.name, photos: mockU.photos, university: mockU.university };
+          updated = true;
+        }
+      });
+      if (updated) {
+        localStorage.setItem(KEYS.USERS, JSON.stringify(currentList));
+      }
+    } catch (e) {}
   }
+
   if (!localStorage.getItem(KEYS.ACTIVE_STATE)) {
     localStorage.setItem(KEYS.ACTIVE_STATE, 'Delhi NCR');
   }

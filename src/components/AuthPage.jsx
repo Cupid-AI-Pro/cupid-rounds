@@ -27,8 +27,8 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
   const [isLogin, setIsLogin] = useState(false);
   const [error, setError] = useState('');
   
-  // Intro Splash screen state
-  const [showSplash, setShowSplash] = useState(true);
+  // Intro Splash screen state (can be triggered anytime via Replay Intro)
+  const [showSplash, setShowSplash] = useState(false);
 
   // Swipe to unlock state
   const [dragX, setDragX] = useState(0);
@@ -114,17 +114,27 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
     };
   }, [isDragging, dragX, isUnlocking]);
 
-  // Cupid-Themed Unlock Trigger with Arrow & Shockwave
+  // Cupid-Themed Unlock Trigger with Arrow & Shockwave (Seamless transition to Screen 2)
   const triggerCupidUnlock = () => {
     setIsUnlocking(true);
     setDragX(maxDrag);
-    setIsLogin(false); // Open registration form on Get Started swipe
 
     setTimeout(() => {
-      setShowLoginInPhone(true);
+      // Seamlessly log into Henry (matching Screen 2: "Hello, Henry") or saved user
+      const users = getUsers();
+      let demoUser = users.find(u => u.id === 'boy_henry') || users.find(u => u.name === 'Henry');
+      if (!demoUser && users.length > 0) {
+        demoUser = users.find(u => u.gender === 'male') || users[0];
+      }
+      if (demoUser) {
+        setCurrentUser(demoUser);
+        onLoginSuccess(demoUser);
+      } else {
+        setShowLoginInPhone(true);
+      }
       setIsUnlocking(false);
       setDragX(0);
-    }, 700);
+    }, 450);
   };
 
   // Handle standard registration (Guaranteed forward navigation)
@@ -253,15 +263,31 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
     return (
       <div className="flex-1 flex flex-col justify-between p-5 h-full relative select-none overflow-hidden bg-transparent">
         
+        {/* iOS Status Bar */}
+        <div className="w-full flex items-center justify-between px-1 pt-1 pb-2 text-slate-900 select-none text-[13px] font-bold">
+          <span>9:41</span>
+          <div className="flex items-center gap-1.5 text-slate-900">
+            <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+              <path d="M2 17h3v4H2v-4zm5-4h3v8H7v-8zm5-4h3v12h-3V9zm5-4h3v16h-3V5z" />
+            </svg>
+            <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+              <path d="M12 4C7.31 4 3.07 5.9 0 8.98L12 21 24 8.98C20.93 5.9 16.69 4 12 4zm0 3.5c3.5 0 6.67 1.45 8.98 3.79L12 19.18 3.02 11.29C5.33 8.95 8.5 7.5 12 7.5z" />
+            </svg>
+            <div className="w-5 h-2.5 rounded-[3px] border border-slate-900 p-[1px] flex items-center">
+              <div className="w-full h-full bg-slate-900 rounded-[1px]"></div>
+            </div>
+          </div>
+        </div>
+
         {/* Cupid's Arrow & Shockwave Overlay on Swipe */}
         {isUnlocking && (
           <div className="absolute inset-0 pointer-events-none z-50 overflow-hidden flex items-center justify-center">
-            <div className="absolute w-24 h-24 rounded-full bg-[#FF2D55]/30 animate-cupid-ripple"></div>
-            <div className="absolute w-24 h-24 rounded-full bg-[#FF2D55]/20 animate-cupid-ripple-delayed"></div>
+            <div className="absolute w-24 h-24 rounded-full bg-[#FF2E79]/30 animate-cupid-ripple"></div>
+            <div className="absolute w-24 h-24 rounded-full bg-[#FF2E79]/20 animate-cupid-ripple-delayed"></div>
             <div className="absolute top-1/2 left-0 w-full animate-cupid-arrow">
               <div className="flex items-center gap-2">
-                <div className="h-1 w-32 bg-gradient-to-r from-transparent via-[#FF2D55] to-[#FF2D55] rounded-full shadow-[0_0_12px_#FF2D55]"></div>
-                <div className="p-2 bg-[#FF2D55] text-white rounded-full shadow-[0_0_20px_#FF2D55]">
+                <div className="h-1 w-32 bg-gradient-to-r from-transparent via-[#FF2E79] to-[#FF2E79] rounded-full shadow-[0_0_12px_#FF2E79]"></div>
+                <div className="p-2 bg-[#FF2E79] text-white rounded-full shadow-[0_0_20px_#FF2E79]">
                   <Heart className="w-6 h-6 fill-white text-white" />
                 </div>
               </div>
@@ -270,23 +296,23 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
         )}
 
         {/* Top Header Row */}
-        <div className="pt-2 text-left">
-          <div className="flex items-center justify-between mb-3">
+        <div className="pt-1 text-left">
+          <div className="flex items-center justify-between mb-2">
             <CupidLogo size="sm" showText={true} textColor="dark" textSubtitle={`${activeState} • Round 1`} />
             <button
               onClick={() => setShowSplash(true)}
-              className="text-[11px] font-medium text-slate-400 hover:text-slate-700 transition-colors"
+              className="text-[11px] font-semibold text-slate-400 hover:text-slate-700 transition-colors"
             >
               Replay Intro
             </button>
           </div>
 
-          <h1 className="text-[34px] font-extrabold tracking-tight text-slate-900 leading-[1.12]">
+          <h1 className="text-[34px] font-black tracking-tight text-slate-900 leading-[1.14]">
             Your Perfect<br />
             Match is Just a<br />
             <span className="inline-flex items-center gap-2 mt-1">
               <span>Tap</span>
-              <span className="bg-[#FF2D55] text-white px-3 py-0.5 rounded-[6px] text-[32px] font-black -rotate-2 shadow-sm">
+              <span className="bg-[#FF2E79] text-white px-3 py-0.5 rounded-[7px] text-[31px] font-black -rotate-2 shadow-sm">
                 Away
               </span>
             </span>
@@ -294,20 +320,18 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
         </div>
 
         {/* ---------------------------------------------------------------- */}
-        {/* PHOTO COLLAGE — exactly matching reference image cluster layout  */}
-        {/* 6 circles: top-left photo, top-right ?, mid-left photo,          */}
-        {/* mid-center photo, mid-right photo, bottom-left ?, bottom-right ? */}
+        {/* PHOTO COLLAGE — matching reference image cluster layout          */}
         {/* ---------------------------------------------------------------- */}
-        <div className="relative w-full flex-1 flex items-center justify-center">
+        <div className="relative w-full flex-1 flex items-center justify-center my-2">
           {/* Fluid white organic blob behind circles */}
           <div
             className="absolute"
             style={{
               width: 280,
               height: 280,
-              background: 'rgba(255,255,255,0.55)',
+              background: 'rgba(255,255,255,0.7)',
               borderRadius: '62% 38% 46% 54% / 60% 44% 56% 40%',
-              filter: 'blur(2px)',
+              boxShadow: '0 16px 40px -10px rgba(255, 46, 121, 0.1)',
               left: '50%',
               top: '50%',
               transform: 'translate(-50%, -50%)',
@@ -317,52 +341,52 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
           {/* Outer container — fixed 290×280 for precise positioning */}
           <div className="relative" style={{ width: 290, height: 280 }}>
 
-            {/* TOP-LEFT: Photo — pops 1st */}
+            {/* TOP-LEFT: Photo — blonde woman in red blazer */}
             <div className="absolute" style={{ width: 102, height: 102, top: 0, left: 10 }}>
               <div className="w-full h-full rounded-full overflow-hidden border-[3px] border-white shadow-xl pop-circle-1">
-                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&auto=format&fit=crop&q=80" alt="" className="w-full h-full object-cover" />
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80" alt="" className="w-full h-full object-cover" />
               </div>
             </div>
 
-            {/* MID-LEFT: Photo — pops 2nd */}
+            {/* MID-LEFT: Photo — woman in dark beret */}
             <div className="absolute" style={{ width: 96, height: 96, top: 94, left: 0 }}>
               <div className="w-full h-full rounded-full overflow-hidden border-[3px] border-white shadow-xl pop-circle-2">
+                <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&auto=format&fit=crop&q=80" alt="" className="w-full h-full object-cover" />
+              </div>
+            </div>
+
+            {/* CENTER: Photo — brunette in red knit sweater */}
+            <div className="absolute" style={{ width: 112, height: 112, top: 84, left: '50%', marginLeft: -56 }}>
+              <div className="w-full h-full rounded-full overflow-hidden border-[3px] border-white shadow-2xl pop-circle-3">
+                <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&auto=format&fit=crop&q=80" alt="" className="w-full h-full object-cover" />
+              </div>
+            </div>
+
+            {/* MID-RIGHT: Photo — woman with red heart balloons */}
+            <div className="absolute" style={{ width: 96, height: 96, top: 94, right: 4 }}>
+              <div className="w-full h-full rounded-full overflow-hidden border-[3px] border-white shadow-xl pop-circle-4">
                 <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&auto=format&fit=crop&q=80" alt="" className="w-full h-full object-cover" />
               </div>
             </div>
 
-            {/* CENTER: Photo — pops 3rd (largest, focal) */}
-            <div className="absolute" style={{ width: 112, height: 112, top: 84, left: '50%', marginLeft: -56 }}>
-              <div className="w-full h-full rounded-full overflow-hidden border-[3px] border-white shadow-2xl pop-circle-3">
-                <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&auto=format&fit=crop&q=80" alt="" className="w-full h-full object-cover" />
-              </div>
-            </div>
-
-            {/* MID-RIGHT: Photo — pops 4th */}
-            <div className="absolute" style={{ width: 96, height: 96, top: 94, right: 4 }}>
-              <div className="w-full h-full rounded-full overflow-hidden border-[3px] border-white shadow-xl pop-circle-4">
-                <img src="https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?w=400&auto=format&fit=crop&q=80" alt="" className="w-full h-full object-cover" />
-              </div>
-            </div>
-
-            {/* BOTTOM-RIGHT: Photo — pops 5th */}
+            {/* BOTTOM-RIGHT: Photo — woman in scarf with red rose */}
             <div className="absolute" style={{ width: 96, height: 96, bottom: 4, right: 20 }}>
               <div className="w-full h-full rounded-full overflow-hidden border-[3px] border-white shadow-xl pop-circle-5">
                 <img src="https://images.unsplash.com/photo-1509783236416-c9ad59bae472?w=400&auto=format&fit=crop&q=80" alt="" className="w-full h-full object-cover" />
               </div>
             </div>
 
-            {/* TOP-RIGHT: ? — emerges at 1.2s from center, then naughty shake */}
+            {/* TOP-RIGHT: White Question Mark Bubble ? */}
             <div className="absolute" style={{ width: 96, height: 96, top: 8, right: 14 }}>
-              <div className="w-full h-full rounded-full bg-white shadow-lg flex items-center justify-center border-[3px] border-white qmark-right">
-                <span className="font-black text-[40px] text-slate-900 leading-none select-none">?</span>
+              <div className="w-full h-full rounded-full bg-white shadow-[0_10px_25px_rgba(0,0,0,0.08)] flex items-center justify-center border-[3px] border-white qmark-right">
+                <span className="font-black text-[38px] text-slate-900 leading-none select-none">?</span>
               </div>
             </div>
 
-            {/* BOTTOM-LEFT: ? — emerges at 1.5s from center, then naughty shake */}
+            {/* BOTTOM-LEFT: White Question Mark Bubble ? */}
             <div className="absolute" style={{ width: 92, height: 92, bottom: 2, left: 28 }}>
-              <div className="w-full h-full rounded-full bg-white shadow-lg flex items-center justify-center border-[3px] border-white qmark-left">
-                <span className="font-black text-[40px] text-slate-900 leading-none select-none">?</span>
+              <div className="w-full h-full rounded-full bg-white shadow-[0_10px_25px_rgba(0,0,0,0.08)] flex items-center justify-center border-[3px] border-white qmark-left">
+                <span className="font-black text-[38px] text-slate-900 leading-none select-none">?</span>
               </div>
             </div>
 
@@ -370,12 +394,13 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
         </div>
 
         {/* ---------------------------------------------------------------- */}
-        {/* SWIPE-TO-UNLOCK TRACK (Not a click button)                        */}
+        {/* GET STARTED BUTTON / SWIPE-TO-UNLOCK TRACK                       */}
         {/* ---------------------------------------------------------------- */}
         <div>
-          {/* Swipe track container */}
+          {/* Swipe / Click track container */}
           <div
-            className="relative w-full h-[60px] bg-[#FF2D55] rounded-full overflow-hidden shadow-[0_10px_25px_-5px_rgba(255,45,85,0.45)]"
+            onClick={triggerCupidUnlock}
+            className="relative w-full h-[58px] bg-[#FF2E79] rounded-full overflow-hidden shadow-[0_10px_25px_-5px_rgba(255,46,121,0.45)] cursor-pointer"
             onMouseDown={handleMouseDown}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
@@ -384,31 +409,34 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
           >
             {/* Sliding fill overlay — shows progress */}
             <div
-              className="absolute inset-0 rounded-full bg-[#e02447] transition-none"
+              className="absolute inset-0 rounded-full bg-[#e02469] transition-none pointer-events-none"
               style={{
                 width: `${Math.min(100, (dragX / maxDrag) * 100 + 20)}%`,
-                opacity: 0.4,
+                opacity: 0.35,
               }}
             />
 
-            {/* Draggable heart thumb */}
+            {/* Draggable heart thumb (White circle with pink heart) */}
             <div
-              className="absolute top-[6px] left-[6px] w-[48px] h-[48px] bg-white rounded-full flex items-center justify-center shadow-md z-10 cursor-grab active:cursor-grabbing"
+              className="absolute top-[5px] left-[5px] w-[48px] h-[48px] bg-white rounded-full flex items-center justify-center shadow-md z-10 cursor-grab active:cursor-grabbing"
               style={{
                 transform: `translateX(${dragX}px)`,
                 transition: isDragging ? 'none' : 'transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)',
               }}
             >
-              <Heart className="w-5 h-5 fill-[#FF2D55] text-[#FF2D55]" />
+              <Heart className="w-5 h-5 fill-[#FF2E79] text-[#FF2E79]" />
             </div>
 
-            {/* Label text — fades as you swipe */}
+            {/* Label text: Get Started    >>> */}
             <div
-              className="absolute inset-0 flex items-center justify-center pointer-events-none"
+              className="absolute inset-0 flex items-center justify-between px-6 pointer-events-none"
               style={{ opacity: Math.max(0, 1 - dragX / (maxDrag * 0.5)) }}
             >
               <span className="font-bold text-[15px] tracking-wide text-white pl-12">
-                Get Started  »»
+                Get Started
+              </span>
+              <span className="text-white/90 font-bold text-sm tracking-widest">
+                &gt;&gt;&gt;
               </span>
             </div>
 
@@ -426,9 +454,9 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
           <div className="text-center mt-3 select-none">
             <button
               onClick={() => { setShowLoginInPhone(true); setIsLogin(true); }}
-              className="text-xs font-semibold text-slate-500 hover:text-[#FF2D55] transition-colors cursor-pointer"
+              className="text-xs font-semibold text-slate-500 hover:text-[#FF2E79] transition-colors cursor-pointer"
             >
-              Already registered? <span className="text-[#FF2D55] font-bold underline ml-0.5">Sign In</span>
+              Already registered? <span className="text-[#FF2E79] font-bold underline ml-0.5">Sign In</span>
             </button>
           </div>
         </div>
@@ -455,17 +483,17 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
       {isWaitlisted ? (
         /* Waitlisted Display */
         <div className="text-center py-6 flex-1 flex flex-col justify-center items-center bg-white rounded-3xl p-5 border border-slate-100 shadow-sm">
-          <div className="w-14 h-14 bg-pink-100 text-[#FF2D55] rounded-full flex items-center justify-center mb-4 shadow-sm">
+          <div className="w-14 h-14 bg-pink-100 text-[#FF2E79] rounded-full flex items-center justify-center mb-4 shadow-sm">
             <AlertCircle className="w-7 h-7" />
           </div>
           <h2 className="text-xl font-bold text-slate-900 mb-1 font-display">Round is Inactive</h2>
           <p className="text-xs text-slate-500 mb-6 px-2 leading-relaxed font-medium">
-            The active round today is for <strong className="text-[#FF2D55]">{activeState}</strong>. 
+            The active round today is for <strong className="text-[#FF2E79]">{activeState}</strong>. 
             Since you are from <strong className="text-slate-800">{waitlistStateName}</strong>, you've been placed on our priority waitlist.
           </p>
           
           <div className="bg-pink-50/80 border border-pink-100 rounded-xl p-3 mb-6 w-full text-left">
-            <span className="text-[9px] font-extrabold text-[#FF2D55] uppercase tracking-wider block mb-0.5">Status</span>
+            <span className="text-[9px] font-extrabold text-[#FF2E79] uppercase tracking-wider block mb-0.5">Status</span>
             <span className="text-xs font-semibold text-slate-700">Waitlist registered. We will alert you on round start!</span>
           </div>
           
@@ -488,7 +516,7 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
                 onClick={() => { setIsLogin(false); setError(''); }}
                 className={`flex-1 py-2 rounded-full text-xs font-extrabold transition-all text-center cursor-pointer ${
                   !isLogin 
-                    ? 'bg-[#FF2D55] text-white shadow-md' 
+                    ? 'bg-[#FF2E79] text-white shadow-md' 
                     : 'text-slate-500 hover:text-slate-800'
                 }`}
               >
@@ -499,7 +527,7 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
                 onClick={() => { setIsLogin(true); setError(''); }}
                 className={`flex-1 py-2 rounded-full text-xs font-extrabold transition-all text-center cursor-pointer ${
                   isLogin 
-                    ? 'bg-[#FF2D55] text-white shadow-md' 
+                    ? 'bg-[#FF2E79] text-white shadow-md' 
                     : 'text-slate-500 hover:text-slate-800'
                 }`}
               >
@@ -554,7 +582,7 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
 
                 <button 
                   type="submit" 
-                  className="w-full h-12 bg-[#FF2D55] hover:bg-[#e02447] text-white font-extrabold text-xs tracking-wide rounded-full flex items-center justify-center gap-2 shadow-[0_8px_20px_rgba(255,45,85,0.35)] transition-transform active:scale-[0.98] cursor-pointer mt-2"
+                  className="w-full h-12 bg-[#FF2E79] hover:bg-[#e02447] text-white font-extrabold text-xs tracking-wide rounded-full flex items-center justify-center gap-2 shadow-[0_8px_20px_rgba(255,45,85,0.35)] transition-transform active:scale-[0.98] cursor-pointer mt-2"
                 >
                   <span>Access Match Dashboard</span>
                   <ArrowRight className="w-4 h-4" />
@@ -631,7 +659,7 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
                         onClick={() => setRegGender(g.id)}
                         className={`py-2 rounded-xl text-xs font-bold transition-all border flex items-center justify-center gap-1 cursor-pointer ${
                           regGender === g.id
-                            ? 'bg-[#FF2D55] text-white border-[#FF2D55] shadow-sm'
+                            ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-sm'
                             : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                         }`}
                       >
@@ -659,7 +687,7 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
                 {/* Submit Button */}
                 <button 
                   type="submit" 
-                  className="w-full h-12 bg-[#FF2D55] hover:bg-[#e02447] text-white font-extrabold text-xs tracking-wide rounded-full flex items-center justify-center gap-2 shadow-[0_8px_20px_rgba(255,45,85,0.35)] transition-transform active:scale-[0.98] cursor-pointer mt-3"
+                  className="w-full h-12 bg-[#FF2E79] hover:bg-[#e02447] text-white font-extrabold text-xs tracking-wide rounded-full flex items-center justify-center gap-2 shadow-[0_8px_20px_rgba(255,45,85,0.35)] transition-transform active:scale-[0.98] cursor-pointer mt-3"
                 >
                   <span>Continue to Round Setup</span>
                   <ArrowRight className="w-4 h-4" />

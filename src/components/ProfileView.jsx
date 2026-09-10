@@ -58,7 +58,7 @@ export default function ProfileView({ user, onLogout, onRequestRefund, onOpenPer
       {/* PROFILE HEADER CARD                                           */}
       {/* ------------------------------------------------------------- */}
       <div className="bg-white rounded-3xl p-4 border border-slate-200/80 shadow-sm text-center relative overflow-hidden shrink-0">
-        <div className="absolute top-0 inset-x-0 h-14 bg-gradient-to-r from-[#FF2D55] via-pink-500 to-rose-400"></div>
+        <div className="absolute top-0 inset-x-0 h-14 bg-gradient-to-r from-[#FF2E79] via-pink-500 to-rose-400"></div>
 
         <div className="relative pt-3">
           <div className="relative w-20 h-20 mx-auto rounded-full overflow-hidden border-4 border-white shadow-md mb-2 bg-slate-100">
@@ -79,7 +79,7 @@ export default function ProfileView({ user, onLogout, onRequestRefund, onOpenPer
           </div>
 
           <div className="flex items-center justify-center gap-1 text-[11px] text-slate-500 font-medium mt-0.5">
-            <GraduationCap className="w-3.5 h-3.5 text-[#FF2D55]" />
+            <GraduationCap className="w-3.5 h-3.5 text-[#FF2E79]" />
             <span>{user.university || 'Bennett University'}</span>
           </div>
 
@@ -96,7 +96,7 @@ export default function ProfileView({ user, onLogout, onRequestRefund, onOpenPer
             <span className="px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 text-[10px] font-extrabold capitalize">
               {user.gender || 'Male'}
             </span>
-            <span className="px-2.5 py-1 rounded-full bg-rose-50 text-[#FF2D55] text-[10px] font-extrabold">
+            <span className="px-2.5 py-1 rounded-full bg-rose-50 text-[#FF2E79] text-[10px] font-extrabold">
               {user.personalityType || 'Ambivert'}
             </span>
           </div>
@@ -154,7 +154,7 @@ export default function ProfileView({ user, onLogout, onRequestRefund, onOpenPer
           className={`w-full h-10 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
             isRoundActive 
               ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200' 
-              : 'bg-[#FF2D55] hover:bg-[#E02447] text-white shadow-md shadow-rose-500/20'
+              : 'bg-[#FF2E79] hover:bg-[#E02447] text-white shadow-md shadow-rose-500/20'
           }`}
         >
           {isRoundActive ? (
@@ -247,13 +247,13 @@ export default function ProfileView({ user, onLogout, onRequestRefund, onOpenPer
           className="flex items-center justify-between py-1.5 border-t border-slate-100 cursor-pointer hover:bg-pink-50/50 rounded-xl px-1 transition-colors"
         >
           <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-[#FF2D55]" />
+            <Sparkles className="w-4 h-4 text-[#FF2E79]" />
             <div>
               <span className="text-xs font-bold text-slate-800 block">Interactive App Guide</span>
               <span className="text-[10px] text-slate-400 block">Replay button tooltips & workflow walkthrough</span>
             </div>
           </div>
-          <span className="text-[10px] font-extrabold text-[#FF2D55] bg-pink-50 px-2 py-0.5 rounded-full border border-pink-200">
+          <span className="text-[10px] font-extrabold text-[#FF2E79] bg-pink-50 px-2 py-0.5 rounded-full border border-pink-200">
             Replay 💡
           </span>
         </div>

@@ -98,7 +98,7 @@ export default function SwipeableDeck({
   if (!currentCandidate) {
     return (
       <div className="w-full h-full flex flex-col justify-center items-center text-center p-6 bg-white/80 backdrop-blur-md border border-white rounded-[28px] select-none shadow-sm">
-        <div className="w-14 h-14 rounded-full bg-rose-50 text-[#FF2D55] flex items-center justify-center mb-3">
+        <div className="w-14 h-14 rounded-full bg-rose-50 text-[#FF2E79] flex items-center justify-center mb-3">
           <Sparkles className="w-7 h-7" />
         </div>
         <h4 className="text-base font-black text-slate-900 font-display">You're All Caught Up!</h4>
@@ -120,29 +120,28 @@ export default function SwipeableDeck({
     >
       
       {/* ---------------------------------------------------------------- */}
-      {/* BACKGROUND CARD — tilted purple/lavender, peeks behind main card  */}
+      {/* BACKGROUND CARD — tilted, peeks behind main card                 */}
       {/* ---------------------------------------------------------------- */}
       {nextCandidate && (
         <div
-          className="absolute rounded-[24px] overflow-hidden pointer-events-none"
+          className="absolute rounded-[28px] overflow-hidden pointer-events-none"
           style={{
-            top: 8,
-            bottom: 8,
-            left: 10,
-            right: 10,
-            background: 'linear-gradient(135deg, #E8D5F7 0%, #D4C0F0 100%)',
-            border: '1px solid rgba(196, 168, 237, 0.5)',
-            transform: 'rotate(4deg) translateY(6px)',
+            top: 6,
+            bottom: 6,
+            left: 8,
+            right: 8,
+            background: 'linear-gradient(135deg, #F2E3F7 0%, #E3D2F2 100%)',
+            border: '1px solid rgba(220, 200, 245, 0.6)',
+            transform: 'rotate(4.5deg) translateX(6px) translateY(4px)',
             transformOrigin: 'bottom center',
             zIndex: 1,
-            boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
+            boxShadow: '0 12px 28px rgba(0,0,0,0.07)',
           }}
         >
           <img
             src={nextCandidate.avatar}
             alt=""
-            className="w-full h-full object-cover"
-            style={{ opacity: 0.45 }}
+            className="w-full h-full object-cover opacity-50"
           />
         </div>
       )}
@@ -155,7 +154,8 @@ export default function SwipeableDeck({
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        className="absolute rounded-[24px] overflow-hidden cursor-grab active:cursor-grabbing bg-slate-900"
+        onClick={() => onOpenDetail(currentCandidate)}
+        className="absolute rounded-[28px] overflow-hidden cursor-grab active:cursor-grabbing bg-slate-900"
         style={{
           top: 0,
           bottom: 0,
@@ -168,7 +168,7 @@ export default function SwipeableDeck({
           transition: isDraggingCard
             ? 'none'
             : 'transform 0.32s cubic-bezier(0.175, 0.885, 0.32, 1.15)',
-          boxShadow: '0 24px 48px -10px rgba(0,0,0,0.28), 0 8px 20px -5px rgba(0,0,0,0.1)',
+          boxShadow: '0 20px 40px -10px rgba(0,0,0,0.22), 0 8px 16px -5px rgba(0,0,0,0.08)',
         }}
       >
         {/* Full-bleed portrait photo */}
@@ -180,55 +180,53 @@ export default function SwipeableDeck({
         />
 
         {/* Location pill — top right */}
-        <div className="absolute top-4 right-4 pointer-events-none">
-          <span className="bg-black/45 backdrop-blur-md px-3.5 py-1.5 rounded-full text-[11px] font-bold text-white flex items-center gap-1.5 border border-white/20 shadow-sm">
-            <MapPin className="w-3.5 h-3.5 text-white" />
+        <div className="absolute top-3.5 right-3.5 pointer-events-none z-20">
+          <span className="bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full text-[11px] font-semibold text-white flex items-center gap-1.5 border border-white/20 shadow-sm">
+            <MapPin className="w-3.5 h-3.5 text-white/90" />
             <span>
-              {currentCandidate.university?.split(' ')[0] || 'Campus'},&nbsp;
-              {currentCandidate.state?.split(' ')[0] || 'NCR'}
+              {currentCandidate.university?.includes(',') ? currentCandidate.university : `${currentCandidate.university?.split(' ')[0] || 'Campus'}, ${currentCandidate.state?.split(' ')[0] || 'NCR'}`}
             </span>
           </span>
         </div>
 
         {/* LIKE badge on drag right */}
         {swipeDirection === 'like' && (
-          <div className="absolute top-8 left-5 border-4 border-emerald-400 bg-emerald-500/25 backdrop-blur-md text-emerald-300 font-black text-xl px-4 py-1.5 rounded-2xl -rotate-12 tracking-wider shadow-lg pointer-events-none">
+          <div className="absolute top-8 left-5 border-4 border-emerald-400 bg-emerald-500/30 backdrop-blur-md text-emerald-300 font-black text-xl px-4 py-1.5 rounded-2xl -rotate-12 tracking-wider shadow-lg pointer-events-none z-30">
             LIKE ❤️
           </div>
         )}
         {/* PASS badge on drag left */}
         {swipeDirection === 'pass' && (
-          <div className="absolute top-8 right-5 border-4 border-rose-500 bg-rose-500/25 backdrop-blur-md text-rose-300 font-black text-xl px-4 py-1.5 rounded-2xl rotate-12 tracking-wider shadow-lg pointer-events-none">
+          <div className="absolute top-8 right-5 border-4 border-rose-500 bg-rose-500/30 backdrop-blur-md text-rose-300 font-black text-xl px-4 py-1.5 rounded-2xl rotate-12 tracking-wider shadow-lg pointer-events-none z-30">
             PASS ✕
           </div>
         )}
 
-        {/* Bottom glassmorphism name/action strip */}
-        <div className="absolute bottom-3 left-3 right-3 pointer-events-none">
+        {/* Bottom dark gradient & frosted glass card */}
+        <div className="absolute inset-x-0 bottom-0 pt-20 pb-3.5 px-3 bg-gradient-to-t from-black/85 via-black/40 to-transparent pointer-events-none z-20">
           <div
-            className="rounded-[20px] px-4 py-3.5 flex items-center justify-between text-white"
+            className="rounded-[22px] px-4 py-3 flex items-center justify-between text-white"
             style={{
-              background: 'rgba(255,255,255,0.18)',
+              background: 'rgba(255, 255, 255, 0.14)',
               backdropFilter: 'blur(24px)',
               WebkitBackdropFilter: 'blur(24px)',
-              border: '1px solid rgba(255,255,255,0.45)',
-              boxShadow: '0 10px 35px rgba(0,0,0,0.28)',
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+              boxShadow: '0 8px 30px rgba(0, 0, 0, 0.28)',
             }}
           >
             <div className="space-y-0.5">
               {/* Active status row */}
               <div className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#10B981]" />
-                <span className="text-[11px] font-black text-white tracking-wider uppercase">Active</span>
-                <div className="w-3.5 h-3.5 bg-[#FF2D55] rounded-full flex items-center justify-center text-[8px] font-black text-white">✓</div>
+                <span className="text-[11px] font-bold text-white tracking-wider">Active</span>
+                <div className="w-3.5 h-3.5 bg-[#FF2E79] rounded-full flex items-center justify-center text-[8px] font-black text-white">✓</div>
               </div>
               {/* Name */}
               <h2
-                className="text-[22px] font-black tracking-tight text-white"
+                className="text-[23px] font-black tracking-tight text-white leading-tight"
                 style={{ textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}
               >
-                {currentCandidate.name.split(' ')[0]}&nbsp;
-                {currentCandidate.name.split(' ')[1]?.[0] || ''}
+                {currentCandidate.name}
               </h2>
             </div>
 
@@ -239,8 +237,7 @@ export default function SwipeableDeck({
                 e.stopPropagation();
                 onOpenDetail(currentCandidate);
               }}
-              className="w-12 h-12 rounded-full bg-[#FF2D55] hover:bg-[#E02447] text-white flex items-center justify-center pointer-events-auto cursor-pointer transition-all transform hover:scale-105 active:scale-95 shrink-0"
-              style={{ boxShadow: '0 6px 20px rgba(255,45,85,0.55)', border: '1.5px solid rgba(255,255,255,0.3)' }}
+              className="w-11 h-11 rounded-full bg-[#FF2E79] hover:bg-[#E02469] text-white flex items-center justify-center pointer-events-auto cursor-pointer transition-all transform hover:scale-105 active:scale-95 shrink-0 shadow-lg shadow-pink-500/40"
               title="View profile"
             >
               <ArrowUpRight className="w-5 h-5 stroke-[2.5]" />

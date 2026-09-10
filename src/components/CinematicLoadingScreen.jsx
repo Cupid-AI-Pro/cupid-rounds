@@ -109,7 +109,7 @@ export default function CinematicLoadingScreen({ onComplete, activeState = 'Delh
         {/* Hairline 1.5px Progress Line */}
         <div className="w-40 h-[2px] bg-white/20 rounded-full overflow-hidden">
           <div
-            className="h-full bg-[#FF2D55] rounded-full transition-all duration-100 ease-out"
+            className="h-full bg-[#FF2E79] rounded-full transition-all duration-100 ease-out"
             style={{ width: `${progress}%` }}
           ></div>
         </div>

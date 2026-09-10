@@ -51,7 +51,7 @@ export default function DownloadApkModal({ isOpen, onClose, onLaunchApp }) {
 
         {/* Header */}
         <div className="pt-1 text-center">
-          <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-[#FF2D55] to-rose-500 text-white flex items-center justify-center mx-auto mb-3 shadow-lg shadow-rose-500/30">
+          <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-[#FF2E79] to-rose-500 text-white flex items-center justify-center mx-auto mb-3 shadow-lg shadow-rose-500/30">
             <Smartphone className="w-8 h-8" />
           </div>
           <h3 className="text-2xl font-serif font-black text-slate-900">
@@ -71,7 +71,7 @@ export default function DownloadApkModal({ isOpen, onClose, onLaunchApp }) {
             className={`w-full py-4 px-5 rounded-2xl font-extrabold text-sm flex items-center justify-center gap-2.5 shadow-lg transition-all active:scale-[0.98] cursor-pointer ${
               downloaded 
                 ? 'bg-emerald-500 shadow-emerald-500/30 text-white' 
-                : 'bg-gradient-to-r from-[#FF2D55] via-rose-500 to-pink-500 text-white shadow-rose-500/30 hover:brightness-105'
+                : 'bg-gradient-to-r from-[#FF2E79] via-rose-500 to-pink-500 text-white shadow-rose-500/30 hover:brightness-105'
             }`}
           >
             {downloading ? (
@@ -100,7 +100,7 @@ export default function DownloadApkModal({ isOpen, onClose, onLaunchApp }) {
             }}
             className="w-full py-3 px-4 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer"
           >
-            <Zap className="w-4 h-4 text-[#FF2D55]" />
+            <Zap className="w-4 h-4 text-[#FF2E79]" />
             <span>Open Web Version Instead</span>
           </button>
         </div>
@@ -112,15 +112,15 @@ export default function DownloadApkModal({ isOpen, onClose, onLaunchApp }) {
           </p>
           <div className="space-y-2 text-xs text-slate-600 font-medium">
             <div className="flex items-start gap-2">
-              <span className="w-4 h-4 rounded-full bg-rose-100 text-[#FF2D55] font-black text-[10px] flex items-center justify-center shrink-0 mt-0.5">1</span>
+              <span className="w-4 h-4 rounded-full bg-rose-100 text-[#FF2E79] font-black text-[10px] flex items-center justify-center shrink-0 mt-0.5">1</span>
               <span>Tap <strong>"Download CupidRounds.apk"</strong> button above.</span>
             </div>
             <div className="flex items-start gap-2">
-              <span className="w-4 h-4 rounded-full bg-rose-100 text-[#FF2D55] font-black text-[10px] flex items-center justify-center shrink-0 mt-0.5">2</span>
+              <span className="w-4 h-4 rounded-full bg-rose-100 text-[#FF2E79] font-black text-[10px] flex items-center justify-center shrink-0 mt-0.5">2</span>
               <span>Open your phone's <strong>Downloads</strong> folder and tap the file.</span>
             </div>
             <div className="flex items-start gap-2">
-              <span className="w-4 h-4 rounded-full bg-rose-100 text-[#FF2D55] font-black text-[10px] flex items-center justify-center shrink-0 mt-0.5">3</span>
+              <span className="w-4 h-4 rounded-full bg-rose-100 text-[#FF2E79] font-black text-[10px] flex items-center justify-center shrink-0 mt-0.5">3</span>
               <span>Tap <strong>Install</strong> when prompted — enjoy the app! 🎉</span>
             </div>
           </div>

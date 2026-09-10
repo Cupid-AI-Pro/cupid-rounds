@@ -106,7 +106,7 @@ export default function ChatView({ user, matchedUsers = [], onOpenMatchProfile }
                 <span className="font-extrabold text-xs text-slate-900 font-display">
                   {activeChatUser.name.split(' ')[0]}, {activeChatUser.age}
                 </span>
-                <span className="text-[8px] bg-rose-50 text-[#FF2D55] px-1.5 py-0.2 rounded-full font-bold">
+                <span className="text-[8px] bg-rose-50 text-[#FF2E79] px-1.5 py-0.2 rounded-full font-bold">
                   Matched
                 </span>
               </div>
@@ -128,7 +128,7 @@ export default function ChatView({ user, matchedUsers = [], onOpenMatchProfile }
         {/* Contact Banner */}
         <div className="px-3 py-1.5 bg-gradient-to-r from-rose-50 to-pink-50 border-b border-rose-100/60 flex items-center justify-between text-[10px]">
           <span className="font-bold text-slate-600 truncate">
-            Direct Link: <strong className="text-[#FF2D55]">{activeChatUser.contact || '@' + activeChatUser.name.toLowerCase().replace(' ', '_')}</strong>
+            Direct Link: <strong className="text-[#FF2E79]">{activeChatUser.contact || '@' + activeChatUser.name.toLowerCase().replace(' ', '_')}</strong>
           </span>
           <span className="text-[9px] font-bold text-rose-500 shrink-0">100% Mutual Yes</span>
         </div>
@@ -143,7 +143,7 @@ export default function ChatView({ user, matchedUsers = [], onOpenMatchProfile }
               <div
                 className={`max-w-[78%] px-3.5 py-2 rounded-2xl text-xs font-medium leading-relaxed shadow-xs ${
                   msg.sender === 'me'
-                    ? 'bg-[#FF2D55] text-white rounded-br-xs'
+                    ? 'bg-[#FF2E79] text-white rounded-br-xs'
                     : 'bg-white text-slate-800 border border-slate-100 rounded-bl-xs'
                 }`}
               >
@@ -161,7 +161,7 @@ export default function ChatView({ user, matchedUsers = [], onOpenMatchProfile }
             <button
               key={i}
               onClick={() => handleSendMessage(prompt)}
-              className="px-2.5 py-1 rounded-full bg-slate-100 hover:bg-pink-50 hover:text-[#FF2D55] text-slate-600 text-[10px] font-bold shrink-0 transition-all border border-slate-200/60 cursor-pointer"
+              className="px-2.5 py-1 rounded-full bg-slate-100 hover:bg-pink-50 hover:text-[#FF2E79] text-slate-600 text-[10px] font-bold shrink-0 transition-all border border-slate-200/60 cursor-pointer"
             >
               {prompt}
             </button>
@@ -176,12 +176,12 @@ export default function ChatView({ user, matchedUsers = [], onOpenMatchProfile }
             onChange={(e) => setInputMessage(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
             placeholder={`Message ${activeChatUser.name.split(' ')[0]}...`}
-            className="flex-1 h-10 px-3.5 text-xs bg-slate-50 border border-slate-200 rounded-full font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#FF2D55] focus:bg-white transition-all"
+            className="flex-1 h-10 px-3.5 text-xs bg-slate-50 border border-slate-200 rounded-full font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#FF2E79] focus:bg-white transition-all"
           />
           <button
             onClick={() => handleSendMessage()}
             disabled={!inputMessage.trim()}
-            className="w-10 h-10 rounded-full bg-[#FF2D55] hover:bg-[#e02447] text-white flex items-center justify-center shadow-md shadow-rose-200 transition-transform active:scale-95 disabled:opacity-50 cursor-pointer"
+            className="w-10 h-10 rounded-full bg-[#FF2E79] hover:bg-[#e02447] text-white flex items-center justify-center shadow-md shadow-rose-200 transition-transform active:scale-95 disabled:opacity-50 cursor-pointer"
           >
             <Send className="w-4 h-4" />
           </button>
@@ -201,7 +201,7 @@ export default function ChatView({ user, matchedUsers = [], onOpenMatchProfile }
           <h2 className="font-display text-base font-black text-slate-900">Matches & Messages</h2>
           <p className="text-[10px] text-slate-400">Mutual connections from active Cupid rounds</p>
         </div>
-        <span className="px-2.5 py-0.5 rounded-full bg-rose-50 text-[#FF2D55] text-xs font-black border border-rose-100">
+        <span className="px-2.5 py-0.5 rounded-full bg-rose-50 text-[#FF2E79] text-xs font-black border border-rose-100">
           {matchedUsers.length} Matches
         </span>
       </div>
@@ -219,7 +219,7 @@ export default function ChatView({ user, matchedUsers = [], onOpenMatchProfile }
                 onClick={() => setActiveChatUser(m)}
                 className="flex flex-col items-center gap-1 cursor-pointer shrink-0"
               >
-                <div className="relative w-14 h-14 rounded-full p-0.5 bg-gradient-to-tr from-[#FF2D55] to-pink-500 shadow-md ring-2 ring-white hover:scale-105 transition-transform">
+                <div className="relative w-14 h-14 rounded-full p-0.5 bg-gradient-to-tr from-[#FF2E79] to-pink-500 shadow-md ring-2 ring-white hover:scale-105 transition-transform">
                   <img src={m.avatar} alt={m.name} className="w-full h-full rounded-full object-cover" />
                   <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white"></span>
                 </div>
@@ -240,7 +240,7 @@ export default function ChatView({ user, matchedUsers = [], onOpenMatchProfile }
 
         {matchedUsers.length === 0 ? (
           <div className="p-8 text-center bg-slate-50 border border-slate-100 rounded-3xl my-4 space-y-2.5">
-            <div className="w-12 h-12 rounded-full bg-pink-100 text-[#FF2D55] flex items-center justify-center mx-auto">
+            <div className="w-12 h-12 rounded-full bg-pink-100 text-[#FF2E79] flex items-center justify-center mx-auto">
               <MessageSquare className="w-6 h-6" />
             </div>
             <h4 className="text-sm font-bold text-slate-800">No Active Chats Yet</h4>
@@ -269,10 +269,10 @@ export default function ChatView({ user, matchedUsers = [], onOpenMatchProfile }
                     <span className="text-[9px] text-slate-400 font-medium">Just now</span>
                   </div>
                   <div className="flex items-center gap-1 text-[10px] text-slate-500 font-medium truncate mt-0.5">
-                    <GraduationCap className="w-3 h-3 text-[#FF2D55] shrink-0" />
+                    <GraduationCap className="w-3 h-3 text-[#FF2E79] shrink-0" />
                     <span>{m.university || m.state}</span>
                   </div>
-                  <p className="text-[10.5px] text-[#FF2D55] font-bold truncate mt-0.5">
+                  <p className="text-[10.5px] text-[#FF2E79] font-bold truncate mt-0.5">
                     Mutual Match • Tap to chat ✨
                   </p>
                 </div>

@@ -25,7 +25,7 @@ import {
   UserCheck
 } from 'lucide-react';
 
-export default function FullProfileModal({ candidate, onClose, onLike, onDecline }) {
+export default function FullProfileModal({ candidate, onClose, onLike, onDecline, onOpenChat }) {
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
 
   if (!candidate) return null;
@@ -33,7 +33,7 @@ export default function FullProfileModal({ candidate, onClose, onLike, onDecline
   // Refined values
   const height = candidate.height || (candidate.gender === 'male' ? "5'10\"" : "5'4\"");
   const yearOfStudy = candidate.yearOfStudy || "3rd Year";
-  const hometown = candidate.hometown || candidate.state || "Delhi NCR";
+  const hometown = candidate.university || candidate.hometown || candidate.state || "Brooklyn, NY";
   const religion = candidate.religion || "Hindu";
   const relationshipType = candidate.relationshipType 
     ? (Array.isArray(candidate.relationshipType) ? candidate.relationshipType[0] : candidate.relationshipType)
@@ -42,14 +42,13 @@ export default function FullProfileModal({ candidate, onClose, onLike, onDecline
     ? (Array.isArray(candidate.habits) ? candidate.habits.join(', ') : candidate.habits)
     : "Social Drinker, Non-Smoker";
   const personalityType = candidate.personalityType || "Ambivert";
-  const qualities = candidate.qualities || (
-    candidate.interests?.length 
-      ? candidate.interests.concat(["Ambitious", "Articulate", "Humorous"]).slice(0, 4)
-      : ["Humorous", "Loyal", "Ambitious", "Creative"]
-  );
-  const datingVibes = candidate.datingVibe || ["Specialty Coffee", "Late Drives", "Curated Playlists"];
+  
+  // Tags matching Screen 3: Photography, Surfing, 18+ (or candidate's interests)
+  const tags = candidate.interests?.length 
+    ? candidate.interests.slice(0, 3) 
+    : ["Photography", "Surfing", "18+"];
 
-  const photos = [
+  const photos = candidate.photos || [
     candidate.avatar,
     candidate.gender === 'female' 
       ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&auto=format&fit=crop&q=80'
@@ -60,44 +59,38 @@ export default function FullProfileModal({ candidate, onClose, onLike, onDecline
   ];
 
   return (
-    <div className="absolute inset-0 z-50 flex flex-col animate-slide-up select-none bg-[#F8F9FC] overflow-hidden">
+    <div className="absolute inset-0 z-50 flex flex-col animate-slide-up select-none bg-[#FDF8FA] overflow-hidden">
       
       {/* ----------------------------------------------------------------- */}
-      {/* LUXURY TOP BAR                                                    */}
+      {/* SCREEN 3 TOP BAR: Back button, Name, Avatar ring                  */}
       {/* ----------------------------------------------------------------- */}
-      <div className="flex items-center justify-between px-5 pt-4 pb-3 z-30 bg-white/95 backdrop-blur-xl border-b border-slate-100 shadow-xs">
+      <div className="flex items-center justify-between px-5 pt-3 pb-2 z-30 bg-white/90 backdrop-blur-xl border-b border-slate-100">
         <button
           onClick={onClose}
-          className="w-10 h-10 rounded-full bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-800 transition-all active:scale-95 border border-slate-200/60 cursor-pointer"
+          className="w-10 h-10 rounded-full bg-white hover:bg-slate-50 flex items-center justify-center text-slate-800 transition-all active:scale-95 border border-slate-200/80 shadow-xs cursor-pointer"
           title="Back"
         >
-          <ChevronLeft className="w-5 h-5 stroke-[2.2]" />
+          <ChevronLeft className="w-5 h-5 stroke-[2.4]" />
         </button>
 
-        <div className="flex flex-col items-center">
-          <div className="flex items-center gap-1.5">
-            <h3 className="font-black text-base text-slate-900 font-display tracking-tight">
-              {candidate.name}
-            </h3>
-            <BadgeCheck className="w-4 h-4 text-[#FF2D55] fill-[#FF2D55]/15" />
-          </div>
-          <span className="text-[10.5px] text-slate-400 font-bold tracking-wider uppercase">
-            {candidate.age} yrs • {candidate.university?.split(' ')[0] || 'Campus'}
-          </span>
-        </div>
+        <h3 className="font-extrabold text-[17px] text-slate-900 font-display tracking-tight">
+          {candidate.name}
+        </h3>
 
-        <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-xs ring-1 ring-slate-200">
-          <img src={candidate.avatar} alt={candidate.name} className="w-full h-full object-cover" />
+        <div className="w-10 h-10 rounded-full p-[2px] bg-gradient-to-tr from-[#FF2E79] to-[#FFA1B5] shadow-xs">
+          <div className="w-full h-full rounded-full overflow-hidden p-[1px] bg-white">
+            <img src={candidate.avatar} alt={candidate.name} className="w-full h-full object-cover rounded-full" />
+          </div>
         </div>
       </div>
 
       {/* ----------------------------------------------------------------- */}
-      {/* SCROLLABLE SPACIOUS LUXURY CANVAS                                 */}
+      {/* SCROLLABLE CANVAS                                                 */}
       {/* ----------------------------------------------------------------- */}
-      <div className="flex-1 overflow-y-auto no-scrollbar px-5 pt-4 pb-32 space-y-4">
+      <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-3 pb-32 space-y-4">
         
-        {/* 1. HERO PHOTO CARD */}
-        <div className="relative w-full h-[420px] rounded-[32px] overflow-hidden shadow-md border border-white bg-slate-950">
+        {/* 1. HERO PHOTO CARD (Screen 3 Reference Style) */}
+        <div className="relative w-full h-[430px] rounded-[28px] overflow-hidden shadow-md border border-white bg-slate-950">
           <img 
             src={photos[activePhotoIndex]} 
             alt={candidate.name} 
@@ -116,69 +109,61 @@ export default function FullProfileModal({ candidate, onClose, onLike, onDecline
             />
           </div>
 
-          {/* Top Indicators */}
-          <div className="absolute top-4 left-4 flex gap-1.5 z-20 pointer-events-none">
+          {/* Top Carousel Dots: ● ○ ○ ○ */}
+          <div className="absolute top-4 left-4 flex gap-1.5 z-20 pointer-events-none items-center">
             {photos.map((_, idx) => (
               <div 
                 key={idx}
-                className={`h-1.5 rounded-full transition-all duration-300 ${
-                  activePhotoIndex === idx ? 'w-7 bg-white shadow-xs' : 'w-2 bg-white/40'
+                className={`rounded-full transition-all duration-300 ${
+                  activePhotoIndex === idx ? 'w-5 h-1.5 bg-white shadow-xs' : 'w-1.5 h-1.5 bg-white/50'
                 }`}
               />
             ))}
           </div>
 
-          {/* Location Tag */}
+          {/* Location Tag Top Right: 📍 Brooklyn, NY */}
           <div className="absolute top-4 right-4 z-20 pointer-events-none">
-            <span className="bg-black/55 backdrop-blur-md text-white text-[11px] font-bold px-3.5 py-1.5 rounded-full flex items-center gap-1.5 border border-white/20 shadow-sm">
-              <MapPin className="w-3.5 h-3.5 text-[#FF2D55]" />
-              <span>{candidate.distanceKm || 1.8} km away</span>
+            <span className="bg-black/45 backdrop-blur-md text-white text-[11px] font-semibold px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-white/20 shadow-sm">
+              <MapPin className="w-3.5 h-3.5 text-white" />
+              <span>{candidate.university?.includes(',') ? candidate.university : `${candidate.university?.split(' ')[0] || 'Campus'}, ${candidate.state?.split(' ')[0] || 'NCR'}`}</span>
             </span>
           </div>
 
-          {/* Vignette Gradient */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent pointer-events-none" />
-
-          {/* Bottom Card Title & Quick Attributes */}
-          <div className="absolute bottom-5 inset-x-5 text-white z-20 pointer-events-none">
-            <div className="flex items-center gap-2 mb-2">
+          {/* Bottom Gradient & Details */}
+          <div className="absolute inset-x-0 bottom-0 pt-28 pb-5 px-5 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none z-20">
+            {/* Active status */}
+            <div className="flex items-center gap-1.5 mb-1">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#10B981]" />
-              <span className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-300">Verified Member</span>
-              <span className="text-white/30">•</span>
-              <span className="text-xs text-slate-200 font-medium">{hometown}</span>
+              <span className="text-[11px] font-bold text-white tracking-wider">Active</span>
+              <div className="w-3.5 h-3.5 bg-[#FF2E79] rounded-full flex items-center justify-center text-[8px] font-black text-white">✓</div>
             </div>
 
-            <h1 className="text-[28px] font-black font-display tracking-tight text-white leading-tight mb-3">
-              {candidate.name}, {candidate.age}
+            {/* Name */}
+            <h1 className="text-[28px] font-black tracking-tight text-white leading-tight mb-2.5">
+              {candidate.name}
             </h1>
 
-            {/* Micro Attribute Pills */}
+            {/* Tag pills matching Screen 3 (Photography, Surfing, 18+) */}
             <div className="flex flex-wrap gap-2">
-              <span className="px-3.5 py-1.5 rounded-full bg-white/20 backdrop-blur-md text-xs font-bold text-white border border-white/20 flex items-center gap-1.5">
-                <Ruler className="w-3.5 h-3.5 text-slate-200" />
-                <span>{height}</span>
-              </span>
-              <span className="px-3.5 py-1.5 rounded-full bg-white/20 backdrop-blur-md text-xs font-bold text-white border border-white/20 flex items-center gap-1.5">
-                <GraduationCap className="w-4 h-4 text-slate-200" />
-                <span>{yearOfStudy}</span>
-              </span>
-              <span className="px-3.5 py-1.5 rounded-full bg-white/20 backdrop-blur-md text-xs font-bold text-white border border-white/20 flex items-center gap-1.5">
-                <HeartHandshake className="w-4 h-4 text-[#FF6B8B]" />
-                <span>{relationshipType}</span>
-              </span>
+              {tags.map((tag, idx) => (
+                <span key={idx} className="px-3.5 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-semibold text-white border border-white/25">
+                  {tag}
+                </span>
+              ))}
             </div>
           </div>
         </div>
+
 
         {/* 2. ABOUT ME / BIO (EDITORIAL QUOTE CARD) */}
         {candidate.bio && (
           <div className="bg-white p-5 rounded-[28px] border border-slate-100 shadow-sm relative overflow-hidden">
             <div className="flex items-center justify-between mb-2.5">
               <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                <Quote className="w-3.5 h-3.5 text-[#FF2D55]" />
+                <Quote className="w-3.5 h-3.5 text-[#FF2E79]" />
                 <span>About Me</span>
               </span>
-              <span className="text-[10px] font-bold text-[#FF2D55] bg-rose-50 px-2.5 py-0.5 rounded-full">
+              <span className="text-[10px] font-bold text-[#FF2E79] bg-rose-50 px-2.5 py-0.5 rounded-full">
                 Bio
               </span>
             </div>
@@ -192,7 +177,7 @@ export default function FullProfileModal({ candidate, onClose, onLike, onDecline
         <div className="bg-white p-5 rounded-[28px] border border-slate-100 shadow-sm space-y-4">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <span className="text-xs font-black uppercase tracking-wider text-slate-900 flex items-center gap-2">
-              <GraduationCap className="w-4 h-4 text-[#FF2D55]" />
+              <GraduationCap className="w-4 h-4 text-[#FF2E79]" />
               <span>Campus & Education</span>
             </span>
             <span className="text-[10.5px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200/50">
@@ -269,7 +254,7 @@ export default function FullProfileModal({ candidate, onClose, onLike, onDecline
         <div className="bg-white p-5 rounded-[28px] border border-slate-100 shadow-sm space-y-4">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <span className="text-xs font-black uppercase tracking-wider text-slate-900 flex items-center gap-2">
-              <HeartHandshake className="w-4 h-4 text-[#FF2D55]" />
+              <HeartHandshake className="w-4 h-4 text-[#FF2E79]" />
               <span>Dating Intent & Vibe</span>
             </span>
           </div>
@@ -277,8 +262,8 @@ export default function FullProfileModal({ candidate, onClose, onLike, onDecline
           <div className="space-y-4">
             <div className="space-y-1.5">
               <span className="text-[10.5px] font-extrabold uppercase tracking-wider text-slate-400 block">Looking For</span>
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-rose-50 text-[#FF2D55] text-xs font-bold border border-rose-200">
-                <Heart className="w-4 h-4 fill-[#FF2D55]" />
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-rose-50 text-[#FF2E79] text-xs font-bold border border-rose-200">
+                <Heart className="w-4 h-4 fill-[#FF2E79]" />
                 <span>{relationshipType}</span>
               </div>
             </div>
@@ -312,52 +297,56 @@ export default function FullProfileModal({ candidate, onClose, onLike, onDecline
       {/* ----------------------------------------------------------------- */}
       {/* LUXURY FLOATING ACTION BAR: Pass + Like + Confirm Match            */}
       {/* ----------------------------------------------------------------- */}
-      <div className="absolute bottom-0 inset-x-0 bg-white/95 backdrop-blur-2xl px-5 pt-3 pb-5 rounded-t-[32px] border-t border-slate-100 shadow-[0_-12px_40px_rgba(0,0,0,0.08)] z-30">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-xs font-extrabold text-slate-600">
-            Potential Match For You
-          </span>
-          <span className="text-[11px] font-black text-[#FF2D55] bg-rose-50 px-3 py-1 rounded-full border border-rose-200">
-            {candidate.matchScore || 96}% Compatible
+      {/* ----------------------------------------------------------------- */}
+      {/* SCREEN 3 ACTION BAR: ✕ + ♥ + 💬 Message                           */}
+      {/* ----------------------------------------------------------------- */}
+      <div className="absolute bottom-0 inset-x-0 bg-white/95 backdrop-blur-2xl px-5 pt-3.5 pb-5 rounded-t-[32px] border-t border-slate-100 shadow-[0_-12px_40px_rgba(0,0,0,0.06)] z-30">
+        <div className="text-left mb-3">
+          <span className="text-[13px] font-bold text-slate-800">
+            Potential Match For You!
           </span>
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Pass Button */}
+          {/* Pass Button ✕ */}
           <button
             onClick={() => { 
               onDecline(candidate); 
               onClose(); 
             }}
-            className="w-13 h-13 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center shadow-xs transition-all active:scale-95 cursor-pointer shrink-0 border border-slate-200/60"
+            className="w-12 h-12 rounded-full bg-slate-100/90 hover:bg-slate-200 text-slate-700 flex items-center justify-center shadow-xs transition-all active:scale-95 cursor-pointer shrink-0 border border-slate-200/60"
             title="Pass"
           >
-            <X className="w-6 h-6 stroke-[2.2]" />
+            <X className="w-5 h-5 stroke-[2.2]" />
           </button>
 
-          {/* Like Button */}
+          {/* Like Button ♥ */}
           <button
             onClick={() => { 
               onLike(candidate); 
               onClose(); 
             }}
-            className="w-13 h-13 rounded-full bg-white border-2 border-rose-200 hover:border-rose-300 text-[#FF2D55] flex items-center justify-center shadow-md shadow-rose-200/50 transition-all active:scale-95 cursor-pointer shrink-0"
+            className="w-12 h-12 rounded-full bg-white border border-pink-100 hover:border-pink-200 text-[#FF2E79] flex items-center justify-center shadow-xs transition-all active:scale-95 cursor-pointer shrink-0"
             title="Like Profile"
           >
-            <Heart className="w-6 h-6 fill-[#FF2D55]" />
+            <Heart className="w-5 h-5 fill-[#FF2E79]" />
           </button>
 
-          {/* Confirm Match Luxury Pill CTA */}
+          {/* Message CTA (Black Pill Button) */}
           <button
             onClick={() => { 
-              onLike(candidate); 
-              onClose(); 
+              if (onOpenChat) {
+                onOpenChat(candidate);
+              } else {
+                onLike(candidate);
+                onClose();
+              }
             }}
-            className="flex-1 h-13 rounded-full bg-gradient-to-r from-[#FF2D55] to-[#E02447] text-white font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-rose-500/30 hover:brightness-105 transition-all active:scale-98 cursor-pointer"
-            title="Confirm Match"
+            className="flex-1 h-12 rounded-full bg-black hover:bg-slate-900 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-sm transition-all active:scale-98 cursor-pointer"
+            title="Message"
           >
-            <CheckCircle2 className="w-5 h-5 fill-white text-[#FF2D55]" />
-            <span>Confirm Match</span>
+            <MessageCircle className="w-4 h-4 fill-white text-white" />
+            <span>Message</span>
           </button>
         </div>
       </div>

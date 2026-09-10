@@ -120,7 +120,7 @@ export default function EditProfileModal({ user, onClose, onSave }) {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full h-10 px-3.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#FF2D55]"
+                className="w-full h-10 px-3.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#FF2E79]"
                 required
               />
             </div>
@@ -132,7 +132,7 @@ export default function EditProfileModal({ user, onClose, onSave }) {
                   type="number"
                   value={age}
                   onChange={(e) => setAge(e.target.value)}
-                  className="w-full h-10 px-3.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#FF2D55]"
+                  className="w-full h-10 px-3.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#FF2E79]"
                   min="18"
                   max="35"
                   required
@@ -145,7 +145,7 @@ export default function EditProfileModal({ user, onClose, onSave }) {
                   type="text"
                   value={height}
                   onChange={(e) => setHeight(e.target.value)}
-                  className="w-full h-10 px-3.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#FF2D55]"
+                  className="w-full h-10 px-3.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#FF2E79]"
                   placeholder={`5'10"`}
                 />
               </div>
@@ -197,7 +197,7 @@ export default function EditProfileModal({ user, onClose, onSave }) {
                   type="text"
                   value={hometown}
                   onChange={(e) => setHometown(e.target.value)}
-                  className="w-full h-11 px-3.5 bg-white border border-slate-200/90 rounded-2xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#FF2D55] focus:ring-3 focus:ring-[#FF2D55]/15"
+                  className="w-full h-11 px-3.5 bg-white border border-slate-200/90 rounded-2xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#FF2E79] focus:ring-3 focus:ring-[#FF2E79]/15"
                 />
               </div>
             </div>
@@ -228,7 +228,7 @@ export default function EditProfileModal({ user, onClose, onSave }) {
                 onChange={(e) => setBio(e.target.value)}
                 rows={3}
                 placeholder="Tell potential matches about your passions..."
-                className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:border-[#FF2D55] resize-none"
+                className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:border-[#FF2E79] resize-none"
               />
             </div>
           </div>
@@ -250,7 +250,7 @@ export default function EditProfileModal({ user, onClose, onSave }) {
                   onClick={() => toggleQuality(q)}
                   className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
                     active 
-                      ? 'bg-[#FF2D55] text-white shadow-xs' 
+                      ? 'bg-[#FF2E79] text-white shadow-xs' 
                       : 'bg-white text-slate-700 border border-slate-200/80 hover:border-rose-300'
                   }`}
                 >
@@ -265,9 +265,9 @@ export default function EditProfileModal({ user, onClose, onSave }) {
         <div className="pt-2">
           <button
             type="submit"
-            className="w-full h-12 rounded-full bg-[#FF2D55] hover:bg-[#E02447] text-white font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-rose-500/25 cursor-pointer"
+            className="w-full h-12 rounded-full bg-[#FF2E79] hover:bg-[#E02447] text-white font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-rose-500/25 cursor-pointer"
           >
-            <CheckCircle2 className="w-5 h-5 fill-white text-[#FF2D55]" />
+            <CheckCircle2 className="w-5 h-5 fill-white text-[#FF2E79]" />
             <span>Save & Update Preferences</span>
           </button>
         </div>

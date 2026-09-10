@@ -17,14 +17,14 @@
     <path
         android:pathData="M 70.5,34.5
                           A 22.5,22.5 0 1,0 70.5,73.5"
-        android:strokeColor="#FF2D55"
+        android:strokeColor="#FF2E79"
         android:strokeWidth="9"
         android:strokeLineCap="round"
         android:fillColor="#00000000"/>
 
     <!-- ===== SOLID HEART centered at (54,54) ===== -->
     <path
-        android:fillColor="#FF2D55"
+        android:fillColor="#FF2E79"
         android:pathData="
           M 54,66
           C 54,66 38,55 38,46

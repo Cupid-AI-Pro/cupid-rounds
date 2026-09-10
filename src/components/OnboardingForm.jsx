@@ -247,7 +247,7 @@ export default function OnboardingForm({ user, onComplete }) {
         particleCount: 50,
         spread: 60,
         origin: { y: 0.7 },
-        colors: ['#10B981', '#FF2D55', '#3B82F6']
+        colors: ['#10B981', '#FF2E79', '#3B82F6']
       });
     }, 1400);
   };
@@ -332,7 +332,7 @@ export default function OnboardingForm({ user, onComplete }) {
         particleCount: 120,
         spread: 70,
         origin: { y: 0.6 },
-        colors: ['#FF2D55', '#FF6584', '#EC4899', '#7C3AED']
+        colors: ['#FF2E79', '#FF6584', '#EC4899', '#7C3AED']
       });
     }, 1200);
   };
@@ -381,7 +381,7 @@ export default function OnboardingForm({ user, onComplete }) {
             </div>
           </div>
 
-          <div className="p-4 rounded-3xl bg-gradient-to-r from-[#FF2D55] to-pink-600 text-white shadow-lg my-4 text-left">
+          <div className="p-4 rounded-3xl bg-gradient-to-r from-[#FF2E79] to-pink-600 text-white shadow-lg my-4 text-left">
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-[10px] font-extrabold tracking-widest uppercase text-pink-200 block mb-0.5">
@@ -443,7 +443,7 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* Stepper Progress Bar */}
         <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-[#FF2D55] via-pink-500 to-rose-400 rounded-full transition-all duration-300 ease-out"
+            className="h-full bg-gradient-to-r from-[#FF2E79] via-pink-500 to-rose-400 rounded-full transition-all duration-300 ease-out"
             style={{ width: `${(step / totalSteps) * 100}%` }}
           ></div>
         </div>
@@ -458,7 +458,7 @@ export default function OnboardingForm({ user, onComplete }) {
         {step === 1 && (
           <div className="space-y-6 animate-slide-up">
             <div className="text-left mb-3">
-              <span className="text-[11px] font-black text-[#FF2D55] uppercase tracking-widest block mb-1">
+              <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 Step 01 • Basic Details
               </span>
               <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">Personal Info</h2>
@@ -521,7 +521,7 @@ export default function OnboardingForm({ user, onComplete }) {
         {step === 2 && (
           <div className="space-y-6 animate-slide-up">
             <div className="text-left mb-3">
-              <span className="text-[11px] font-black text-[#FF2D55] uppercase tracking-widest block mb-1">
+              <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 Step 02 • Genuine Profile Photos
               </span>
               <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">Your Photos & Insta</h2>
@@ -532,7 +532,7 @@ export default function OnboardingForm({ user, onComplete }) {
 
             {/* Clear English Helper Box */}
             <div className="p-4 rounded-3xl bg-rose-50/80 border border-rose-200/80 text-left flex items-start gap-3 shadow-sm">
-              <Sparkles className="w-5 h-5 text-[#FF2D55] shrink-0 mt-0.5" />
+              <Sparkles className="w-5 h-5 text-[#FF2E79] shrink-0 mt-0.5" />
               <div>
                 <span className="text-xs font-bold text-slate-900 block">
                   Upload Your Best Clear Photos (Min 2, Max 6)
@@ -562,7 +562,7 @@ export default function OnboardingForm({ user, onComplete }) {
                 <span className={`text-[11px] font-extrabold px-3 py-1 rounded-full border ${
                   userPhotos.length >= 2 
                     ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
-                    : 'bg-rose-50 text-[#FF2D55] border-rose-200'
+                    : 'bg-rose-50 text-[#FF2E79] border-rose-200'
                 }`}>
                   {userPhotos.length < 2 ? `Add ${2 - userPhotos.length} more` : '✓ Minimum 2 met'}
                 </span>
@@ -585,7 +585,7 @@ export default function OnboardingForm({ user, onComplete }) {
                         />
                         {/* Main Photo Badge on 1st Photo */}
                         {slotIdx === 0 && (
-                          <span className="absolute bottom-1.5 left-1.5 bg-[#FF2D55] text-white text-[9px] font-black px-2 py-0.5 rounded-lg shadow-sm">
+                          <span className="absolute bottom-1.5 left-1.5 bg-[#FF2E79] text-white text-[9px] font-black px-2 py-0.5 rounded-lg shadow-sm">
                             MAIN
                           </span>
                         )}
@@ -606,7 +606,7 @@ export default function OnboardingForm({ user, onComplete }) {
                       key={slotIdx}
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="aspect-square rounded-3xl border-2 border-dashed border-slate-300 hover:border-[#FF2D55] bg-slate-50/70 hover:bg-rose-50/40 flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-[#FF2D55] transition-all cursor-pointer group shadow-sm"
+                      className="aspect-square rounded-3xl border-2 border-dashed border-slate-300 hover:border-[#FF2E79] bg-slate-50/70 hover:bg-rose-50/40 flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-[#FF2E79] transition-all cursor-pointer group shadow-sm"
                     >
                       <div className="w-10 h-10 rounded-full bg-slate-200/80 group-hover:bg-rose-100 flex items-center justify-center transition-colors">
                         <Plus className="w-5 h-5" />
@@ -640,7 +640,7 @@ export default function OnboardingForm({ user, onComplete }) {
                 <button
                   type="button"
                   onClick={() => setIsFlippedPreview(!isFlippedPreview)}
-                  className="flex items-center gap-1 text-[11px] font-bold text-[#FF2D55] hover:text-[#e02447] transition-colors cursor-pointer"
+                  className="flex items-center gap-1 text-[11px] font-bold text-[#FF2E79] hover:text-[#e02447] transition-colors cursor-pointer"
                 >
                   <RefreshCw className="w-3.5 h-3.5 animate-spin-slow" />
                   <span>Flip Coin</span>
@@ -654,7 +654,7 @@ export default function OnboardingForm({ user, onComplete }) {
                   className="relative w-20 h-20 cursor-pointer [perspective:1000px]"
                 >
                   <div 
-                    className={`w-full h-full rounded-full transition-transform duration-700 [transform-style:preserve-3d] shadow-lg border-4 border-[#FF2D55] ${
+                    className={`w-full h-full rounded-full transition-transform duration-700 [transform-style:preserve-3d] shadow-lg border-4 border-[#FF2E79] ${
                       isFlippedPreview ? '[transform:rotateY(180deg)]' : ''
                     }`}
                   >
@@ -692,7 +692,7 @@ export default function OnboardingForm({ user, onComplete }) {
                       }}
                       className={`p-2 rounded-2xl border-2 transition-all flex flex-col items-center cursor-pointer ${
                         isSelected
-                          ? 'border-[#FF2D55] bg-rose-50/70 shadow-md scale-105 ring-2 ring-rose-200'
+                          ? 'border-[#FF2E79] bg-rose-50/70 shadow-md scale-105 ring-2 ring-rose-200'
                           : 'border-slate-200 bg-white hover:border-slate-300'
                       }`}
                     >
@@ -700,7 +700,7 @@ export default function OnboardingForm({ user, onComplete }) {
                         <img src={char.url} alt={char.name} className="w-full h-full object-cover" />
                       </div>
                       <span className="text-[10px] font-bold text-slate-800">{char.name}</span>
-                      <span className="text-[8px] font-extrabold text-[#FF2D55] uppercase">{char.gender}</span>
+                      <span className="text-[8px] font-extrabold text-[#FF2E79] uppercase">{char.gender}</span>
                     </button>
                   );
                 })}
@@ -730,7 +730,7 @@ export default function OnboardingForm({ user, onComplete }) {
         {step === 3 && (
           <div className="space-y-6 animate-slide-up">
             <div className="text-left mb-3">
-              <span className="text-[11px] font-black text-[#FF2D55] uppercase tracking-widest block mb-1">
+              <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 Step 03 • Stats & Biology
               </span>
               <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">Age, Height & Gender</h2>
@@ -746,7 +746,7 @@ export default function OnboardingForm({ user, onComplete }) {
                   Physical Measurements
                 </span>
                 <div className="flex items-center gap-2">
-                  <span className="px-3 py-1 rounded-full bg-[#FF2D55] text-white text-xs font-black shadow-sm">
+                  <span className="px-3 py-1 rounded-full bg-[#FF2E79] text-white text-xs font-black shadow-sm">
                     {age} YRS
                   </span>
                   <span className="px-3 py-1 rounded-full bg-slate-900 text-white text-xs font-black shadow-sm">
@@ -791,7 +791,7 @@ export default function OnboardingForm({ user, onComplete }) {
                     onClick={() => setGender(g.id)}
                     className={`py-3.5 rounded-2xl text-xs font-bold transition-all border flex items-center justify-center gap-2 cursor-pointer ${
                       gender === g.id
-                        ? 'bg-[#FF2D55] text-white border-[#FF2D55] shadow-md scale-105'
+                        ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md scale-105'
                         : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                     }`}
                   >
@@ -810,7 +810,7 @@ export default function OnboardingForm({ user, onComplete }) {
         {step === 4 && (
           <div className="space-y-6 animate-slide-up">
             <div className="text-left mb-3">
-              <span className="text-[11px] font-black text-[#FF2D55] uppercase tracking-widest block mb-1">
+              <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 Step 04 • Campus & Academics
               </span>
               <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">University & Major</h2>
@@ -873,7 +873,7 @@ export default function OnboardingForm({ user, onComplete }) {
                     onClick={() => setYearOfStudy(yr)}
                     className={`py-3 rounded-2xl text-xs font-bold border transition-all cursor-pointer ${
                       yearOfStudy === yr
-                        ? 'bg-[#FF2D55] text-white border-[#FF2D55] shadow-sm'
+                        ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-sm'
                         : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                     }`}
                   >
@@ -891,7 +891,7 @@ export default function OnboardingForm({ user, onComplete }) {
         {step === 5 && (
           <div className="space-y-6 animate-slide-up">
             <div className="text-left mb-3">
-              <span className="text-[11px] font-black text-[#FF2D55] uppercase tracking-widest block mb-1">
+              <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 Step 05 • Beliefs & Lifestyle
               </span>
               <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">Religion & Goals</h2>
@@ -911,7 +911,7 @@ export default function OnboardingForm({ user, onComplete }) {
                     onClick={() => setReligion(rel)}
                     className={`px-4 py-2.5 rounded-full text-xs font-bold border transition-all cursor-pointer ${
                       religion === rel
-                        ? 'bg-[#FF2D55] text-white border-[#FF2D55] shadow-sm'
+                        ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-sm'
                         : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                     }`}
                   >
@@ -937,7 +937,7 @@ export default function OnboardingForm({ user, onComplete }) {
                     onClick={() => toggleArrayItem(relationshipType, setRelationshipType, type)}
                     className={`p-3.5 rounded-2xl text-left text-xs font-bold border transition-all cursor-pointer ${
                       relationshipType.includes(type)
-                        ? 'bg-rose-50 border-[#FF2D55] text-[#FF2D55] shadow-sm'
+                        ? 'bg-rose-50 border-[#FF2E79] text-[#FF2E79] shadow-sm'
                         : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
                     }`}
                   >
@@ -958,7 +958,7 @@ export default function OnboardingForm({ user, onComplete }) {
                     onClick={() => toggleArrayItem(habits, setHabits, h)}
                     className={`px-4 py-2 rounded-full text-xs font-bold border transition-all cursor-pointer ${
                       habits.includes(h)
-                        ? 'bg-[#FF2D55] text-white border-[#FF2D55] shadow-sm'
+                        ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-sm'
                         : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
                     }`}
                   >
@@ -976,7 +976,7 @@ export default function OnboardingForm({ user, onComplete }) {
         {step === 6 && (
           <div className="space-y-6 animate-slide-up">
             <div className="text-left mb-3">
-              <span className="text-[11px] font-black text-[#FF2D55] uppercase tracking-widest block mb-1">
+              <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 Step 06 • Your Vibe & Energy
               </span>
               <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">Personality & Exes</h2>
@@ -996,7 +996,7 @@ export default function OnboardingForm({ user, onComplete }) {
                     onClick={() => setPersonalityType(p)}
                     className={`py-3 rounded-2xl text-xs font-bold border transition-all cursor-pointer ${
                       personalityType === p
-                        ? 'bg-[#FF2D55] text-white border-[#FF2D55] shadow-sm'
+                        ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-sm'
                         : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
                     }`}
                   >
@@ -1017,7 +1017,7 @@ export default function OnboardingForm({ user, onComplete }) {
                     onClick={() => toggleArrayItem(qualities, setQualities, q)}
                     className={`px-3.5 py-2 rounded-full text-xs font-bold border transition-all cursor-pointer ${
                       qualities.includes(q)
-                        ? 'bg-[#FF2D55] text-white border-[#FF2D55] shadow-sm'
+                        ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-sm'
                         : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                     }`}
                   >
@@ -1039,7 +1039,7 @@ export default function OnboardingForm({ user, onComplete }) {
                     onClick={() => toggleArrayItem(datingVibe, setDatingVibe, v)}
                     className={`p-3 rounded-2xl text-xs font-bold border transition-all text-left cursor-pointer ${
                       datingVibe.includes(v)
-                        ? 'bg-rose-50 border-[#FF2D55] text-[#FF2D55] shadow-sm'
+                        ? 'bg-rose-50 border-[#FF2E79] text-[#FF2E79] shadow-sm'
                         : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
                     }`}
                   >
@@ -1069,7 +1069,7 @@ export default function OnboardingForm({ user, onComplete }) {
         {step === 7 && (
           <div className="space-y-6 animate-slide-up">
             <div className="text-left mb-3">
-              <span className="text-[11px] font-black text-[#FF2D55] uppercase tracking-widest block mb-1">
+              <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 Step 07 • Ideal Match Criteria
               </span>
               <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">Partner Stats</h2>
@@ -1094,7 +1094,7 @@ export default function OnboardingForm({ user, onComplete }) {
                   max="32"
                   value={prefMinAge}
                   onChange={(e) => setPrefMinAge(Math.min(Number(e.target.value), prefMaxAge - 1))}
-                  className="w-full accent-[#FF2D55]"
+                  className="w-full accent-[#FF2E79]"
                 />
                 <span className="text-xs font-bold text-slate-700 shrink-0">to</span>
                 <input
@@ -1103,7 +1103,7 @@ export default function OnboardingForm({ user, onComplete }) {
                   max="35"
                   value={prefMaxAge}
                   onChange={(e) => setPrefMaxAge(Math.max(Number(e.target.value), prefMinAge + 1))}
-                  className="w-full accent-[#FF2D55]"
+                  className="w-full accent-[#FF2E79]"
                 />
               </div>
             </div>
@@ -1130,7 +1130,7 @@ export default function OnboardingForm({ user, onComplete }) {
                     onClick={() => setPrefGender(g)}
                     className={`py-3 rounded-2xl text-xs font-bold border transition-all cursor-pointer ${
                       prefGender === g
-                        ? 'bg-[#FF2D55] text-white border-[#FF2D55] shadow-sm'
+                        ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-sm'
                         : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
                     }`}
                   >
@@ -1148,7 +1148,7 @@ export default function OnboardingForm({ user, onComplete }) {
         {step === 8 && (
           <div className="space-y-6 animate-slide-up">
             <div className="text-left mb-3">
-              <span className="text-[11px] font-black text-[#FF2D55] uppercase tracking-widest block mb-1">
+              <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 Step 08 • Campus Criteria
               </span>
               <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">Preferred University</h2>
@@ -1168,7 +1168,7 @@ export default function OnboardingForm({ user, onComplete }) {
                     onClick={() => toggleArrayItem(prefUniversity, setPrefUniversity, u)}
                     className={`px-3.5 py-2 rounded-full text-xs font-bold border transition-all cursor-pointer ${
                       prefUniversity.includes(u)
-                        ? 'bg-[#FF2D55] text-white border-[#FF2D55] shadow-sm'
+                        ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-sm'
                         : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                     }`}
                   >
@@ -1202,7 +1202,7 @@ export default function OnboardingForm({ user, onComplete }) {
                     onClick={() => toggleArrayItem(prefYearOfStudy, setPrefYearOfStudy, yr)}
                     className={`px-4 py-2 rounded-full text-xs font-bold border transition-all cursor-pointer ${
                       prefYearOfStudy.includes(yr)
-                        ? 'bg-[#FF2D55] text-white border-[#FF2D55] shadow-sm'
+                        ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-sm'
                         : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                     }`}
                   >
@@ -1221,7 +1221,7 @@ export default function OnboardingForm({ user, onComplete }) {
         {step === 9 && (
           <div className="space-y-6 animate-slide-up">
             <div className="text-left mb-3">
-              <span className="text-[11px] font-black text-[#FF2D55] uppercase tracking-widest block mb-1">
+              <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 Step 09 • Partner Lifestyle
               </span>
               <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">Habits & Exes</h2>
@@ -1241,7 +1241,7 @@ export default function OnboardingForm({ user, onComplete }) {
                     onClick={() => toggleArrayItem(prefReligion, setPrefReligion, r)}
                     className={`px-4 py-2.5 rounded-full text-xs font-bold border transition-all cursor-pointer ${
                       prefReligion.includes(r)
-                        ? 'bg-[#FF2D55] text-white border-[#FF2D55] shadow-sm'
+                        ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-sm'
                         : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                     }`}
                   >
@@ -1262,7 +1262,7 @@ export default function OnboardingForm({ user, onComplete }) {
                     onClick={() => toggleArrayItem(prefHabits, setPrefHabits, h)}
                     className={`px-4 py-2 rounded-full text-xs font-bold border transition-all cursor-pointer ${
                       prefHabits.includes(h)
-                        ? 'bg-[#FF2D55] text-white border-[#FF2D55] shadow-sm'
+                        ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-sm'
                         : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                     }`}
                   >
@@ -1291,7 +1291,7 @@ export default function OnboardingForm({ user, onComplete }) {
         {step === 10 && (
           <div className="space-y-6 animate-slide-up">
             <div className="text-left mb-3">
-              <span className="text-[11px] font-black text-[#FF2D55] uppercase tracking-widest block mb-1">
+              <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 Step 10 • Energy & Persona
               </span>
               <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">Personality & Vibe</h2>
@@ -1311,7 +1311,7 @@ export default function OnboardingForm({ user, onComplete }) {
                     onClick={() => setPrefPersonality(p)}
                     className={`py-3 rounded-2xl text-xs font-bold border transition-all cursor-pointer ${
                       prefPersonality === p
-                        ? 'bg-[#FF2D55] text-white border-[#FF2D55] shadow-sm'
+                        ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-sm'
                         : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
                     }`}
                   >
@@ -1332,7 +1332,7 @@ export default function OnboardingForm({ user, onComplete }) {
                     onClick={() => toggleArrayItem(prefQualities, setPrefQualities, q)}
                     className={`px-3.5 py-2 rounded-full text-xs font-bold border transition-all cursor-pointer ${
                       prefQualities.includes(q)
-                        ? 'bg-[#FF2D55] text-white border-[#FF2D55] shadow-sm'
+                        ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-sm'
                         : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                     }`}
                   >
@@ -1354,7 +1354,7 @@ export default function OnboardingForm({ user, onComplete }) {
                     onClick={() => toggleArrayItem(prefDatingVibe, setPrefDatingVibe, v)}
                     className={`p-3.5 rounded-2xl text-xs font-bold border transition-all text-left cursor-pointer ${
                       prefDatingVibe.includes(v)
-                        ? 'bg-rose-50 border-[#FF2D55] text-[#FF2D55] shadow-sm'
+                        ? 'bg-rose-50 border-[#FF2E79] text-[#FF2E79] shadow-sm'
                         : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
                     }`}
                   >
@@ -1372,7 +1372,7 @@ export default function OnboardingForm({ user, onComplete }) {
         {step === 11 && (
           <div className="space-y-6 animate-slide-up">
             <div className="text-left mb-3">
-              <span className="text-[11px] font-black text-[#FF2D55] uppercase tracking-widest block mb-1">
+              <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 Step 11 • Strict Filters
               </span>
               <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">Non-Negotiables</h2>
@@ -1418,7 +1418,7 @@ export default function OnboardingForm({ user, onComplete }) {
                 type="checkbox"
                 checked={autoThreeRounds}
                 onChange={(e) => setAutoThreeRounds(e.target.checked)}
-                className="mt-0.5 accent-[#FF2D55] w-4 h-4 rounded"
+                className="mt-0.5 accent-[#FF2E79] w-4 h-4 rounded"
               />
               <span className="leading-snug font-medium">
                 Automatically receive matches in the next 3 rounds on round days, without filling the form again.
@@ -1433,7 +1433,7 @@ export default function OnboardingForm({ user, onComplete }) {
         {step === 12 && (
           <div className="space-y-6 animate-slide-up">
             <div className="text-left mb-3">
-              <span className="text-[11px] font-black text-[#FF2D55] uppercase tracking-widest block mb-1">
+              <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 Step 12 • Legal Agreement
               </span>
               <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">Terms & Conditions</h2>
@@ -1449,7 +1449,7 @@ export default function OnboardingForm({ user, onComplete }) {
                   type="checkbox"
                   checked={agreedTerms.t1}
                   onChange={(e) => setAgreedTerms({ ...agreedTerms, t1: e.target.checked })}
-                  className="mt-0.5 accent-[#FF2D55] w-4 h-4 rounded shrink-0"
+                  className="mt-0.5 accent-[#FF2E79] w-4 h-4 rounded shrink-0"
                 />
                 <span className="leading-relaxed">
                   The monetary remittance of ₹100 is strictly non-refundable. This fee solely remunerates the administrative exertions undertaken to procure a potentially compatible match. While every endeavor shall be employed to facilitate a suitable pairing, no assurance or warranty of match fruition is extended.
@@ -1461,7 +1461,7 @@ export default function OnboardingForm({ user, onComplete }) {
                   type="checkbox"
                   checked={agreedTerms.t2}
                   onChange={(e) => setAgreedTerms({ ...agreedTerms, t2: e.target.checked })}
-                  className="mt-0.5 accent-[#FF2D55] w-4 h-4 rounded shrink-0"
+                  className="mt-0.5 accent-[#FF2E79] w-4 h-4 rounded shrink-0"
                 />
                 <span className="leading-relaxed">
                   By submitting your personal data and stipulated preferences, you irrevocably consent to the utilization of such information by Cupid for the explicit purpose of effectuating an optimal match.
@@ -1473,7 +1473,7 @@ export default function OnboardingForm({ user, onComplete }) {
                   type="checkbox"
                   checked={agreedTerms.t3}
                   onChange={(e) => setAgreedTerms({ ...agreedTerms, t3: e.target.checked })}
-                  className="mt-0.5 accent-[#FF2D55] w-4 h-4 rounded shrink-0"
+                  className="mt-0.5 accent-[#FF2E79] w-4 h-4 rounded shrink-0"
                 />
                 <span className="leading-relaxed">
                   Cupid's role is strictly mediatory; it merely effectuates an introduction between individuals deemed ostensibly compatible. The resultant parties are not, under any circumstances, pre-established romantic affiliates, and the onus of advancing the relational dynamics rests solely upon the individuals involved.
@@ -1485,7 +1485,7 @@ export default function OnboardingForm({ user, onComplete }) {
                   type="checkbox"
                   checked={agreedTerms.t4}
                   onChange={(e) => setAgreedTerms({ ...agreedTerms, t4: e.target.checked })}
-                  className="mt-0.5 accent-[#FF2D55] w-4 h-4 rounded shrink-0"
+                  className="mt-0.5 accent-[#FF2E79] w-4 h-4 rounded shrink-0"
                 />
                 <span className="leading-relaxed">
                   Any conduct deemed inappropriate, disrespectful, or constituting ghosting of a matched individual absolves Cupid of any liability. Recurrent grievances or infractions in successive rounds may culminate in immediate exclusion from the platform without recourse to refund or compensation.
@@ -1502,7 +1502,7 @@ export default function OnboardingForm({ user, onComplete }) {
         {step === 13 && (
           <div className="space-y-6 animate-slide-up">
             <div className="text-left mb-3">
-              <span className="text-[11px] font-black text-[#FF2D55] uppercase tracking-widest block mb-1">
+              <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 Step 13 • Plan Tier
               </span>
               <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">Matchmaking Tier</h2>
@@ -1518,7 +1518,7 @@ export default function OnboardingForm({ user, onComplete }) {
                 onClick={() => setSelectedPlan('basic')}
                 className={`p-5 rounded-3xl border-2 transition-all cursor-pointer text-left ${
                   selectedPlan === 'basic' 
-                    ? 'border-[#FF2D55] bg-rose-50/40 shadow-md ring-2 ring-rose-200' 
+                    ? 'border-[#FF2E79] bg-rose-50/40 shadow-md ring-2 ring-rose-200' 
                     : 'border-slate-200 bg-white hover:border-slate-300'
                 }`}
               >
@@ -1539,7 +1539,7 @@ export default function OnboardingForm({ user, onComplete }) {
                 onClick={() => setSelectedPlan('premium')}
                 className={`p-5 rounded-3xl border-2 transition-all cursor-pointer text-left ${
                   selectedPlan === 'premium' 
-                    ? 'border-[#FF2D55] bg-rose-50/40 shadow-md ring-2 ring-rose-200' 
+                    ? 'border-[#FF2E79] bg-rose-50/40 shadow-md ring-2 ring-rose-200' 
                     : 'border-slate-200 bg-white hover:border-slate-300'
                 }`}
               >
@@ -1560,18 +1560,18 @@ export default function OnboardingForm({ user, onComplete }) {
                 onClick={() => setSelectedPlan('elite')}
                 className={`p-5 rounded-3xl border-2 transition-all cursor-pointer text-left relative overflow-hidden ${
                   selectedPlan === 'elite' 
-                    ? 'border-[#FF2D55] bg-rose-50/60 shadow-xl ring-2 ring-[#FF2D55]' 
+                    ? 'border-[#FF2E79] bg-rose-50/60 shadow-xl ring-2 ring-[#FF2E79]' 
                     : 'border-slate-200 bg-white hover:border-slate-300'
                 }`}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="font-black text-slate-900 text-sm">449 Rupee Plan</span>
-                    <span className="text-[9px] font-black bg-[#FF2D55] text-white px-2.5 py-0.5 rounded-full uppercase">
+                    <span className="text-[9px] font-black bg-[#FF2E79] text-white px-2.5 py-0.5 rounded-full uppercase">
                       VIP ELITE
                     </span>
                   </div>
-                  <span className="text-xs font-black text-[#FF2D55]">Highest Match Rate</span>
+                  <span className="text-xs font-black text-[#FF2E79]">Highest Match Rate</span>
                 </div>
                 <ul className="text-xs text-slate-700 mt-2.5 space-y-1.5 font-medium leading-relaxed">
                   <li>• Highest VIP priority matching placement</li>
@@ -1592,7 +1592,7 @@ export default function OnboardingForm({ user, onComplete }) {
         {step === 14 && (
           <div className="space-y-6 animate-slide-up">
             <div className="text-left mb-3">
-              <span className="text-[11px] font-black text-[#FF2D55] uppercase tracking-widest block mb-1">
+              <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 Step 14 • Final Activation
               </span>
               <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">Confirm & Pay</h2>
@@ -1605,7 +1605,7 @@ export default function OnboardingForm({ user, onComplete }) {
               <div className="flex items-center justify-between text-xs font-bold text-slate-700 pb-3 border-b border-slate-200/60">
                 <span>Exact Required Amount:</span>
                 <div className="text-right">
-                  <span className="text-[#FF2D55] text-xl font-black">
+                  <span className="text-[#FF2E79] text-xl font-black">
                     {selectedPlan === 'basic' ? '₹100' : selectedPlan === 'premium' ? '₹250' : '₹449'}
                   </span>
                   <span className="text-[9px] text-slate-400 font-extrabold block uppercase tracking-wider mt-0.5">
@@ -1678,7 +1678,7 @@ export default function OnboardingForm({ user, onComplete }) {
                     onClick={handleCopyUpi}
                     className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-100 shadow-sm transition-all"
                   >
-                    <Copy className="w-3.5 h-3.5 text-[#FF2D55]" />
+                    <Copy className="w-3.5 h-3.5 text-[#FF2E79]" />
                     <span>{copiedUpi ? 'Copied UPI ID!' : 'cupidround@upi'}</span>
                   </button>
                 </div>
@@ -1730,7 +1730,7 @@ export default function OnboardingForm({ user, onComplete }) {
           <button
             type="button"
             onClick={handleNext}
-            className="w-full h-14 bg-[#FF2D55] hover:bg-[#e02447] text-white font-black text-sm rounded-full flex items-center justify-center gap-2 shadow-[0_10px_25px_rgba(255,45,85,0.4)] transition-all active:scale-[0.98] cursor-pointer"
+            className="w-full h-14 bg-[#FF2E79] hover:bg-[#e02447] text-white font-black text-sm rounded-full flex items-center justify-center gap-2 shadow-[0_10px_25px_rgba(255,45,85,0.4)] transition-all active:scale-[0.98] cursor-pointer"
           >
             <span>Next Step →</span>
             <ChevronRight className="w-5 h-5" />
@@ -1756,7 +1756,7 @@ export default function OnboardingForm({ user, onComplete }) {
                 type="button"
                 onClick={handleFinalSubmit}
                 disabled={isSubmitting}
-                className="w-full h-14 bg-[#FF2D55] hover:bg-[#e02447] text-white font-black text-sm rounded-full flex items-center justify-center gap-2 shadow-[0_10px_25px_rgba(255,45,85,0.4)] transition-all active:scale-[0.98] disabled:opacity-75 cursor-pointer"
+                className="w-full h-14 bg-[#FF2E79] hover:bg-[#e02447] text-white font-black text-sm rounded-full flex items-center justify-center gap-2 shadow-[0_10px_25px_rgba(255,45,85,0.4)] transition-all active:scale-[0.98] disabled:opacity-75 cursor-pointer"
               >
                 {isSubmitting ? (
                   <div className="flex items-center gap-2">

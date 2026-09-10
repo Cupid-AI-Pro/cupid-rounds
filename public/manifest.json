@@ -11,8 +11,8 @@
     }
   ],
   "start_url": "/?view=app&source=pwa",
-  "background_color": "#FAF8F5",
-  "theme_color": "#FF2D55",
+  "background_color": "#FFFFFF",
+  "theme_color": "#FF2E79",
   "display": "standalone",
   "orientation": "portrait",
   "scope": "/"

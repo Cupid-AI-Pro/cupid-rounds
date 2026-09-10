@@ -14,7 +14,7 @@
     <!-- Outer Bold Circular 'C' -->
     <path
       d="M 8 -4.8 A 12 12 0 1 0 8 4.8"
-      stroke="#FF2D55"
+      stroke="#FF2E79"
       stroke-width="3.6"
       stroke-linecap="round"
       fill="none"
@@ -22,7 +22,7 @@
     <!-- Inner Centered Solid Heart -->
     <path
       d="M 0 5.2 C -0.5 4.7 -4.8 0.8 -4.8 -2.2 C -4.8 -4.4 -3 -6 -0.9 -6 C -0.2 -6 0 -5.7 0 -5.4 C 0 -5.7 0.2 -6 0.9 -6 C 3 -6 4.8 -4.4 4.8 -2.2 C 4.8 0.8 0.5 4.7 0 5.2 Z"
-      fill="#FF2D55"
+      fill="#FF2E79"
     />
   </g>
 </svg>

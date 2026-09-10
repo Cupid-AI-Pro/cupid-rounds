@@ -117,7 +117,7 @@ export default function ScrollWheelPicker({
                 }}
                 className={`flex items-center justify-center font-display transition-all duration-150 cursor-pointer ${
                   isSelected
-                    ? 'text-[#FF2D55] font-black text-lg'
+                    ? 'text-[#FF2E79] font-black text-lg'
                     : 'text-slate-400 font-semibold text-sm'
                 }`}
                 style={{
