@@ -15,12 +15,38 @@ export default function App() {
   const [showLoginInPhone, setShowLoginInPhone] = useState(false);
   const [isPlayingIntro, setIsPlayingIntro] = useState(false);
   
-  // Default to internal matchmaking app directly!
+  // Default to landing page for web visitors, but open matchmaking app directly for APK, PWA or saved users!
   const [currentView, setCurrentView] = useState(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('view') === 'admin') return 'admin';
+    if (params.get('view') === 'app') return 'app';
     if (params.get('view') === 'landing') return 'landing';
-    return 'app'; // Directly open the actual matchmaking app
+
+    // 1. Native Android APK detection (Capacitor / Android WebView)
+    const isCapacitorNative = Boolean(
+      (typeof window !== 'undefined' && window.Capacitor) ||
+      window.location.protocol === 'capacitor:' ||
+      window.location.protocol === 'ionic:' ||
+      /wv|Capacitor/i.test(window.navigator.userAgent)
+    );
+
+    // 2. Standalone / Installed WebAPK detection
+    const isInstalledApp = Boolean(
+      window.matchMedia('(display-mode: standalone)').matches || 
+      window.navigator.standalone === true ||
+      document.referrer.includes('android-app://') ||
+      params.get('source') === 'pwa'
+    );
+
+    if (isCapacitorNative || isInstalledApp) {
+      return 'app'; // Directly open app for APK / PWA users
+    }
+
+    const savedUser = getCurrentUser();
+    if (savedUser) return 'app';
+
+    // Default for web visitors is LANDING PAGE
+    return 'landing';
   });
 
   useEffect(() => {
@@ -45,7 +71,7 @@ export default function App() {
     logout();
     setLocalCurrentUser(null);
     setShowLoginInPhone(false);
-    setCurrentView('app');
+    setCurrentView('landing');
   };
 
   const handleOnboardingComplete = (updatedUser) => {

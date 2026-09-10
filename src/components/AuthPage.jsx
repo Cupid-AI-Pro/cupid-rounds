@@ -28,7 +28,7 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
   const [error, setError] = useState('');
   
   // Intro Splash screen state (can be triggered anytime via Replay Intro)
-  const [showSplash, setShowSplash] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
 
   // Swipe to unlock state
   const [dragX, setDragX] = useState(0);
@@ -114,24 +114,15 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
     };
   }, [isDragging, dragX, isUnlocking]);
 
-  // Cupid-Themed Unlock Trigger with Arrow & Shockwave (Seamless transition to Screen 2)
+  // Cupid-Themed Unlock Trigger — opens Create Profile / Registration form
   const triggerCupidUnlock = () => {
     setIsUnlocking(true);
     setDragX(maxDrag);
 
     setTimeout(() => {
-      // Seamlessly log into Henry (matching Screen 2: "Hello, Henry") or saved user
-      const users = getUsers();
-      let demoUser = users.find(u => u.id === 'boy_henry') || users.find(u => u.name === 'Henry');
-      if (!demoUser && users.length > 0) {
-        demoUser = users.find(u => u.gender === 'male') || users[0];
-      }
-      if (demoUser) {
-        setCurrentUser(demoUser);
-        onLoginSuccess(demoUser);
-      } else {
-        setShowLoginInPhone(true);
-      }
+      // Open the registration form (Create Profile, not auto-login)
+      setIsLogin(false);
+      setShowLoginInPhone(true);
       setIsUnlocking(false);
       setDragX(0);
     }, 450);
@@ -263,21 +254,6 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
     return (
       <div className="flex-1 flex flex-col justify-between p-5 h-full relative select-none overflow-hidden bg-transparent">
         
-        {/* iOS Status Bar */}
-        <div className="w-full flex items-center justify-between px-1 pt-1 pb-2 text-slate-900 select-none text-[13px] font-bold">
-          <span>9:41</span>
-          <div className="flex items-center gap-1.5 text-slate-900">
-            <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-              <path d="M2 17h3v4H2v-4zm5-4h3v8H7v-8zm5-4h3v12h-3V9zm5-4h3v16h-3V5z" />
-            </svg>
-            <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-              <path d="M12 4C7.31 4 3.07 5.9 0 8.98L12 21 24 8.98C20.93 5.9 16.69 4 12 4zm0 3.5c3.5 0 6.67 1.45 8.98 3.79L12 19.18 3.02 11.29C5.33 8.95 8.5 7.5 12 7.5z" />
-            </svg>
-            <div className="w-5 h-2.5 rounded-[3px] border border-slate-900 p-[1px] flex items-center">
-              <div className="w-full h-full bg-slate-900 rounded-[1px]"></div>
-            </div>
-          </div>
-        </div>
 
         {/* Cupid's Arrow & Shockwave Overlay on Swipe */}
         {isUnlocking && (

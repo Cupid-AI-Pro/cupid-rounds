@@ -202,22 +202,6 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
       {currentTab === 'explore' && (
         <div className="flex-1 flex flex-col px-4 pt-1 pb-1 h-full overflow-hidden">
           
-          {/* iOS Status Bar */}
-          <div className="w-full flex items-center justify-between px-1 pt-1 pb-2 text-slate-900 select-none text-[13px] font-bold">
-            <span>9:41</span>
-            <div className="flex items-center gap-1.5 text-slate-900">
-              <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-                <path d="M2 17h3v4H2v-4zm5-4h3v8H7v-8zm5-4h3v12h-3V9zm5-4h3v16h-3V5z" />
-              </svg>
-              <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-                <path d="M12 4C7.31 4 3.07 5.9 0 8.98L12 21 24 8.98C20.93 5.9 16.69 4 12 4zm0 3.5c3.5 0 6.67 1.45 8.98 3.79L12 19.18 3.02 11.29C5.33 8.95 8.5 7.5 12 7.5z" />
-              </svg>
-              <div className="w-5 h-2.5 rounded-[3px] border border-slate-900 p-[1px] flex items-center">
-                <div className="w-full h-full bg-slate-900 rounded-[1px]"></div>
-              </div>
-            </div>
-          </div>
-
           {/* Top Header Row (Matching Reference) */}
           <div className="flex items-center justify-between select-none mb-3">
             <div className="flex items-center gap-2.5">
