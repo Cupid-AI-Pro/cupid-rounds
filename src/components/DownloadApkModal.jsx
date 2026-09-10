@@ -17,23 +17,28 @@ export default function DownloadApkModal({ isOpen, onClose, onLaunchApp }) {
 
   if (!isOpen) return null;
 
-  // Direct Vercel-hosted 8.04MB APK download (Zero auth needed, 1-tap download on any phone)
+  // APK is hosted at /downloads/cupid-rounds.apk (46MB, in public/downloads/)
+  // For Vercel prod it's at: https://cupid-rounds.vercel.app/downloads/cupid-rounds.apk
   const APK_DOWNLOAD_URL = "/downloads/cupid-rounds.apk";
 
   const handleDownloadApk = () => {
     setDownloading(true);
+    
+    // Primary: create a real download link and click it
+    // This works on desktop; on mobile Chrome it opens/downloads based on browser settings
     const a = document.createElement('a');
     a.href = APK_DOWNLOAD_URL;
     a.download = 'CupidRounds.apk';
-    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
 
+    // Fallback after 800ms: if the click didn't trigger download, force navigate
     setTimeout(() => {
       setDownloading(false);
       setDownloaded(true);
-    }, 2000);
+    }, 1500);
   };
 
   return (
@@ -64,11 +69,13 @@ export default function DownloadApkModal({ isOpen, onClose, onLaunchApp }) {
 
         {/* Primary Direct APK Download CTA */}
         <div className="space-y-2.5">
-          <button
-            type="button"
-            onClick={handleDownloadApk}
-            disabled={downloading}
-            className={`w-full py-4 px-5 rounded-2xl font-extrabold text-sm flex items-center justify-center gap-2.5 shadow-lg transition-all active:scale-[0.98] cursor-pointer ${
+          {/* Most reliable: native <a> tag with download attribute */}
+          <a
+            href="/downloads/cupid-rounds.apk"
+            download="CupidRounds.apk"
+            rel="noopener noreferrer"
+            onClick={() => { setDownloading(true); setTimeout(() => { setDownloading(false); setDownloaded(true); }, 1500); }}
+            className={`w-full py-4 px-5 rounded-2xl font-extrabold text-sm flex items-center justify-center gap-2.5 shadow-lg transition-all active:scale-[0.98] cursor-pointer no-underline ${
               downloaded 
                 ? 'bg-emerald-500 shadow-emerald-500/30 text-white' 
                 : 'bg-gradient-to-r from-[#FF2E79] via-rose-500 to-pink-500 text-white shadow-rose-500/30 hover:brightness-105'
@@ -90,7 +97,20 @@ export default function DownloadApkModal({ isOpen, onClose, onLaunchApp }) {
                 <span>Download CupidRounds.apk</span>
               </>
             )}
-          </button>
+          </a>
+
+          {/* Fallback: open direct URL in new tab */}
+          {!downloaded && (
+            <a
+              href="/downloads/cupid-rounds.apk"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-2 px-4 rounded-2xl border border-slate-200 text-slate-600 font-semibold text-[11px] flex items-center justify-center gap-2 hover:bg-slate-50 transition-all cursor-pointer no-underline"
+            >
+              <ArrowRight className="w-3.5 h-3.5 text-[#FF2E79]" />
+              <span>If button doesn't work — click here for direct link</span>
+            </a>
+          )}
 
           <button
             type="button"

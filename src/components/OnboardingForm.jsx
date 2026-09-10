@@ -28,6 +28,7 @@ import ScrollWheelPicker from './onboarding/ScrollWheelPicker';
 import CupidLogo from './CupidLogo';
 import CustomSelect from './CustomSelect';
 import confetti from 'canvas-confetti';
+import { sendPaymentNotification } from '../services/notificationService';
 
 // 4 Fun 3D Cartoon Avatars (for Instagram-style profile flip)
 const AVATAR_3D_CHARACTERS = [
@@ -234,34 +235,45 @@ export default function OnboardingForm({ user, onComplete }) {
     setTimeout(() => setCopiedUpi(false), 2000);
   };
 
-  // Instant Automated Payment Gateway Simulation
+  // Real UPI Payment — user pays to aditya.378@superyes via PhonePe/GPay
+  // then submits 12-digit UTR. Admin gets email notification and verifies.
   const handleInstantAutoPay = () => {
-    setIsVerifyingAutoPay(true);
-    setTimeout(() => {
-      const generatedUtr = `UTR${Math.floor(100000000000 + Math.random() * 900000000000)}`;
-      setAutoVerifiedUtr(generatedUtr);
-      setIsVerifyingAutoPay(false);
-      setPaymentProofUploaded(true);
-      
-      confetti({
-        particleCount: 50,
-        spread: 60,
-        origin: { y: 0.7 },
-        colors: ['#10B981', '#FF2E79', '#3B82F6']
-      });
-    }, 1400);
+    // Open UPI deeplink so user can pay directly
+    const amount = selectedPlan === 'basic' ? '100.00' : selectedPlan === 'premium' ? '250.00' : '449.00';
+    const upiLink = `upi://pay?pa=aditya.378%40superyes&pn=CupidRound&am=${amount}&cu=INR&tn=Cupid_Round_${selectedPlan}_Plan`;
+    window.open(upiLink, '_blank');
   };
 
-  // Instant UTR Verification
-  const handleVerifyUtr = () => {
-    if (!manualUtr.trim()) return;
+  // UTR Verification — saves UTR and sends email notification to admin
+  const handleVerifyUtr = async () => {
+    const cleanUtr = manualUtr.trim();
+    if (!cleanUtr || cleanUtr.length < 8) {
+      return;
+    }
     setIsVerifyingAutoPay(true);
-    setTimeout(() => {
-      setAutoVerifiedUtr(manualUtr);
-      setIsUtrVerified(true);
-      setIsVerifyingAutoPay(false);
-      setPaymentProofUploaded(true);
-    }, 1000);
+    
+    // Send email notification to admin
+    await sendPaymentNotification({
+      userName: name || user?.name || 'Unknown',
+      userEmail: email || user?.email || '',
+      userPhone: phone || user?.phone || '',
+      plan: selectedPlan,
+      amount: selectedPlan === 'basic' ? 100 : selectedPlan === 'premium' ? 250 : 449,
+      utrNumber: cleanUtr,
+      userState: user?.state || activeState || 'Unknown',
+    });
+
+    setAutoVerifiedUtr(cleanUtr);
+    setIsUtrVerified(true);
+    setIsVerifyingAutoPay(false);
+    setPaymentProofUploaded(true);
+    
+    confetti({
+      particleCount: 50,
+      spread: 60,
+      origin: { y: 0.7 },
+      colors: ['#10B981', '#FF2E79', '#3B82F6']
+    });
   };
 
   // Final Submission Handler
@@ -1632,24 +1644,16 @@ export default function OnboardingForm({ user, onComplete }) {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {/* Instant 1-Click Gateway Auto-Pay */}
+                  {/* Pay via PhonePe / GPay Button */}
                   <button
                     type="button"
                     onClick={handleInstantAutoPay}
                     disabled={isVerifyingAutoPay}
-                    className="w-full h-14 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-xs rounded-2xl flex items-center justify-center gap-2 shadow-lg transition-all active:scale-[0.98] disabled:opacity-75 cursor-pointer"
+                    className="w-full h-14 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-black text-xs rounded-2xl flex items-center justify-center gap-2 shadow-lg transition-all active:scale-[0.98] disabled:opacity-75 cursor-pointer"
                   >
-                    {isVerifyingAutoPay ? (
-                      <>
-                        <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin"></span>
-                        <span>Verifying Exact Amount ₹{selectedPlan === 'basic' ? '100' : selectedPlan === 'premium' ? '250' : '449'}...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="w-4 h-4 text-emerald-200" />
-                        <span>Instant Auto-Pay Exactly {selectedPlan === 'basic' ? '₹100' : selectedPlan === 'premium' ? '₹250' : '₹449'}</span>
-                      </>
-                    )}
+                    <span className="text-lg">📲</span>
+                    <span>Pay via PhonePe / GPay / BHIM</span>
+                    <span className="ml-1 opacity-80">{selectedPlan === 'basic' ? '₹100' : selectedPlan === 'premium' ? '₹250' : '₹449'}</span>
                   </button>
 
                   <div className="relative flex items-center justify-center my-2">
@@ -1663,7 +1667,7 @@ export default function OnboardingForm({ user, onComplete }) {
                   <div className="w-36 h-36 mx-auto bg-white p-2 rounded-2xl border-2 border-rose-100 shadow-md flex items-center justify-center relative">
                     <img
                       src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(
-                        `upi://pay?pa=cupidround@upi&pn=CupidRound&am=${
+                        `upi://pay?pa=aditya.378%40superyes&pn=CupidRound&am=${
                           selectedPlan === 'basic' ? '100.00' : selectedPlan === 'premium' ? '250.00' : '449.00'
                         }&cu=INR&tn=Cupid_Round_${selectedPlan}_Plan`
                       )}`}
@@ -1675,12 +1679,20 @@ export default function OnboardingForm({ user, onComplete }) {
                   {/* UPI ID Copy button */}
                   <button
                     type="button"
-                    onClick={handleCopyUpi}
+                    onClick={() => {
+                      navigator.clipboard.writeText('aditya.378@superyes');
+                      setCopiedUpi(true);
+                      setTimeout(() => setCopiedUpi(false), 2000);
+                    }}
                     className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-100 shadow-sm transition-all"
                   >
                     <Copy className="w-3.5 h-3.5 text-[#FF2E79]" />
-                    <span>{copiedUpi ? 'Copied UPI ID!' : 'cupidround@upi'}</span>
+                    <span>{copiedUpi ? '✓ Copied!' : 'aditya.378@superyes'}</span>
                   </button>
+                  
+                  <p className="text-[10px] text-slate-500 font-medium text-center leading-relaxed">
+                    After payment, enter your <strong>12-digit UTR</strong> below to confirm your entry.
+                  </p>
                 </div>
               )}
             </div>
