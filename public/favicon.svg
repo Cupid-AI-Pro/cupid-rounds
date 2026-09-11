@@ -1,28 +1,28 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#FFFFFF"/>
-      <stop offset="100%" stop-color="#FFF8FA"/>
+      <stop offset="0%" stop-color="#FF2E79"/>
+      <stop offset="100%" stop-color="#FF0055"/>
     </linearGradient>
   </defs>
   
-  <!-- Clean App Icon Badge -->
+  <!-- Hot Pink App Icon Badge -->
   <rect width="512" height="512" rx="128" fill="url(#bg)"/>
   
-  <!-- Exact Official Cupid Logo: Bold Circular 'C' with Centered Solid Heart -->
-  <g transform="translate(256, 256) scale(14.5)">
-    <!-- Outer Bold Circular 'C' -->
+  <!-- White Monogram: Refined C + Heart -->
+  <g transform="translate(76, 76) scale(11.3)">
+    <!-- Refined Outer C Curve -->
     <path
-      d="M 8 -4.8 A 12 12 0 1 0 8 4.8"
-      stroke="#FF2E79"
-      stroke-width="3.6"
+      d="M 23,8 C 20.5,5.5 16.5,4.5 12.5,6 C 7.5,7.8 4,12.6 4,18 C 4,23.8 8.2,28.5 14,28.5 C 18.5,28.5 22,26 24,22.5"
+      stroke="#FFFFFF"
+      stroke-width="3.2"
       stroke-linecap="round"
       fill="none"
     />
-    <!-- Inner Centered Solid Heart -->
+    <!-- Inner Heart -->
     <path
-      d="M 0 5.2 C -0.5 4.7 -4.8 0.8 -4.8 -2.2 C -4.8 -4.4 -3 -6 -0.9 -6 C -0.2 -6 0 -5.7 0 -5.4 C 0 -5.7 0.2 -6 0.9 -6 C 3 -6 4.8 -4.4 4.8 -2.2 C 4.8 0.8 0.5 4.7 0 5.2 Z"
-      fill="#FF2E79"
+      d="M 17,11.5 C 17,11.5 19.5,9 22,10.5 C 24.5,12 24.5,15.5 21.5,18.5 L 17,23 L 12.5,18.5 C 9.5,15.5 9.5,12 12,10.5 C 14.5,9 17,11.5 17,11.5 Z"
+      fill="#FFFFFF"
     />
   </g>
 </svg>

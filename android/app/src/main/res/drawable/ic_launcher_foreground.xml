@@ -5,33 +5,24 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!--
-        CUPID ADAPTIVE ICON FOREGROUND
-        Safe zone: 72dp center (18dp margin each side)
-        Center: (54, 54)
-        All design fits within 18–90dp range
-    -->
+    <!-- Safe zone: 72dp center (18dp padding on all sides) -->
+    <group
+        android:translateX="22.5"
+        android:translateY="22.5"
+        android:scaleX="1.96875"
+        android:scaleY="1.96875">
+        
+        <!-- Refined Outer C Curve (White) -->
+        <path
+            android:pathData="M 23,8 C 20.5,5.5 16.5,4.5 12.5,6 C 7.5,7.8 4,12.6 4,18 C 4,23.8 8.2,28.5 14,28.5 C 18.5,28.5 22,26 24,22.5"
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="3.2"
+            android:strokeLineCap="round" />
 
-    <!-- ===== BOLD 'C' ARC (thick stroked path rendered as thick fill) ===== -->
-    <!-- Outer ring of C -->
-    <path
-        android:pathData="M 70.5,34.5
-                          A 22.5,22.5 0 1,0 70.5,73.5"
-        android:strokeColor="#FF2E79"
-        android:strokeWidth="9"
-        android:strokeLineCap="round"
-        android:fillColor="#00000000"/>
-
-    <!-- ===== SOLID HEART centered at (54,54) ===== -->
-    <path
-        android:fillColor="#FF2E79"
-        android:pathData="
-          M 54,66
-          C 54,66 38,55 38,46
-          C 38,40.5 42.5,37 47.5,37
-          C 50.5,37 53,38.5 54,39.5
-          C 55,38.5 57.5,37 60.5,37
-          C 65.5,37 70,40.5 70,46
-          C 70,55 54,66 54,66 Z" />
+        <!-- Delicate Inner Heart (White) -->
+        <path
+            android:pathData="M 17,11.5 C 17,11.5 19.5,9 22,10.5 C 24.5,12 24.5,15.5 21.5,18.5 L 17,23 L 12.5,18.5 C 9.5,15.5 9.5,12 12,10.5 C 14.5,9 17,11.5 17,11.5 Z"
+            android:fillColor="#FFFFFF" />
+    </group>
 
 </vector>
