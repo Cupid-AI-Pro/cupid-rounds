@@ -21,20 +21,28 @@ export default function DownloadApkModal({ isOpen, onClose, onLaunchApp }) {
   // For Vercel prod it's at: https://cupid-rounds.vercel.app/downloads/cupid-rounds.apk
   const APK_DOWNLOAD_URL = "/downloads/cupid-rounds.apk";
 
-  const handleDownloadApk = () => {
+  const handleDownloadApk = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
     setDownloading(true);
     
-    // Primary: create a real download link and click it
-    // This works on desktop; on mobile Chrome it opens/downloads based on browser settings
-    const a = document.createElement('a');
-    a.href = APK_DOWNLOAD_URL;
-    a.download = 'CupidRounds.apk';
-    a.rel = 'noopener noreferrer';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    try {
+      // 1. Direct anchor click
+      const a = document.createElement('a');
+      a.href = '/downloads/cupid-rounds.apk';
+      a.download = 'CupidRounds.apk';
+      a.setAttribute('target', '_blank');
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } catch (err) {
+      console.warn('Anchor download failed, using location trigger', err);
+    }
 
-    // Fallback after 800ms: if the click didn't trigger download, force navigate
+    // 2. Direct browser location fallback
+    setTimeout(() => {
+      window.location.href = '/downloads/cupid-rounds.apk';
+    }, 200);
+
     setTimeout(() => {
       setDownloading(false);
       setDownloaded(true);
@@ -63,19 +71,16 @@ export default function DownloadApkModal({ isOpen, onClose, onLaunchApp }) {
             Download Android APK
           </h3>
           <p className="text-xs text-slate-500 font-medium mt-1">
-            Real Android Application (.apk) • Direct Install
+            Real Android Application (.apk) • Direct Install (46 MB)
           </p>
         </div>
 
         {/* Primary Direct APK Download CTA */}
         <div className="space-y-2.5">
-          {/* Most reliable: native <a> tag with download attribute */}
-          <a
-            href="/downloads/cupid-rounds.apk"
-            download="CupidRounds.apk"
-            rel="noopener noreferrer"
-            onClick={() => { setDownloading(true); setTimeout(() => { setDownloading(false); setDownloaded(true); }, 1500); }}
-            className={`w-full py-4 px-5 rounded-2xl font-extrabold text-sm flex items-center justify-center gap-2.5 shadow-lg transition-all active:scale-[0.98] cursor-pointer no-underline ${
+          <button
+            type="button"
+            onClick={handleDownloadApk}
+            className={`w-full py-4 px-5 rounded-2xl font-extrabold text-sm flex items-center justify-center gap-2.5 shadow-lg transition-all active:scale-[0.98] cursor-pointer ${
               downloaded 
                 ? 'bg-emerald-500 shadow-emerald-500/30 text-white' 
                 : 'bg-gradient-to-r from-[#FF2E79] via-rose-500 to-pink-500 text-white shadow-rose-500/30 hover:brightness-105'
@@ -89,7 +94,7 @@ export default function DownloadApkModal({ isOpen, onClose, onLaunchApp }) {
             ) : downloaded ? (
               <>
                 <CheckCircle2 className="w-5 h-5" />
-                <span>APK Downloading! Check Downloads</span>
+                <span>APK Downloading! Check Phone Downloads</span>
               </>
             ) : (
               <>
@@ -97,20 +102,19 @@ export default function DownloadApkModal({ isOpen, onClose, onLaunchApp }) {
                 <span>Download CupidRounds.apk</span>
               </>
             )}
-          </a>
+          </button>
 
-          {/* Fallback: open direct URL in new tab */}
-          {!downloaded && (
-            <a
-              href="/downloads/cupid-rounds.apk"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full py-2 px-4 rounded-2xl border border-slate-200 text-slate-600 font-semibold text-[11px] flex items-center justify-center gap-2 hover:bg-slate-50 transition-all cursor-pointer no-underline"
-            >
-              <ArrowRight className="w-3.5 h-3.5 text-[#FF2E79]" />
-              <span>If button doesn't work — click here for direct link</span>
-            </a>
-          )}
+          {/* Direct link fallback */}
+          <a
+            href="/downloads/cupid-rounds.apk"
+            target="_blank"
+            rel="noopener noreferrer"
+            download="CupidRounds.apk"
+            className="w-full py-2.5 px-4 rounded-2xl border border-rose-200 bg-rose-50/50 text-[#FF2E79] font-bold text-xs flex items-center justify-center gap-2 hover:bg-rose-100 transition-all cursor-pointer no-underline"
+          >
+            <ArrowRight className="w-4 h-4 text-[#FF2E79]" />
+            <span>Direct Mirror Link: Click to Force Download</span>
+          </a>
 
           <button
             type="button"
