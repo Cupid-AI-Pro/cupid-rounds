@@ -22,12 +22,27 @@ export default function CupidLogo({
   // Luxury Editorial Monogram Mark (Inspired by Hinge / Modern High-End Editorial Brands)
   // Geometric Minimalist Monogram: Intertwined 'C' + Hairline Heart Silhouette
   const EditorialIcon = () => (
-    <img
-      src="/logo/cupid-logo.png"
-      alt="Cupid Logo"
-      style={{ width: currentSize.icon, height: currentSize.icon }}
-      className="shrink-0 object-contain rounded-md"
-    />
+    <svg
+      width={currentSize.icon}
+      height={currentSize.icon}
+      viewBox="0 0 32 32"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="shrink-0"
+    >
+      {/* Outer refined architectural C curve */}
+      <path
+        d="M23 8C20.5 5.5 16.5 4.5 12.5 6C7.5 7.8 4 12.6 4 18C4 23.8 8.2 28.5 14 28.5C18.5 28.5 22 26 24 22.5"
+        stroke="#FF2E79"
+        strokeWidth="2.8"
+        strokeLinecap="round"
+      />
+      {/* Delicate inner heart apex */}
+      <path
+        d="M17 11.5C17 11.5 19.5 9 22 10.5C24.5 12 24.5 15.5 21.5 18.5L17 23L12.5 18.5C9.5 15.5 9.5 12 12 10.5C14.5 9 17 11.5 17 11.5Z"
+        fill="#FF2E79"
+      />
+    </svg>
   );
 
   return (
