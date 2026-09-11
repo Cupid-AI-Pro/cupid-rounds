@@ -7,7 +7,9 @@ import {
   createMatch, 
   suggestMatch, 
   updateUser,
-  clearAllData
+  clearAllData,
+  getPaymentSubmissions,
+  updatePaymentStatus
 } from '../utils/storage';
 import { 
   getRoundState, 
@@ -57,7 +59,11 @@ export default function AdminDashboard({ activeState, onStateChange }) {
   const [filterStatus, setFilterStatus] = useState('All');
 
   // Active Admin Sub-Tab
-  const [adminTab, setAdminTab] = useState('pipeline'); // 'pipeline' | 'refunds' | 'directory' | 'schedule'
+  const [adminTab, setAdminTab] = useState('payments'); // 'payments' | 'pipeline' | 'refunds' | 'directory' | 'schedule'
+
+  // Payment submissions
+  const [paymentSubmissions, setPaymentSubmissions] = useState([]);
+  const [previewScreenshot, setPreviewScreenshot] = useState(null);
 
   // Stats
   const [stats, setStats] = useState({
@@ -73,6 +79,7 @@ export default function AdminDashboard({ activeState, onStateChange }) {
 
   useEffect(() => {
     loadAdminData();
+    setPaymentSubmissions(getPaymentSubmissions());
   }, [activeState]);
 
   const loadAdminData = async () => {
@@ -210,6 +217,30 @@ export default function AdminDashboard({ activeState, onStateChange }) {
       saveUsers(allUsers);
       loadAdminData();
     }
+  };
+
+  // Approve payment — activate user account
+  const handleApprovePayment = (submission) => {
+    // Update payment status to approved
+    updatePaymentStatus(submission.userId, 'approved');
+    // Activate the user
+    const allUsers = getUsers();
+    const idx = allUsers.findIndex(u => u.id === submission.userId);
+    if (idx !== -1) {
+      allUsers[idx].status = 'active';
+      allUsers[idx].paymentVerified = true;
+      allUsers[idx].paymentVerifiedAt = new Date().toISOString();
+      saveUsers(allUsers);
+    }
+    setPaymentSubmissions(getPaymentSubmissions());
+    loadAdminData();
+    confetti({ particleCount: 60, spread: 50, origin: { y: 0.6 }, colors: ['#10B981', '#FF2E79'] });
+  };
+
+  // Reject payment — mark as rejected, user must re-submit
+  const handleRejectPayment = (submission) => {
+    updatePaymentStatus(submission.userId, 'rejected');
+    setPaymentSubmissions(getPaymentSubmissions());
   };
 
   // Delete account helper
@@ -370,6 +401,7 @@ export default function AdminDashboard({ activeState, onStateChange }) {
       {/* NAVIGATION TABS FOR ADMIN MODULES */}
       <div className="flex gap-2 border-b border-slate-200 pb-2 overflow-x-auto no-scrollbar">
         {[
+          { id: 'payments', label: `💰 Payments (${paymentSubmissions.filter(s => s.status === 'pending').length} pending)`, icon: CheckCircle },
           { id: 'pipeline', label: 'Matchmaking Pipeline', icon: Sparkles },
           { id: 'refunds', label: `Refund Manager (${refundEligibleUsers.length})`, icon: DollarSign },
           { id: 'schedule', label: '10-Day Rotation Schedule', icon: Calendar },
@@ -389,6 +421,136 @@ export default function AdminDashboard({ activeState, onStateChange }) {
           </button>
         ))}
       </div>
+
+      {/* TAB 0: PAYMENT VERIFICATION */}
+      {adminTab === 'payments' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-black text-slate-900">💰 Payment Verification Queue</h2>
+            <button
+              type="button"
+              onClick={() => setPaymentSubmissions(getPaymentSubmissions())}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 cursor-pointer transition-colors"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Refresh</span>
+            </button>
+          </div>
+
+          {paymentSubmissions.length === 0 ? (
+            <div className="glass-panel p-10 text-center text-slate-400 text-sm font-semibold">
+              No payment submissions yet. When users pay and submit their screenshot, they'll appear here.
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 gap-4">
+              {[...paymentSubmissions].reverse().map((sub, i) => (
+                <div
+                  key={sub.userId + i}
+                  className={`glass-panel p-4 space-y-3 border-2 ${
+                    sub.status === 'approved' ? 'border-emerald-300 bg-emerald-50/30' :
+                    sub.status === 'rejected' ? 'border-red-200 bg-red-50/20' :
+                    'border-amber-300 bg-amber-50/30'
+                  }`}
+                >
+                  {/* Status badge */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                        sub.status === 'approved' ? 'bg-emerald-100 text-emerald-800' :
+                        sub.status === 'rejected' ? 'bg-red-100 text-red-700' :
+                        'bg-amber-100 text-amber-800'
+                      }`}>
+                        {sub.status === 'approved' ? '✅ Approved' : sub.status === 'rejected' ? '❌ Rejected' : '⏳ Pending'}
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-medium">
+                        {new Date(sub.submittedAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'short', timeStyle: 'short' })}
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-bold text-slate-500 uppercase">{sub.plan} • ₹{sub.amount}</span>
+                  </div>
+
+                  {/* User info */}
+                  <div className="text-xs space-y-0.5">
+                    <p className="font-black text-slate-900 text-sm">{sub.userName}</p>
+                    <p className="text-slate-500">{sub.userEmail} {sub.userPhone ? `• ${sub.userPhone}` : ''}</p>
+                    <p className="text-slate-500">State: <strong className="text-slate-700">{sub.userState}</strong></p>
+                    <p className="text-slate-700 font-bold">UTR: <span className="font-mono text-[#FF2E79]">{sub.utr}</span></p>
+                  </div>
+
+                  {/* Screenshot */}
+                  {sub.screenshotBase64 ? (
+                    <div>
+                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Payment Screenshot:</p>
+                      <img
+                        src={sub.screenshotBase64}
+                        alt="Payment proof"
+                        className="w-full max-h-52 object-contain rounded-xl border border-slate-200 cursor-zoom-in bg-white"
+                        onClick={() => setPreviewScreenshot(sub.screenshotBase64)}
+                      />
+                    </div>
+                  ) : (
+                    <div className="bg-slate-100 rounded-xl p-3 text-center text-xs text-slate-400 font-medium">No screenshot uploaded</div>
+                  )}
+
+                  {/* Actions */}
+                  {sub.status === 'pending' && (
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleApprovePayment(sub)}
+                        className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-95"
+                      >
+                        <CheckCircle className="w-3.5 h-3.5" />
+                        ✅ Approve & Activate
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleRejectPayment(sub)}
+                        className="flex-1 py-2.5 rounded-xl bg-red-100 hover:bg-red-200 text-red-700 text-xs font-black flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-95"
+                      >
+                        <XCircle className="w-3.5 h-3.5" />
+                        ❌ Reject
+                      </button>
+                    </div>
+                  )}
+
+                  {sub.status === 'approved' && (
+                    <p className="text-[11px] text-emerald-700 font-bold text-center">
+                      ✅ Approved — User account activated
+                      {sub.resolvedAt && ` at ${new Date(sub.resolvedAt).toLocaleTimeString('en-IN')}`}
+                    </p>
+                  )}
+                  {sub.status === 'rejected' && (
+                    <p className="text-[11px] text-red-600 font-bold text-center">
+                      ❌ Rejected — User needs to re-submit
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Screenshot Lightbox */}
+      {previewScreenshot && (
+        <div
+          className="fixed inset-0 z-[999] bg-black/90 flex items-center justify-center p-4 cursor-zoom-out"
+          onClick={() => setPreviewScreenshot(null)}
+        >
+          <img
+            src={previewScreenshot}
+            alt="Payment proof fullscreen"
+            className="max-w-full max-h-full rounded-2xl shadow-2xl"
+          />
+          <button
+            className="absolute top-4 right-4 w-10 h-10 bg-white/20 text-white rounded-full flex items-center justify-center text-xl font-bold cursor-pointer hover:bg-white/30"
+            onClick={() => setPreviewScreenshot(null)}
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* TAB 1: MATCHMAKING PIPELINE OVERVIEW */}
       {adminTab === 'pipeline' && (

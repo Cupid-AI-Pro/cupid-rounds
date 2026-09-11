@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { updateUser } from '../utils/storage';
+import { updateUser, savePaymentSubmission } from '../utils/storage';
 import { 
   Check, 
   ChevronRight, 
@@ -28,7 +28,6 @@ import ScrollWheelPicker from './onboarding/ScrollWheelPicker';
 import CupidLogo from './CupidLogo';
 import CustomSelect from './CustomSelect';
 import confetti from 'canvas-confetti';
-import { sendPaymentNotification } from '../services/notificationService';
 
 // 4 Fun 3D Cartoon Avatars (for Instagram-style profile flip)
 const AVATAR_3D_CHARACTERS = [
@@ -161,6 +160,11 @@ export default function OnboardingForm({ user, onComplete }) {
   const [manualUtr, setManualUtr] = useState('');
   const [isUtrVerified, setIsUtrVerified] = useState(false);
 
+  // Screenshot upload state
+  const [screenshotFile, setScreenshotFile] = useState(null);
+  const [screenshotPreview, setScreenshotPreview] = useState('');
+  const screenshotInputRef = useRef(null);
+
   // Completed user state
   const [completedUser, setCompletedUser] = useState(null);
 
@@ -244,32 +248,46 @@ export default function OnboardingForm({ user, onComplete }) {
     window.open(upiLink, '_blank');
   };
 
-  // UTR Verification — saves UTR and sends email notification to admin
+  // Screenshot upload handler
+  const handleScreenshotUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setScreenshotPreview(ev.target.result);
+      setScreenshotFile(file);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // UTR + Screenshot submission — saves to localStorage for admin verification
   const handleVerifyUtr = async () => {
     const cleanUtr = manualUtr.trim();
-    if (!cleanUtr || cleanUtr.length < 8) {
-      return;
-    }
+    if (!cleanUtr || cleanUtr.length < 6) return;
     setIsVerifyingAutoPay(true);
-    
-    // Send email notification to admin
-    await sendPaymentNotification({
+
+    const planAmount = selectedPlan === 'basic' ? 100 : selectedPlan === 'premium' ? 250 : 449;
+
+    // Save payment submission (with screenshot) to localStorage for admin panel
+    savePaymentSubmission({
+      userId: user.id,
       userName: name || user?.name || 'Unknown',
       userEmail: email || user?.email || '',
       userPhone: phone || user?.phone || '',
       plan: selectedPlan,
-      amount: selectedPlan === 'basic' ? 100 : selectedPlan === 'premium' ? 250 : 449,
-      utrNumber: cleanUtr,
-      userState: user?.state || activeState || 'Unknown',
+      amount: planAmount,
+      utr: cleanUtr,
+      screenshotBase64: screenshotPreview || null,
+      userState: user?.state || 'Unknown',
     });
 
     setAutoVerifiedUtr(cleanUtr);
     setIsUtrVerified(true);
     setIsVerifyingAutoPay(false);
     setPaymentProofUploaded(true);
-    
+
     confetti({
-      particleCount: 50,
+      particleCount: 60,
       spread: 60,
       origin: { y: 0.7 },
       colors: ['#10B981', '#FF2E79', '#3B82F6']
@@ -1697,25 +1715,93 @@ export default function OnboardingForm({ user, onComplete }) {
               )}
             </div>
 
-            {/* Manual UTR Input */}
+            {/* Screenshot Upload + UTR Submission */}
             {!autoVerifiedUtr && (
-              <div className="space-y-2 text-left">
-                <label className="form-label text-xs font-bold text-slate-700">Enter 12-Digit UPI Transaction UTR</label>
-                <div className="flex gap-2">
+              <div className="space-y-4 text-left">
+                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-left">
+                  <p className="text-xs font-black text-amber-800 mb-1">📸 After Paying:</p>
+                  <p className="text-[11px] text-amber-700 leading-relaxed font-medium">
+                    1. Take a screenshot of the payment confirmation<br/>
+                    2. Upload it below<br/>
+                    3. Enter your UTR/transaction ID<br/>
+                    4. Submit — admin will verify &amp; activate your profile
+                  </p>
+                </div>
+
+                {/* Screenshot Upload */}
+                <div>
+                  <label className="form-label text-xs font-bold text-slate-700 mb-2 block">
+                    Upload Payment Screenshot *
+                  </label>
                   <input
-                    type="text"
-                    placeholder="Enter 12-digit UTR from your UPI app"
-                    value={manualUtr}
-                    onChange={(e) => setManualUtr(e.target.value)}
-                    className="form-input text-xs flex-1 h-14 rounded-2xl"
+                    type="file"
+                    accept="image/*"
+                    ref={screenshotInputRef}
+                    onChange={handleScreenshotUpload}
+                    className="hidden"
+                    id="screenshot-upload"
                   />
-                  <button
-                    type="button"
-                    onClick={handleVerifyUtr}
-                    className="px-5 h-14 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-2xl transition-all active:scale-95 shrink-0 cursor-pointer"
-                  >
-                    Verify
-                  </button>
+                  {screenshotPreview ? (
+                    <div className="relative">
+                      <img
+                        src={screenshotPreview}
+                        alt="Payment Screenshot"
+                        className="w-full max-h-48 object-contain rounded-2xl border-2 border-emerald-300 bg-emerald-50"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => { setScreenshotPreview(''); setScreenshotFile(null); }}
+                        className="absolute top-2 right-2 w-7 h-7 bg-slate-900/70 text-white rounded-full flex items-center justify-center text-xs font-bold cursor-pointer"
+                      >
+                        ✕
+                      </button>
+                      <div className="mt-1 flex items-center gap-1 text-emerald-700 text-[11px] font-bold">
+                        <Check className="w-3.5 h-3.5" />
+                        <span>Screenshot uploaded</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <label
+                      htmlFor="screenshot-upload"
+                      className="flex flex-col items-center justify-center gap-2 w-full h-28 border-2 border-dashed border-slate-300 hover:border-[#FF2E79] rounded-2xl bg-slate-50 cursor-pointer transition-colors"
+                    >
+                      <Upload className="w-6 h-6 text-slate-400" />
+                      <span className="text-xs font-semibold text-slate-500">Tap to upload payment screenshot</span>
+                      <span className="text-[10px] text-slate-400">JPG, PNG — from your PhonePe / GPay</span>
+                    </label>
+                  )}
+                </div>
+
+                {/* UTR Input */}
+                <div>
+                  <label className="form-label text-xs font-bold text-slate-700 mb-1 block">
+                    UTR / Transaction Reference ID *
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="e.g. 408123456789 (from payment app)"
+                      value={manualUtr}
+                      onChange={(e) => setManualUtr(e.target.value)}
+                      className="form-input text-xs flex-1 h-14 rounded-2xl"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleVerifyUtr}
+                      disabled={isVerifyingAutoPay || !manualUtr.trim() || !screenshotPreview}
+                      className="px-5 h-14 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-xs font-bold rounded-2xl transition-all active:scale-95 shrink-0 cursor-pointer flex items-center gap-1.5"
+                    >
+                      {isVerifyingAutoPay ? (
+                        <span className="w-3.5 h-3.5 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                      ) : (
+                        <Check className="w-3.5 h-3.5" />
+                      )}
+                      <span>Submit</span>
+                    </button>
+                  </div>
+                  {!screenshotPreview && manualUtr.trim() && (
+                    <p className="text-[10px] text-amber-600 font-semibold mt-1">⚠ Please also upload the payment screenshot above</p>
+                  )}
                 </div>
               </div>
             )}
@@ -1757,10 +1843,10 @@ export default function OnboardingForm({ user, onComplete }) {
                   className="w-full h-14 bg-slate-200 text-slate-400 font-bold text-xs rounded-full flex items-center justify-center gap-2 cursor-not-allowed shadow-none"
                 >
                   <AlertCircle className="w-4 h-4 text-slate-400" />
-                  <span>Complete Payment Verification to Submit</span>
+                  <span>Upload Screenshot + Enter UTR to Submit</span>
                 </button>
                 <p className="text-[11px] text-center text-slate-400 font-medium">
-                  Tap "Instant Auto-Pay" or verify your 12-digit UTR to activate your round profile.
+                  Pay via PhonePe/GPay → upload screenshot → enter UTR → submit.
                 </p>
               </div>
             ) : (
@@ -1773,11 +1859,11 @@ export default function OnboardingForm({ user, onComplete }) {
                 {isSubmitting ? (
                   <div className="flex items-center gap-2">
                     <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin"></span>
-                    <span>Activating Verified Profile...</span>
+                    <span>Submitting for Admin Verification...</span>
                   </div>
                 ) : (
                   <>
-                    <span>Submit & Enter Match Radar →</span>
+                    <span>Submit — Pending Admin Verification →</span>
                     <ArrowRight className="w-5 h-5" />
                   </>
                 )}

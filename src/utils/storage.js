@@ -3,8 +3,36 @@ import { MOCK_USERS } from '../data/mockData';
 const KEYS = {
   USERS: 'cupid_users',
   ACTIVE_STATE: 'cupid_active_state',
-  CURRENT_USER: 'cupid_current_user'
+  CURRENT_USER: 'cupid_current_user',
+  PAYMENT_SUBMISSIONS: 'cupid_payment_submissions'
 };
+
+// ─── Payment Submission Helpers ───────────────────────────────────────────────
+export const getPaymentSubmissions = () => {
+  const json = localStorage.getItem(KEYS.PAYMENT_SUBMISSIONS);
+  return json ? JSON.parse(json) : [];
+};
+
+export const savePaymentSubmission = (submission) => {
+  const list = getPaymentSubmissions();
+  const idx = list.findIndex(s => s.userId === submission.userId);
+  const entry = { ...submission, submittedAt: submission.submittedAt || new Date().toISOString(), status: 'pending' };
+  if (idx !== -1) { list[idx] = { ...list[idx], ...entry }; } else { list.push(entry); }
+  localStorage.setItem(KEYS.PAYMENT_SUBMISSIONS, JSON.stringify(list));
+};
+
+export const updatePaymentStatus = (userId, status) => {
+  const list = getPaymentSubmissions();
+  const idx = list.findIndex(s => s.userId === userId);
+  if (idx !== -1) {
+    list[idx].status = status;
+    list[idx].resolvedAt = new Date().toISOString();
+    localStorage.setItem(KEYS.PAYMENT_SUBMISSIONS, JSON.stringify(list));
+    return list[idx];
+  }
+  return null;
+};
+
 
 export const initializeStorage = () => {
   const existingUsersJson = localStorage.getItem(KEYS.USERS);
