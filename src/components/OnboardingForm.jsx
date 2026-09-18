@@ -1818,7 +1818,6 @@ export default function OnboardingForm({ user, onComplete }) {
             className="w-full h-14 bg-[#FF2E79] hover:bg-[#e02447] text-white font-black text-sm rounded-full flex items-center justify-center gap-2 shadow-[0_10px_25px_rgba(255,45,85,0.4)] transition-all active:scale-[0.98] cursor-pointer"
           >
             <span>Next Step →</span>
-            <ChevronRight className="w-5 h-5" />
           </button>
         ) : (
           <div>
