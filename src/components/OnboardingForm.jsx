@@ -472,54 +472,54 @@ export default function OnboardingForm({ user, onComplete }) {
   }
 
   return (
-    <div className="flex-1 flex flex-col justify-between p-4 sm:p-5 h-full bg-gradient-to-b from-rose-100/50 via-pink-50/30 to-white/90 relative select-none font-sans overflow-y-auto">
+    <div className="flex-1 flex flex-col justify-between p-4 sm:p-5 h-full bg-gradient-to-b from-[#FFF0F4] via-[#FFEBEF] to-[#FFF5F8] text-slate-900 font-sans relative select-none overflow-y-auto">
       
       {/* Top Header & Smooth Progress Bar with Cursive Tagline */}
-      <div className="sticky top-0 bg-white/90 backdrop-blur-xl pt-2 pb-3 z-30 border-b border-rose-100/60 -mx-4 px-4 sm:-mx-5 sm:px-5">
-        <div className="flex items-center justify-between mb-2">
+      <div className="sticky top-0 bg-[#FFF0F4]/90 backdrop-blur-md pt-2 pb-3 z-30 -mx-4 px-4 sm:-mx-5 sm:px-5">
+        <div className="flex items-center justify-between mb-2.5">
           {step > 1 ? (
             <button
               onClick={handleBack}
-              className="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center text-slate-700 hover:bg-slate-50 transition-all border border-rose-100/80 cursor-pointer active:scale-95"
+              className="w-10 h-10 rounded-full bg-white shadow-xs flex items-center justify-center text-slate-800 hover:bg-slate-50 transition-all border border-rose-100/80 cursor-pointer active:scale-95"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
             </button>
           ) : (
-            <div className="w-9 h-9"></div>
+            <div className="w-10 h-10"></div>
           )}
 
           <CupidLogo size="xs" showText={true} textColor="dark" textSubtitle={`${user.state || 'DELHI NCR'} • ROUND 1`} />
 
           <div className="text-right pointer-events-none select-none">
-            <span className="font-cursive text-rose-400 font-bold text-sm sm:text-base leading-tight block rotate-[-4deg]">
+            <span className="font-cursive text-[#FF2E79] font-bold text-sm sm:text-base leading-tight block rotate-[-3deg]">
               Good People<br />Brighter Stories ♡
             </span>
           </div>
         </div>
 
-        {/* Stepper Progress Bar */}
-        <div className="flex items-center gap-2">
-          <div className="flex-1 h-2 bg-rose-100/70 rounded-full overflow-hidden">
+        {/* Stepper Progress Bar Pill Box */}
+        <div className="bg-white/80 backdrop-blur-md rounded-full p-1.5 shadow-2xs border border-white/80 flex items-center gap-2">
+          <div className="flex-1 h-2.5 bg-rose-100/70 rounded-full overflow-hidden ml-1">
             <div
               className="h-full bg-gradient-to-r from-[#FF2E79] via-pink-500 to-rose-400 rounded-full transition-all duration-300 ease-out"
               style={{ width: `${(step / totalSteps) * 100}%` }}
             ></div>
           </div>
-          <span className="text-[11px] font-black text-slate-700 bg-white px-2.5 py-0.5 rounded-full border border-rose-100 shadow-2xs">
+          <span className="text-xs font-black text-slate-800 bg-white px-3 py-0.5 rounded-full border border-rose-100/80 shadow-2xs">
             {step}<span className="text-slate-400 font-medium">/</span>{totalSteps}
           </span>
         </div>
       </div>
 
-      {/* Main Multi-Step Form Body — Card Wrapper */}
-      <div className="flex-1 flex flex-col justify-between py-4 overflow-y-auto no-scrollbar space-y-6">
+      {/* Main Multi-Step Form Body — Master Card Wrapper */}
+      <div className="flex-1 flex flex-col justify-between py-3 overflow-y-auto no-scrollbar space-y-6">
         
         {/* ========================================================================= */}
         {/* STEP 1: Personal Info (Name, Phone, Email, Hometown)                      */}
         {/* ========================================================================= */}
         {step === 1 && (
-          <div className="space-y-4 animate-slide-up">
-            <div className="text-left mb-2">
+          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-5 animate-slide-up">
+            <div>
               <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 01 • BASIC DETAILS
               </span>
@@ -529,7 +529,7 @@ export default function OnboardingForm({ user, onComplete }) {
               </p>
             </div>
 
-            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs space-y-4 text-left">
+            <div className="space-y-4 pt-1">
               <div>
                 <div className="flex items-center gap-2 mb-1.5">
                   <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79] shrink-0">
@@ -594,6 +594,13 @@ export default function OnboardingForm({ user, onComplete }) {
                 />
               </div>
             </div>
+
+            {/* Watermark Heart Outline */}
+            <div className="absolute -bottom-4 -right-4 pointer-events-none opacity-[0.12] text-[#FF2E79]">
+              <svg className="w-28 h-28 fill-none stroke-current stroke-[1.5]" viewBox="0 0 24 24">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+              </svg>
+            </div>
           </div>
         )}
 
@@ -601,8 +608,8 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 2: Real Photos Upload (Min 2, Max 6) + Mandatory Instagram & Avatars  */}
         {/* ========================================================================= */}
         {step === 2 && (
-          <div className="space-y-4 animate-slide-up">
-            <div className="text-left mb-2">
+          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-5 animate-slide-up">
+            <div>
               <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 02 • PROFILE MEDIA & SOCIAL
               </span>
@@ -825,8 +832,8 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 3: Age & Height 3D Drum Wheels + Gender                              */}
         {/* ========================================================================= */}
         {step === 3 && (
-          <div className="space-y-6 animate-slide-up">
-            <div className="text-left mb-2">
+          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-5 animate-slide-up">
+            <div>
               <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 03 • STATS & BIOLOGY
               </span>
@@ -886,6 +893,13 @@ export default function OnboardingForm({ user, onComplete }) {
                 ))}
               </div>
             </div>
+
+            {/* Watermark Heart Outline */}
+            <div className="absolute -bottom-4 -right-4 pointer-events-none opacity-[0.12] text-[#FF2E79]">
+              <svg className="w-28 h-28 fill-none stroke-current stroke-[1.5]" viewBox="0 0 24 24">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+              </svg>
+            </div>
           </div>
         )}
 
@@ -893,8 +907,8 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 4: University, Branch & Year of Study                                */}
         {/* ========================================================================= */}
         {step === 4 && (
-          <div className="space-y-4 animate-slide-up">
-            <div className="text-left mb-2">
+          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-5 animate-slide-up">
+            <div>
               <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 04 • CAMPUS & ACADEMICS
               </span>
@@ -904,8 +918,8 @@ export default function OnboardingForm({ user, onComplete }) {
               </p>
             </div>
 
-            {/* University Selection Card */}
-            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs space-y-3 text-left">
+            {/* University Selection */}
+            <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
                   <GraduationCap className="w-4 h-4" />
@@ -931,8 +945,8 @@ export default function OnboardingForm({ user, onComplete }) {
               )}
             </div>
 
-            {/* Branch Selection Card */}
-            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs space-y-3 text-left">
+            {/* Branch Selection */}
+            <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
                   <BookOpen className="w-4 h-4" />
@@ -957,8 +971,8 @@ export default function OnboardingForm({ user, onComplete }) {
               )}
             </div>
 
-            {/* Year of Study Card */}
-            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs space-y-3 text-left">
+            {/* Year of Study */}
+            <div className="space-y-3">
               <div className="flex items-center gap-2 mb-1">
                 <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
                   <Award className="w-4 h-4" />
@@ -986,6 +1000,13 @@ export default function OnboardingForm({ user, onComplete }) {
                 })}
               </div>
             </div>
+
+            {/* Watermark Heart Outline */}
+            <div className="absolute -bottom-4 -right-4 pointer-events-none opacity-[0.12] text-[#FF2E79]">
+              <svg className="w-28 h-28 fill-none stroke-current stroke-[1.5]" viewBox="0 0 24 24">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+              </svg>
+            </div>
           </div>
         )}
 
@@ -993,8 +1014,8 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 5: Religion, Relationship Type & Habits                              */}
         {/* ========================================================================= */}
         {step === 5 && (
-          <div className="space-y-4 animate-slide-up">
-            <div className="text-left mb-2">
+          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-5 animate-slide-up">
+            <div>
               <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 05 • BELIEFS & LIFESTYLE
               </span>
@@ -1004,8 +1025,8 @@ export default function OnboardingForm({ user, onComplete }) {
               </p>
             </div>
 
-            {/* Religion Card */}
-            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs space-y-3 text-left">
+            {/* Religion */}
+            <div className="space-y-3">
               <div className="flex items-center gap-2 mb-1">
                 <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
                   <Flower2 className="w-4 h-4" />
@@ -1034,8 +1055,8 @@ export default function OnboardingForm({ user, onComplete }) {
               </div>
             </div>
 
-            {/* Relationship Type Card */}
-            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs space-y-3 text-left">
+            {/* Relationship Type */}
+            <div className="space-y-3">
               <div className="flex items-center gap-2 mb-1">
                 <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
                   <Heart className="w-4 h-4 fill-pink-100" />
@@ -1069,8 +1090,8 @@ export default function OnboardingForm({ user, onComplete }) {
               </div>
             </div>
 
-            {/* Drinking / Smoking Habits Card */}
-            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs space-y-3 text-left">
+            {/* Drinking / Smoking Habits */}
+            <div className="space-y-3">
               <div className="flex items-center gap-2 mb-1">
                 <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
                   <Wine className="w-4 h-4" />
@@ -1098,6 +1119,13 @@ export default function OnboardingForm({ user, onComplete }) {
                 })}
               </div>
             </div>
+
+            {/* Watermark Heart Outline */}
+            <div className="absolute -bottom-4 -right-4 pointer-events-none opacity-[0.12] text-[#FF2E79]">
+              <svg className="w-28 h-28 fill-none stroke-current stroke-[1.5]" viewBox="0 0 24 24">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+              </svg>
+            </div>
           </div>
         )}
 
@@ -1105,8 +1133,8 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 6: Personality Type, Qualities, Vibe & Exes                          */}
         {/* ========================================================================= */}
         {step === 6 && (
-          <div className="space-y-4 animate-slide-up">
-            <div className="text-left mb-2">
+          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-5 animate-slide-up">
+            <div>
               <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 06 • YOUR VIBE & ENERGY
               </span>
@@ -1116,8 +1144,8 @@ export default function OnboardingForm({ user, onComplete }) {
               </p>
             </div>
 
-            {/* Personality Type Card */}
-            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs space-y-3 text-left">
+            {/* Personality Type */}
+            <div className="space-y-3">
               <div className="flex items-center gap-2 mb-1">
                 <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
                   <Smile className="w-4 h-4" />
@@ -1146,8 +1174,8 @@ export default function OnboardingForm({ user, onComplete }) {
               </div>
             </div>
 
-            {/* Qualities Card */}
-            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs space-y-3 text-left">
+            {/* Qualities */}
+            <div className="space-y-3">
               <div className="flex items-center gap-2 mb-1">
                 <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
                   <Sparkles className="w-4 h-4" />
@@ -1176,8 +1204,8 @@ export default function OnboardingForm({ user, onComplete }) {
               </div>
             </div>
 
-            {/* Dating Vibe Card */}
-            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs space-y-3 text-left">
+            {/* Dating Vibe */}
+            <div className="space-y-3">
               <div className="flex items-center gap-2 mb-1">
                 <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
                   <Coffee className="w-4 h-4" />
@@ -1206,8 +1234,8 @@ export default function OnboardingForm({ user, onComplete }) {
               </div>
             </div>
 
-            {/* Number of Exes Card */}
-            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs space-y-3 text-left">
+            {/* Number of Exes */}
+            <div className="space-y-3">
               <div className="flex items-center gap-2 mb-1">
                 <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
                   <Heart className="w-4 h-4 fill-pink-100" />
@@ -1221,15 +1249,22 @@ export default function OnboardingForm({ user, onComplete }) {
                 placeholder="Select number of exes..."
               />
             </div>
+
+            {/* Watermark Heart Outline */}
+            <div className="absolute -bottom-4 -right-4 pointer-events-none opacity-[0.12] text-[#FF2E79]">
+              <svg className="w-28 h-28 fill-none stroke-current stroke-[1.5]" viewBox="0 0 24 24">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+              </svg>
+            </div>
           </div>
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 7: Partner Preferences — Age, Height & Gender                        */}
+        {/* STEP 7: Partner Preferences — Age, Height & Gender (Exact Image 2 Match)  */}
         {/* ========================================================================= */}
         {step === 7 && (
-          <div className="space-y-4 animate-slide-up">
-            <div className="text-left mb-2">
+          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-5 animate-slide-up">
+            <div>
               <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 07 • IDEAL MATCH CRITERIA
               </span>
@@ -1249,8 +1284,8 @@ export default function OnboardingForm({ user, onComplete }) {
               </span>
             </div>
 
-            {/* Preferred Age Card */}
-            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs space-y-3 text-left">
+            {/* Preferred Age */}
+            <div className="space-y-3">
               <label className="text-sm font-bold text-slate-900 block">
                 Preferred Age ({prefMinAge} - {prefMaxAge} yrs) *
               </label>
@@ -1275,8 +1310,8 @@ export default function OnboardingForm({ user, onComplete }) {
               </div>
             </div>
 
-            {/* Preferred Height Card */}
-            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs space-y-3 text-left">
+            {/* Preferred Height */}
+            <div className="space-y-3">
               <label className="text-sm font-bold text-slate-900 block">Preferred Height *</label>
               <CustomSelect
                 value={prefHeight}
@@ -1286,8 +1321,8 @@ export default function OnboardingForm({ user, onComplete }) {
               />
             </div>
 
-            {/* Preferred Gender Card */}
-            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs space-y-3 text-left">
+            {/* Preferred Gender */}
+            <div className="space-y-3">
               <label className="text-sm font-bold text-slate-900 block">Preferred Gender *</label>
               <div className="grid grid-cols-3 gap-3">
                 {['Male', 'Female', 'Others'].map((g) => {
@@ -1309,15 +1344,22 @@ export default function OnboardingForm({ user, onComplete }) {
                 })}
               </div>
             </div>
+
+            {/* Watermark Heart Outline */}
+            <div className="absolute -bottom-4 -right-4 pointer-events-none opacity-[0.12] text-[#FF2E79]">
+              <svg className="w-28 h-28 fill-none stroke-current stroke-[1.5]" viewBox="0 0 24 24">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+              </svg>
+            </div>
           </div>
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 8: Partner Preferences — University, Branch & Year of Study          */}
+        {/* STEP 8: Partner Preferences — University, Branch & Year (Exact Image 3 Match) */}
         {/* ========================================================================= */}
         {step === 8 && (
-          <div className="space-y-4 animate-slide-up">
-            <div className="text-left mb-2">
+          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-5 animate-slide-up">
+            <div>
               <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 07 • IDEAL MATCH CRITERIA
               </span>
@@ -1327,8 +1369,8 @@ export default function OnboardingForm({ user, onComplete }) {
               </p>
             </div>
 
-            {/* Preferred University Container */}
-            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs space-y-3 text-left">
+            {/* Preferred University */}
+            <div className="space-y-3">
               <label className="text-sm font-bold text-slate-900 block">Preferred University *</label>
               <div className="flex flex-wrap gap-2.5">
                 {['Any University', ...POPULAR_UNIVERSITIES].map((u) => {
@@ -1352,8 +1394,8 @@ export default function OnboardingForm({ user, onComplete }) {
               </div>
             </div>
 
-            {/* Preferred Branch Card */}
-            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs space-y-3 text-left">
+            {/* Preferred Branch */}
+            <div className="space-y-3">
               <label className="text-sm font-bold text-slate-900 block">Preferred Branch *</label>
               <CustomSelect
                 value={prefBranch}
@@ -1363,8 +1405,8 @@ export default function OnboardingForm({ user, onComplete }) {
               />
             </div>
 
-            {/* Preferred Year Of Study Container */}
-            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs space-y-3 text-left">
+            {/* Preferred Year Of Study */}
+            <div className="space-y-3">
               <label className="text-sm font-bold text-slate-900 block">Preferred year of study *</label>
               <div className="flex flex-wrap gap-2.5">
                 {['Any Year', '1st Year', '2nd Year', '3rd Year', '4th Year', 'Graduate'].map((yr) => {
@@ -1387,15 +1429,22 @@ export default function OnboardingForm({ user, onComplete }) {
                 })}
               </div>
             </div>
+
+            {/* Watermark Heart Outline */}
+            <div className="absolute -bottom-4 -right-4 pointer-events-none opacity-[0.12] text-[#FF2E79]">
+              <svg className="w-28 h-28 fill-none stroke-current stroke-[1.5]" viewBox="0 0 24 24">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+              </svg>
+            </div>
           </div>
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 9: Partner Preferences — Religion, Habits & Exes                     */}
+        {/* STEP 9: Partner Preferences — Religion, Habits & Exes (Exact Image 1 Match) */}
         {/* ========================================================================= */}
         {step === 9 && (
-          <div className="space-y-4 animate-slide-up">
-            <div className="text-left mb-2">
+          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-6 animate-slide-up">
+            <div>
               <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 09 • PARTNER LIFESTYLE
               </span>
@@ -1405,83 +1454,85 @@ export default function OnboardingForm({ user, onComplete }) {
               </p>
             </div>
 
-            {/* Translucent Glass Card Wrapper */}
-            <div className="bg-white/90 backdrop-blur-md rounded-[32px] p-5 border border-slate-100/90 shadow-xs space-y-6 text-left relative overflow-hidden">
-              
-              {/* Preferred Religion */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79] shrink-0">
-                    <Flower2 className="w-4 h-4" />
-                  </div>
-                  <label className="text-sm font-bold text-slate-900">Preferred Religion *</label>
+            {/* Preferred Religion */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79] shrink-0">
+                  <Flower2 className="w-4 h-4" />
                 </div>
-                <div className="flex flex-wrap gap-2.5">
-                  {['Any', 'Hindu', 'Muslim', 'Sikh', 'Christian', 'Others'].map((r) => {
-                    const isSelected = prefReligion.includes(r);
-                    return (
-                      <button
-                        key={r}
-                        type="button"
-                        onClick={() => toggleArrayItem(prefReligion, setPrefReligion, r)}
-                        className={`px-4.5 py-2.5 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
-                          isSelected
-                            ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
-                            : 'bg-white text-slate-800 border-slate-200/90 hover:border-pink-200 shadow-2xs'
-                        }`}
-                      >
-                        {r}
-                      </button>
-                    );
-                  })}
-                </div>
+                <label className="text-sm font-bold text-slate-900">Preferred Religion *</label>
               </div>
-
-              {/* Preferred Habits */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79] shrink-0">
-                    <Wine className="w-4 h-4" />
-                  </div>
-                  <label className="text-sm font-bold text-slate-900">Preferred Habits *</label>
-                </div>
-                <div className="flex flex-wrap gap-2.5">
-                  {['None', 'Drink', 'Smoke', 'Weed', 'Doesn\'t matter'].map((h) => {
-                    const isSelected = prefHabits.includes(h);
-                    return (
-                      <button
-                        key={h}
-                        type="button"
-                        onClick={() => toggleArrayItem(prefHabits, setPrefHabits, h)}
-                        className={`px-4.5 py-2.5 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
-                          isSelected
-                            ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
-                            : 'bg-white text-slate-800 border-slate-200/90 hover:border-pink-200 shadow-2xs'
-                        }`}
-                      >
-                        {h}
-                      </button>
-                    );
-                  })}
-                </div>
+              <div className="flex flex-wrap gap-2.5">
+                {['Any', 'Hindu', 'Muslim', 'Sikh', 'Christian', 'Others'].map((r) => {
+                  const isSelected = prefReligion.includes(r);
+                  return (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => toggleArrayItem(prefReligion, setPrefReligion, r)}
+                      className={`px-4.5 py-2.5 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
+                          : 'bg-white text-slate-800 border-slate-200/90 hover:border-pink-200 shadow-2xs'
+                      }`}
+                    >
+                      {r}
+                    </button>
+                  );
+                })}
               </div>
+            </div>
 
-              {/* Preferred Number Of Exes */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79] shrink-0">
-                    <Heart className="w-4 h-4 fill-pink-100" />
-                  </div>
-                  <label className="text-sm font-bold text-slate-900">Preferred Number Of Exes *</label>
+            {/* Preferred Habits */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79] shrink-0">
+                  <Wine className="w-4 h-4" />
                 </div>
-                <CustomSelect
-                  value={prefExes}
-                  onChange={(val) => setPrefExes(val)}
-                  options={["Doesn't matter", "0 (No exes)", "1-2 exes", "3+ exes"]}
-                  placeholder="Select preferred number of exes..."
-                />
+                <label className="text-sm font-bold text-slate-900">Preferred Habits *</label>
               </div>
+              <div className="flex flex-wrap gap-2.5">
+                {['None', 'Drink', 'Smoke', 'Weed', 'Doesn\'t matter'].map((h) => {
+                  const isSelected = prefHabits.includes(h);
+                  return (
+                    <button
+                      key={h}
+                      type="button"
+                      onClick={() => toggleArrayItem(prefHabits, setPrefHabits, h)}
+                      className={`px-4.5 py-2.5 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
+                          : 'bg-white text-slate-800 border-slate-200/90 hover:border-pink-200 shadow-2xs'
+                      }`}
+                    >
+                      {h}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
 
+            {/* Preferred Number Of Exes */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79] shrink-0">
+                  <Heart className="w-4 h-4 fill-pink-100" />
+                </div>
+                <label className="text-sm font-bold text-slate-900">Preferred Number Of Exes *</label>
+              </div>
+              <CustomSelect
+                value={prefExes}
+                onChange={(val) => setPrefExes(val)}
+                options={["Doesn't matter", "0 (No exes)", "1-2 exes", "3+ exes"]}
+                placeholder="Select preferred number of exes..."
+              />
+            </div>
+
+            {/* Watermark Heart Outline */}
+            <div className="absolute -bottom-4 -right-4 pointer-events-none opacity-[0.12] text-[#FF2E79]">
+              <svg className="w-28 h-28 fill-none stroke-current stroke-[1.5]" viewBox="0 0 24 24">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+              </svg>
             </div>
           </div>
         )}
@@ -2035,14 +2086,16 @@ export default function OnboardingForm({ user, onComplete }) {
       </div>
 
       {/* Sticky Bottom Navigation Bar */}
-      <div className="sticky bottom-0 bg-white/95 backdrop-blur-md pt-4 pb-3 border-t border-slate-100 z-30">
+      <div className="sticky bottom-0 bg-[#FFF0F4]/90 backdrop-blur-md pt-3 pb-3 border-t border-rose-100/40 z-30 -mx-4 px-4 sm:-mx-5 sm:px-5">
         {step < totalSteps ? (
           <button
             type="button"
             onClick={handleNext}
-            className="w-full h-14 bg-[#FF2E79] hover:bg-[#e02447] text-white font-black text-sm rounded-full flex items-center justify-center gap-2 shadow-[0_10px_25px_rgba(255,45,85,0.4)] transition-all active:scale-[0.98] cursor-pointer"
+            className="w-full h-14 bg-gradient-to-r from-[#FF2E79] via-pink-600 to-[#FF2E79] hover:opacity-95 text-white font-black text-sm sm:text-base rounded-full flex items-center justify-center gap-1.5 shadow-[0_12px_28px_rgba(255,46,121,0.4)] transition-all active:scale-[0.98] cursor-pointer"
           >
-            <span>Next Step →</span>
+            <span>Next Step</span>
+            <span className="text-lg font-normal">→</span>
+            <ChevronRight className="w-4 h-4 opacity-80" />
           </button>
         ) : (
           <div>
@@ -2065,7 +2118,7 @@ export default function OnboardingForm({ user, onComplete }) {
                 type="button"
                 onClick={handleFinalSubmit}
                 disabled={isSubmitting}
-                className="w-full h-14 bg-[#FF2E79] hover:bg-[#e02447] text-white font-black text-sm rounded-full flex items-center justify-center gap-2 shadow-[0_10px_25px_rgba(255,45,85,0.4)] transition-all active:scale-[0.98] disabled:opacity-75 cursor-pointer"
+                className="w-full h-14 bg-gradient-to-r from-[#FF2E79] via-pink-600 to-[#FF2E79] hover:opacity-95 text-white font-black text-sm rounded-full flex items-center justify-center gap-2 shadow-[0_12px_28px_rgba(255,46,121,0.4)] transition-all active:scale-[0.98] disabled:opacity-75 cursor-pointer"
               >
                 {isSubmitting ? (
                   <div className="flex items-center gap-2">
@@ -2074,7 +2127,7 @@ export default function OnboardingForm({ user, onComplete }) {
                   </div>
                 ) : (
                   <>
-                    <span>Submit — Pending Admin Verification →</span>
+                    <span>Submit — Pending Admin Verification</span>
                     <ArrowRight className="w-5 h-5" />
                   </>
                 )}
