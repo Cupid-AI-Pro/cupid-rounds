@@ -1501,78 +1501,99 @@ export default function OnboardingForm({ user, onComplete }) {
               </p>
             </div>
 
-            {/* Preferred Personality Card */}
-            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs space-y-3 text-left">
-              <label className="text-sm font-bold text-slate-900 block">Preferred Personality *</label>
-              <div className="grid grid-cols-4 gap-2">
-                {['Introvert', 'Ambivert', 'Extrovert', 'Any'].map((p) => {
-                  const isSelected = prefPersonality === p;
-                  return (
-                    <button
-                      key={p}
-                      type="button"
-                      onClick={() => setPrefPersonality(p)}
-                      className={`py-3 rounded-2xl text-xs font-bold border transition-all cursor-pointer ${
-                        isSelected
-                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
-                          : 'bg-white text-slate-800 border-slate-200/90 hover:border-pink-200 shadow-2xs'
-                      }`}
-                    >
-                      {p}
-                    </button>
-                  );
-                })}
+            {/* Translucent Glass Card Wrapper */}
+            <div className="bg-white/90 backdrop-blur-md rounded-[32px] p-5 border border-slate-100/90 shadow-xs space-y-6 text-left relative overflow-hidden">
+              
+              {/* Preferred Personality */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79] shrink-0">
+                    <Smile className="w-4 h-4" />
+                  </div>
+                  <label className="text-sm font-bold text-slate-900">Preferred Personality *</label>
+                </div>
+                <div className="grid grid-cols-4 gap-2">
+                  {['Introvert', 'Ambivert', 'Extrovert', 'Any'].map((p) => {
+                    const isSelected = prefPersonality === p;
+                    return (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => setPrefPersonality(p)}
+                        className={`py-2.5 rounded-full text-xs font-bold border transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
+                            : 'bg-white text-slate-800 border-slate-200/90 hover:border-pink-200 shadow-2xs'
+                        }`}
+                      >
+                        {isSelected && '✓ '}
+                        {p}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
 
-            {/* Preferred Qualities Card */}
-            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs space-y-3 text-left">
-              <label className="text-sm font-bold text-slate-900 block">Preferred Qualities *</label>
-              <div className="flex flex-wrap gap-2.5">
-                {QUALITIES_LIST.map((q) => {
-                  const isSelected = prefQualities.includes(q);
-                  return (
-                    <button
-                      key={q}
-                      type="button"
-                      onClick={() => toggleArrayItem(prefQualities, setPrefQualities, q)}
-                      className={`px-4 py-2.5 rounded-full text-xs font-bold border transition-all cursor-pointer ${
-                        isSelected
-                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
-                          : 'bg-white text-slate-800 border-slate-200/90 hover:border-pink-200 shadow-2xs'
-                      }`}
-                    >
-                      {isSelected && '✓ '}
-                      {q}
-                    </button>
-                  );
-                })}
+              {/* Preferred Qualities */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79] shrink-0">
+                    <Sparkles className="w-4 h-4" />
+                  </div>
+                  <label className="text-sm font-bold text-slate-900">Preferred Qualities *</label>
+                </div>
+                <div className="flex flex-wrap gap-2.5">
+                  {QUALITIES_LIST.map((q) => {
+                    const isSelected = prefQualities.includes(q);
+                    return (
+                      <button
+                        key={q}
+                        type="button"
+                        onClick={() => toggleArrayItem(prefQualities, setPrefQualities, q)}
+                        className={`px-4 py-2.5 rounded-full text-xs font-bold border transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
+                            : 'bg-white text-slate-800 border-slate-200/90 hover:border-pink-200 shadow-2xs'
+                        }`}
+                      >
+                        {isSelected && '✓ '}
+                        {q}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
 
-            {/* Preferred Dating Vibe Card */}
-            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs space-y-3 text-left">
-              <label className="text-sm font-bold text-slate-900 block">Preferred Dating Vibe *</label>
-              <div className="grid grid-cols-2 gap-2.5">
-                {DATING_VIBES.map((v) => {
-                  const isSelected = prefDatingVibe.includes(v);
-                  return (
-                    <button
-                      key={v}
-                      type="button"
-                      onClick={() => toggleArrayItem(prefDatingVibe, setPrefDatingVibe, v)}
-                      className={`p-3.5 rounded-2xl text-xs font-bold border transition-all text-left cursor-pointer ${
-                        isSelected
-                          ? 'bg-rose-50 border-[#FF2E79] text-[#FF2E79] shadow-xs'
-                          : 'bg-white border-slate-200/90 text-slate-800 hover:border-pink-200 shadow-2xs'
-                      }`}
-                    >
-                      {isSelected && '✓ '}
-                      {v}
-                    </button>
-                  );
-                })}
+              {/* Preferred Dating Vibe */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79] shrink-0">
+                    <Coffee className="w-4 h-4" />
+                  </div>
+                  <label className="text-sm font-bold text-slate-900">Preferred Dating Vibe *</label>
+                </div>
+                <div className="grid grid-cols-2 gap-2.5">
+                  {DATING_VIBES.map((v) => {
+                    const isSelected = prefDatingVibe.includes(v);
+                    return (
+                      <button
+                        key={v}
+                        type="button"
+                        onClick={() => toggleArrayItem(prefDatingVibe, setPrefDatingVibe, v)}
+                        className={`p-3.5 rounded-2xl text-xs font-bold border transition-all text-left cursor-pointer ${
+                          isSelected
+                            ? 'bg-rose-50 border-[#FF2E79] text-[#FF2E79] shadow-xs font-black'
+                            : 'bg-white border-slate-200/90 text-slate-800 hover:border-pink-200 shadow-2xs'
+                        }`}
+                      >
+                        {isSelected && '✓ '}
+                        {v}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
+
             </div>
           </div>
         )}
@@ -1592,18 +1613,25 @@ export default function OnboardingForm({ user, onComplete }) {
               </p>
             </div>
 
-            <div className="p-4 bg-pink-50/70 border border-pink-100/80 rounded-3xl text-left space-y-1.5 shadow-2xs">
-              <p className="text-xs text-slate-700 leading-relaxed font-medium">
-                These are the deal-breakers for you – the parameters on which you are not willing to compromise at all. Think of them as your absolute must-haves.
-              </p>
-              <p className="text-xs font-black text-[#FF2E79]">
-                Cupid Note : Fewer non-negotiables lead to higher match probabilities!
-              </p>
+            {/* Cupid Note Card */}
+            <div className="p-3.5 bg-pink-50/70 border border-pink-100/80 rounded-2xl flex items-center gap-3 text-xs text-slate-700 shadow-2xs text-left">
+              <div className="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center text-[#FF2E79] shrink-0">
+                <Lightbulb className="w-4 h-4 fill-pink-200" />
+              </div>
+              <span>
+                <strong>Cupid Note :</strong> Fewer non-negotiables lead to significantly higher match probabilities!
+              </span>
             </div>
 
             {/* Non-Negotiable Checklist Card */}
-            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs space-y-3 text-left">
-              <label className="text-sm font-bold text-slate-900 block">My Non Negotiables Are *</label>
+            <div className="bg-white/90 backdrop-blur-md rounded-[32px] p-5 border border-slate-100/90 shadow-xs space-y-4 text-left">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79] shrink-0">
+                  <ShieldCheck className="w-4 h-4" />
+                </div>
+                <label className="text-sm font-bold text-slate-900 block">My Non Negotiables Are *</label>
+              </div>
+
               <div className="flex flex-wrap gap-2.5">
                 {NON_NEGOTIABLES_LIST.map((item) => {
                   const isSelected = nonNegotiables.includes(item);
@@ -1612,7 +1640,7 @@ export default function OnboardingForm({ user, onComplete }) {
                       key={item}
                       type="button"
                       onClick={() => toggleArrayItem(nonNegotiables, setNonNegotiables, item)}
-                      className={`px-4 py-2.5 rounded-full text-xs font-bold border transition-all cursor-pointer ${
+                      className={`px-4.5 py-2.5 rounded-full text-xs font-bold border transition-all cursor-pointer ${
                         isSelected
                           ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
                           : 'bg-white text-slate-800 border-slate-200/90 hover:border-pink-200 shadow-2xs'
@@ -1627,14 +1655,14 @@ export default function OnboardingForm({ user, onComplete }) {
             </div>
 
             {/* Next 3 rounds note */}
-            <label className="flex items-start gap-3 text-xs text-slate-600 text-left bg-slate-50/80 p-4 rounded-3xl border border-slate-200/80 cursor-pointer">
+            <label className="flex items-start gap-3 text-xs text-slate-600 text-left bg-white/90 backdrop-blur-md p-4.5 rounded-3xl border border-slate-100 shadow-2xs cursor-pointer">
               <input
                 type="checkbox"
                 checked={autoThreeRounds}
                 onChange={(e) => setAutoThreeRounds(e.target.checked)}
-                className="mt-0.5 accent-[#FF2E79] w-4 h-4 rounded"
+                className="mt-0.5 accent-[#FF2E79] w-4 h-4 rounded shrink-0"
               />
-              <span className="leading-snug font-medium">
+              <span className="leading-relaxed font-medium">
                 Automatically receive matches in the next 3 rounds on round days, without filling the form again.
               </span>
             </label>
@@ -1645,10 +1673,10 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 12: Terms and Condition (All 4 Exact Legal Clauses)                   */}
         {/* ========================================================================= */}
         {step === 12 && (
-          <div className="space-y-6 animate-slide-up">
-            <div className="text-left mb-3">
+          <div className="space-y-4 animate-slide-up">
+            <div className="text-left mb-2">
               <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                Step 12 • Legal Agreement
+                STEP 12 • LEGAL AGREEMENT
               </span>
               <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">Terms & Conditions</h2>
               <p className="text-xs text-slate-500 font-medium mt-1 leading-relaxed">
@@ -1656,7 +1684,7 @@ export default function OnboardingForm({ user, onComplete }) {
               </p>
             </div>
 
-            <div className="bg-slate-50/80 border border-slate-200/80 rounded-3xl p-5 space-y-4 text-left max-h-[350px] overflow-y-auto no-scrollbar shadow-sm">
+            <div className="bg-white/90 backdrop-blur-md border border-slate-100/90 rounded-[32px] p-5 space-y-4 text-left max-h-[360px] overflow-y-auto no-scrollbar shadow-xs">
               
               <label className="flex items-start gap-3 text-xs text-slate-600 cursor-pointer pb-3.5 border-b border-slate-200/60">
                 <input
@@ -1665,7 +1693,7 @@ export default function OnboardingForm({ user, onComplete }) {
                   onChange={(e) => setAgreedTerms({ ...agreedTerms, t1: e.target.checked })}
                   className="mt-0.5 accent-[#FF2E79] w-4 h-4 rounded shrink-0"
                 />
-                <span className="leading-relaxed">
+                <span className="leading-relaxed font-medium">
                   The monetary remittance of ₹100 is strictly non-refundable. This fee solely remunerates the administrative exertions undertaken to procure a potentially compatible match. While every endeavor shall be employed to facilitate a suitable pairing, no assurance or warranty of match fruition is extended.
                 </span>
               </label>
@@ -1677,7 +1705,7 @@ export default function OnboardingForm({ user, onComplete }) {
                   onChange={(e) => setAgreedTerms({ ...agreedTerms, t2: e.target.checked })}
                   className="mt-0.5 accent-[#FF2E79] w-4 h-4 rounded shrink-0"
                 />
-                <span className="leading-relaxed">
+                <span className="leading-relaxed font-medium">
                   By submitting your personal data and stipulated preferences, you irrevocably consent to the utilization of such information by Cupid for the explicit purpose of effectuating an optimal match.
                 </span>
               </label>
@@ -1689,7 +1717,7 @@ export default function OnboardingForm({ user, onComplete }) {
                   onChange={(e) => setAgreedTerms({ ...agreedTerms, t3: e.target.checked })}
                   className="mt-0.5 accent-[#FF2E79] w-4 h-4 rounded shrink-0"
                 />
-                <span className="leading-relaxed">
+                <span className="leading-relaxed font-medium">
                   Cupid's role is strictly mediatory; it merely effectuates an introduction between individuals deemed ostensibly compatible. The resultant parties are not, under any circumstances, pre-established romantic affiliates, and the onus of advancing the relational dynamics rests solely upon the individuals involved.
                 </span>
               </label>
@@ -1701,7 +1729,7 @@ export default function OnboardingForm({ user, onComplete }) {
                   onChange={(e) => setAgreedTerms({ ...agreedTerms, t4: e.target.checked })}
                   className="mt-0.5 accent-[#FF2E79] w-4 h-4 rounded shrink-0"
                 />
-                <span className="leading-relaxed">
+                <span className="leading-relaxed font-medium">
                   Any conduct deemed inappropriate, disrespectful, or constituting ghosting of a matched individual absolves Cupid of any liability. Recurrent grievances or infractions in successive rounds may culminate in immediate exclusion from the platform without recourse to refund or compensation.
                 </span>
               </label>
@@ -1714,10 +1742,10 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 13: Plan Selection (₹100, ₹250, ₹449)                                */}
         {/* ========================================================================= */}
         {step === 13 && (
-          <div className="space-y-6 animate-slide-up">
-            <div className="text-left mb-3">
+          <div className="space-y-4 animate-slide-up">
+            <div className="text-left mb-2">
               <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                Step 13 • Plan Tier
+                STEP 13 • PLAN TIER
               </span>
               <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">Matchmaking Tier</h2>
               <p className="text-xs text-slate-500 font-medium mt-1 leading-relaxed">
@@ -1725,22 +1753,22 @@ export default function OnboardingForm({ user, onComplete }) {
               </p>
             </div>
 
-            <div className="space-y-3.5 max-h-[380px] overflow-y-auto no-scrollbar">
+            <div className="space-y-3.5 max-h-[390px] overflow-y-auto no-scrollbar">
               
               {/* 100 Rupee plan */}
               <div
                 onClick={() => setSelectedPlan('basic')}
-                className={`p-5 rounded-3xl border-2 transition-all cursor-pointer text-left ${
+                className={`p-5 rounded-[28px] border-2 transition-all cursor-pointer text-left ${
                   selectedPlan === 'basic' 
-                    ? 'border-[#FF2E79] bg-rose-50/40 shadow-md ring-2 ring-rose-200' 
-                    : 'border-slate-200 bg-white hover:border-slate-300'
+                    ? 'border-[#FF2E79] bg-white shadow-md ring-2 ring-pink-100' 
+                    : 'border-slate-200 bg-white/80 hover:border-slate-300'
                 }`}
               >
                 <div className="flex items-center justify-between">
                   <span className="font-black text-slate-900 text-sm">100 Rupee Plan</span>
                   <span className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">Standard</span>
                 </div>
-                <ul className="text-xs text-slate-600 mt-2.5 space-y-1.5 leading-relaxed">
+                <ul className="text-xs text-slate-600 mt-2.5 space-y-1.5 leading-relaxed font-medium">
                   <li>• Participate in 1 matchmaking round</li>
                   <li>• Chance of 1 match based on compatibility</li>
                   <li>• 100% anonymous matching process</li>
@@ -1751,17 +1779,17 @@ export default function OnboardingForm({ user, onComplete }) {
               {/* 250 Rupee plan */}
               <div
                 onClick={() => setSelectedPlan('premium')}
-                className={`p-5 rounded-3xl border-2 transition-all cursor-pointer text-left ${
+                className={`p-5 rounded-[28px] border-2 transition-all cursor-pointer text-left ${
                   selectedPlan === 'premium' 
-                    ? 'border-[#FF2E79] bg-rose-50/40 shadow-md ring-2 ring-rose-200' 
-                    : 'border-slate-200 bg-white hover:border-slate-300'
+                    ? 'border-[#FF2E79] bg-white shadow-md ring-2 ring-pink-100' 
+                    : 'border-slate-200 bg-white/80 hover:border-slate-300'
                 }`}
               >
                 <div className="flex items-center justify-between">
                   <span className="font-black text-slate-900 text-sm">250 Rupee Plan</span>
                   <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">100% Refund Guarantee</span>
                 </div>
-                <ul className="text-xs text-slate-600 mt-2.5 space-y-1.5 leading-relaxed">
+                <ul className="text-xs text-slate-600 mt-2.5 space-y-1.5 leading-relaxed font-medium">
                   <li>• Higher priority placement in round</li>
                   <li>• Profile preview before match confirmation</li>
                   <li>• Advanced compatibility algorithm filtering</li>
@@ -1772,10 +1800,10 @@ export default function OnboardingForm({ user, onComplete }) {
               {/* 449 Rupee Plan */}
               <div
                 onClick={() => setSelectedPlan('elite')}
-                className={`p-5 rounded-3xl border-2 transition-all cursor-pointer text-left relative overflow-hidden ${
+                className={`p-5 rounded-[28px] border-2 transition-all cursor-pointer text-left relative overflow-hidden ${
                   selectedPlan === 'elite' 
-                    ? 'border-[#FF2E79] bg-rose-50/60 shadow-xl ring-2 ring-[#FF2E79]' 
-                    : 'border-slate-200 bg-white hover:border-slate-300'
+                    ? 'border-[#FF2E79] bg-white shadow-xl ring-2 ring-[#FF2E79]' 
+                    : 'border-slate-200 bg-white/80 hover:border-slate-300'
                 }`}
               >
                 <div className="flex items-center justify-between">
@@ -1804,10 +1832,10 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 14: Payment QR, Auto-Verify & Screenshot Upload                      */}
         {/* ========================================================================= */}
         {step === 14 && (
-          <div className="space-y-6 animate-slide-up">
-            <div className="text-left mb-3">
+          <div className="space-y-4 animate-slide-up">
+            <div className="text-left mb-2">
               <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                Step 14 • Final Activation
+                STEP 14 • FINAL ACTIVATION
               </span>
               <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">Confirm & Pay</h2>
               <p className="text-xs text-slate-500 font-medium mt-1 leading-relaxed">
@@ -1815,7 +1843,7 @@ export default function OnboardingForm({ user, onComplete }) {
               </p>
             </div>
 
-            <div className="bg-slate-50/90 border border-slate-200/80 rounded-3xl p-6 text-center space-y-4 shadow-sm">
+            <div className="bg-white/90 backdrop-blur-md border border-slate-100/90 rounded-[32px] p-5 text-center space-y-4 shadow-xs">
               <div className="flex items-center justify-between text-xs font-bold text-slate-700 pb-3 border-b border-slate-200/60">
                 <span>Exact Required Amount:</span>
                 <div className="text-right">
