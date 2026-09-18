@@ -11,7 +11,7 @@
     <link rel="manifest" href="/manifest.json" />
     <title>Cupid Rounds — Matchmaking & Dating</title>
     
-    <!-- Google Fonts: Plus Jakarta Sans & Outfit for modern spacious typography -->
+    <!-- Google Fonts: Plus Jakarta Sans & Outfit for modern typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -19,29 +19,49 @@
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
+      // Live Over-The-Air (OTA) Instant Auto-Update Engine
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/sw.js').then((registration) => {
-            // Check for new updates on every visit / visibility change
+            console.log('[Live OTA] Service Worker Registered');
+
+            // Force immediate update check on load
+            registration.update().catch(() => {});
+
+            // Auto-check for updates every 15 seconds while app is active
+            setInterval(() => {
+              registration.update().catch(() => {});
+            }, 15000);
+
+            // Auto-check on visibility/tab change
             document.addEventListener('visibilitychange', () => {
               if (document.visibilityState === 'visible') {
-                registration.update().catch(err => console.log('SW update check:', err));
+                registration.update().catch(() => {});
               }
             });
 
-            // If a new worker is installed, auto reload to update APK/App
+            // When new version is detected, auto reload to reflect live updates
             registration.addEventListener('updatefound', () => {
               const newWorker = registration.installing;
               if (newWorker) {
                 newWorker.addEventListener('statechange', () => {
                   if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                    console.log('[OTA Update] New version detected, reloading...');
+                    console.log('[Live OTA] Fresh update ready! Reloading app...');
                     window.location.reload();
                   }
                 });
               }
             });
           }).catch(err => console.log('SW reg error:', err));
+        });
+
+        // Controller change listener for instant reload
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (!refreshing) {
+            refreshing = true;
+            window.location.reload();
+          }
         });
       }
     </script>
