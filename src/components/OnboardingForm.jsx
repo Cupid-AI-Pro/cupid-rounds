@@ -211,11 +211,14 @@ export default function OnboardingForm({ user, onComplete }) {
     setUserPhotos((prev) => prev.filter((_, idx) => idx !== indexToRemove));
   };
 
+  // Warning modal popup state for Step 2 photo validation
+  const [showPhotoWarningModal, setShowPhotoWarningModal] = useState(false);
+
   const handleNext = () => {
-    // Step 2 Validation: Minimum 2 Real Photos Required
+    // Step 2 Validation: Minimum 2 Real Photos Required (Trigger Popup Modal)
     if (step === 2) {
       if (userPhotos.length < 2) {
-        setPhotoError(`Please upload at least 2 clear photos of yourself to continue (currently ${userPhotos.length}/2).`);
+        setShowPhotoWarningModal(true);
         return;
       }
       setPhotoError('');
@@ -390,10 +393,10 @@ export default function OnboardingForm({ user, onComplete }) {
           </div>
 
           <h2 className="text-2xl font-black text-slate-900 mb-1 font-display tracking-tight">
-            Thanks for participating! 🎉
+            Thanks for participating!
           </h2>
           <span className="inline-block px-3 py-1 bg-emerald-50 text-emerald-700 text-[11px] font-bold rounded-full mb-3 border border-emerald-200">
-            Payment Auto-Verified ✓
+            Payment Auto-Verified
           </span>
           
           <div className="bg-slate-50 border border-slate-100 rounded-3xl p-5 text-left my-2 space-y-2.5 shadow-sm">
@@ -401,10 +404,10 @@ export default function OnboardingForm({ user, onComplete }) {
               Thank you for participating in Cupid Round
             </h4>
             <p className="text-xs text-slate-600 leading-relaxed">
-              Your entry has been <strong className="text-emerald-600">successfully registered ✅</strong>. Our team will carefully process all submissions, and within 1-2 days after the form closes, you'll receive the details of your match directly on your email / Instagram.
+              Your entry has been <strong className="text-emerald-600">successfully registered</strong>. Our team will carefully process all submissions, and within 1-2 days after the form closes, you'll receive the details of your match directly on your email / Instagram.
             </p>
             <p className="text-xs text-slate-600 leading-relaxed">
-              We appreciate your trust in Cupid and are excited to help you connect with someone special. Stay tuned—your match is on the way! ✨
+              We appreciate your trust in Cupid and are excited to help you connect with someone special. Stay tuned—your match is on the way!
             </p>
             <div className="pt-1 text-xs font-bold text-slate-800">
               — Team Cupid
@@ -565,19 +568,6 @@ export default function OnboardingForm({ user, onComplete }) {
               <p className="text-xs text-slate-500 font-medium mt-1 leading-relaxed">
                 Upload 2 to 6 of your best clear photos & set your Instagram handle
               </p>
-            </div>
-
-            {/* Clear English Helper Box */}
-            <div className="p-4 rounded-3xl bg-rose-50/80 border border-rose-200/80 text-left flex items-start gap-3 shadow-sm">
-              <Sparkles className="w-5 h-5 text-[#FF2E79] shrink-0 mt-0.5" />
-              <div>
-                <span className="text-xs font-bold text-slate-900 block">
-                  Upload Your Best Clear Photos (Min 2, Max 6)
-                </span>
-                <span className="text-[11px] text-slate-600 leading-relaxed block mt-1">
-                  Please upload clear, high-quality, authentic photos of yourself. Well-lit genuine face photos receive up to <strong>3x more matches</strong>!
-                </span>
-              </div>
             </div>
 
             {/* Hidden File Input */}
@@ -1880,6 +1870,33 @@ export default function OnboardingForm({ user, onComplete }) {
         )}
       </div>
 
+      {/* Photo Requirement Warning Popup Modal */}
+      {showPhotoWarningModal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in select-none">
+          <div className="bg-white rounded-[28px] p-6 max-w-sm w-full shadow-2xl border border-rose-100 text-center space-y-4 animate-scale-up">
+            <div className="w-14 h-14 rounded-full bg-rose-50 text-[#FF2E79] flex items-center justify-center mx-auto border border-rose-100 shadow-xs">
+              <AlertCircle className="w-7 h-7 stroke-[2.2]" />
+            </div>
+
+            <div className="space-y-1.5">
+              <h3 className="text-lg font-extrabold text-slate-900 font-display">
+                Clear Profile Photos Required
+              </h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Please upload clear, high-quality, authentic photos of yourself. Well-lit genuine face photos receive up to <strong>3x more matches</strong>. Minimum 2 photos are required to continue.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowPhotoWarningModal(false)}
+              className="w-full h-12 bg-[#FF2E79] hover:bg-[#e02469] text-white font-extrabold text-xs tracking-wide rounded-full shadow-[0_8px_20px_rgba(255,46,121,0.35)] transition-all active:scale-[0.98] cursor-pointer"
+            >
+              Upload Photos
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -420,7 +420,7 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
             {dragX > maxDrag * 0.6 && (
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <span className="font-black text-[14px] text-white tracking-wider animate-pulse">
-                  Release! ♥
+                  Release to Start
                 </span>
               </div>
             )}
