@@ -133,48 +133,66 @@ export default function App() {
     );
   }
 
-  // 3. USER APP VIEW: 100% Edge-to-Edge Fullscreen Native Experience (No Simulated Frame, No Outer Margins)
+  // 3. USER APP VIEW: Fullscreen Pink Pastel Experience on Mobile, Sleek Mobile Frame on Desktop
   return (
-    <div className="w-full h-[100dvh] min-h-[100dvh] bg-white flex flex-col relative overflow-hidden select-none">
+    <div className="min-h-screen w-full bg-[#FFEBF2] md:bg-slate-100 flex flex-col justify-center items-center select-none overflow-x-hidden relative">
       
-      {/* Back to Landing Page floating button (Only on Desktop hover) */}
-      <div className="hidden lg:block fixed top-3 left-3 z-50 opacity-30 hover:opacity-100 transition-opacity">
-        <button
-          onClick={() => setCurrentView('landing')}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900/80 text-white rounded-full text-xs font-bold shadow-lg backdrop-blur-md cursor-pointer"
+      {/* Top Navigation bar (Desktop only) */}
+      <div className="hidden md:flex w-full max-w-md items-center justify-between py-2 px-4 text-xs font-bold text-slate-500 z-20">
+        <button 
+          onClick={() => setCurrentView('landing')} 
+          className="flex items-center gap-1.5 hover:text-[#FF2E79] transition-colors cursor-pointer"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Exit App to Website</span>
+          <span>Landing Website</span>
+        </button>
+
+        <button 
+          onClick={() => setCurrentView('admin')} 
+          className="flex items-center gap-1.5 hover:text-slate-800 transition-colors cursor-pointer"
+        >
+          <ShieldCheck className="w-3.5 h-3.5" />
+          <span>Admin Console</span>
         </button>
       </div>
 
-      {/* 100% Fullscreen Native Content Container */}
-      <div className="flex-1 flex flex-col overflow-y-auto relative bg-white w-full h-full">
-        {isPlayingIntro ? (
-          <CinematicLoadingScreen 
-            onComplete={() => setIsPlayingIntro(false)} 
-            activeState={activeState} 
-            duration={3800} 
-          />
-        ) : !currentUser ? (
-          <AuthPage 
-            onLoginSuccess={handleLoginSuccess} 
-            activeState={activeState}
-            showLoginInPhone={showLoginInPhone}
-            setShowLoginInPhone={setShowLoginInPhone}
-          />
-        ) : currentUser.status === 'onboarding' ? (
-          <OnboardingForm 
-            user={currentUser} 
-            onComplete={handleOnboardingComplete}
-          />
-        ) : (
-          <UserDashboard 
-            user={currentUser} 
-            onUpdateUser={handleUpdateUser}
-            onLogout={handleLogout}
-          />
-        )}
+      {/* Main App Canvas Container:
+          - On Mobile: 100% full screen height, borderless, pink pastel background
+          - On Desktop (md:): Clean centered 420px phone frame mockup */}
+      <div className="w-full max-w-md h-[100dvh] md:h-[844px] md:max-h-[92vh] md:rounded-[44px] overflow-hidden flex flex-col relative z-10 bg-gradient-to-b from-[#FFEBF2] via-[#FFF5F8] to-white md:border-[6px] md:border-white shadow-none md:shadow-2xl">
+        
+        {/* Dynamic Island (Desktop only) */}
+        <div className="hidden md:block absolute top-2 left-1/2 -translate-x-1/2 w-28 h-4 bg-slate-900 rounded-full z-50 pointer-events-none"></div>
+
+        {/* Content Wrapper */}
+        <div className="flex-1 flex flex-col overflow-y-auto relative bg-transparent">
+          {isPlayingIntro ? (
+            <CinematicLoadingScreen 
+              onComplete={() => setIsPlayingIntro(false)} 
+              activeState={activeState} 
+              duration={3800} 
+            />
+          ) : !currentUser ? (
+            <AuthPage 
+              onLoginSuccess={handleLoginSuccess} 
+              activeState={activeState}
+              showLoginInPhone={showLoginInPhone}
+              setShowLoginInPhone={setShowLoginInPhone}
+            />
+          ) : currentUser.status === 'onboarding' ? (
+            <OnboardingForm 
+              user={currentUser} 
+              onComplete={handleOnboardingComplete}
+            />
+          ) : (
+            <UserDashboard 
+              user={currentUser} 
+              onUpdateUser={handleUpdateUser}
+              onLogout={handleLogout}
+            />
+          )}
+        </div>
+
       </div>
 
     </div>
