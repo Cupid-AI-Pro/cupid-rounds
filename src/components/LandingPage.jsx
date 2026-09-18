@@ -31,6 +31,7 @@ import DownloadApkModal from './DownloadApkModal';
 import StaggeredGrid from './StaggeredGrid';
 import TestimonialsCard from './TestimonialsCard';
 import FlipFadeText from './FlipFadeText';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -555,11 +556,8 @@ export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
               </div>
             </div>
 
-            {/* Inside Screen Profile Card */}
-            <div 
-              key={currentProfile.id}
-              className="rounded-[30px] sm:rounded-[38px] overflow-hidden bg-white border border-slate-100 p-3.5 sm:p-5 text-center space-y-2.5 sm:space-y-3.5 animate-profile-zoom relative"
-            >
+            {/* Inside Screen Profile Card - Static Container to Prevent Screen Blinking */}
+            <div className="rounded-[30px] sm:rounded-[38px] overflow-hidden bg-white border border-slate-100 p-3.5 sm:p-5 text-center relative min-h-[390px] sm:min-h-[430px] flex flex-col justify-between shadow-inner">
               
               {/* Heart burst celebration particles */}
               {likeBurst && (
@@ -570,39 +568,51 @@ export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
                 </div>
               )}
 
-              {/* Profile Avatar inside Rounded Square */}
-              <div 
-                className="relative mx-auto overflow-hidden border-2 border-slate-100 shadow-md rounded-2xl sm:rounded-3xl"
-                style={{ width: 'clamp(72px, 18vw, 108px)', height: 'clamp(72px, 18vw, 108px)' }}
-              >
-                <img 
-                  src={currentProfile.avatar} 
-                  alt={currentProfile.name} 
-                  className="w-full h-full object-cover"
-                />
-              </div>
+              {/* Smooth Framer Motion Cross-fade per Profile */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentProfile.id}
+                  initial={{ opacity: 0, scale: 0.96 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.96 }}
+                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                  className="space-y-2.5 sm:space-y-3.5 my-auto"
+                >
+                  {/* Profile Avatar inside Rounded Square */}
+                  <div 
+                    className="relative mx-auto overflow-hidden border-2 border-slate-100 shadow-md rounded-2xl sm:rounded-3xl"
+                    style={{ width: 'clamp(72px, 18vw, 108px)', height: 'clamp(72px, 18vw, 108px)' }}
+                  >
+                    <img 
+                      src={currentProfile.avatar} 
+                      alt={currentProfile.name} 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
 
-              {/* Character Name & Subtitle */}
-              <div>
-                <h3 className="text-xl sm:text-3xl font-serif text-slate-900 font-bold">{currentProfile.name}</h3>
-                <p className="text-[10px] sm:text-xs text-slate-500 font-medium mt-0.5">{currentProfile.headline}</p>
-              </div>
+                  {/* Character Name & Subtitle */}
+                  <div>
+                    <h3 className="text-xl sm:text-3xl font-serif text-slate-900 font-bold">{currentProfile.name}</h3>
+                    <p className="text-[10px] sm:text-xs text-slate-500 font-medium mt-0.5">{currentProfile.headline}</p>
+                  </div>
 
-              {/* Decorative Pill Icon */}
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center mx-auto text-slate-700 shadow-sm">
-                <IconComponent className="w-4 h-4 sm:w-5 sm:h-5 text-[#FF2E79]" />
-              </div>
+                  {/* Decorative Pill Icon */}
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center mx-auto text-slate-700 shadow-sm">
+                    <IconComponent className="w-4 h-4 sm:w-5 sm:h-5 text-[#FF2E79]" />
+                  </div>
 
-              {/* About Me Section */}
-              <div className="text-left space-y-0.5 sm:space-y-1 pt-0.5">
-                <h4 className="text-xs sm:text-sm font-serif font-bold text-slate-900 text-center">About me</h4>
-                <p className="text-[10px] sm:text-xs text-slate-500 font-normal leading-relaxed text-center px-1 line-clamp-3 sm:line-clamp-none">
-                  "{currentProfile.bio}"
-                </p>
-              </div>
+                  {/* About Me Section */}
+                  <div className="text-left space-y-0.5 sm:space-y-1 pt-0.5">
+                    <h4 className="text-xs sm:text-sm font-serif font-bold text-slate-900 text-center">About me</h4>
+                    <p className="text-[10px] sm:text-xs text-slate-500 font-normal leading-relaxed text-center px-1 line-clamp-3 sm:line-clamp-none">
+                      "{currentProfile.bio}"
+                    </p>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
 
-              {/* Action Button */}
-              <div className="pt-1">
+              {/* Action Button & Next/Prev Controls */}
+              <div className="space-y-2 pt-1">
                 <button
                   onClick={handleLikeClick}
                   className={`w-full py-2.5 sm:py-3 rounded-2xl font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md ${
@@ -614,17 +624,16 @@ export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
                   <Heart className="w-3.5 h-3.5 fill-white" />
                   <span>{isLiked ? 'Matched! 🎉 (Chat Unlocked)' : `Like ${currentProfile.name}`}</span>
                 </button>
-              </div>
 
-              {/* Next / Prev Controls */}
-              <div className="flex items-center justify-between px-1 pt-0.5 text-[9px] sm:text-[11px] font-bold text-slate-400">
-                <button onClick={handlePrevProfile} className="hover:text-[#FF2E79] flex items-center gap-0.5 cursor-pointer">
-                  <ChevronLeft className="w-3 h-3" /> Prev
-                </button>
-                <span className="text-[9px] sm:text-[10px] text-slate-300 font-bold">{activeProfileIndex + 1} of {profiles.length}</span>
-                <button onClick={handleNextProfile} className="hover:text-[#FF2E79] flex items-center gap-0.5 cursor-pointer">
-                  Next <ChevronRight className="w-3 h-3" />
-                </button>
+                <div className="flex items-center justify-between px-1 text-[9px] sm:text-[11px] font-bold text-slate-400">
+                  <button onClick={handlePrevProfile} className="hover:text-[#FF2E79] flex items-center gap-0.5 cursor-pointer">
+                    <ChevronLeft className="w-3 h-3" /> Prev
+                  </button>
+                  <span className="text-[9px] sm:text-[10px] text-slate-300 font-bold">{activeProfileIndex + 1} of {profiles.length}</span>
+                  <button onClick={handleNextProfile} className="hover:text-[#FF2E79] flex items-center gap-0.5 cursor-pointer">
+                    Next <ChevronRight className="w-3 h-3" />
+                  </button>
+                </div>
               </div>
 
             </div>
