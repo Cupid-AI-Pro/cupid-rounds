@@ -84,7 +84,11 @@ const HEIGHT_RANGE = [
 const EXES_RANGE = [0, 1, 2, 3, 4, "5+"];
 
 export default function OnboardingForm({ user, onComplete }) {
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    const parsedStep = parseInt(params.get('step') || '1', 10);
+    return parsedStep >= 1 && parsedStep <= 14 ? parsedStep : 1;
+  });
   const totalSteps = 14;
   const fileInputRef = useRef(null);
 

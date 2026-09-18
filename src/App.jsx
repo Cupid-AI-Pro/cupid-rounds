@@ -10,7 +10,20 @@ import { initializeStorage, getCurrentUser, getActiveState, logout, setCurrentUs
 import { Sparkles, Phone, ShieldCheck, ArrowLeft, Globe } from 'lucide-react';
 
 export default function App() {
-  const [currentUser, setLocalCurrentUser] = useState(null);
+  const [currentUser, setLocalCurrentUser] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('step')) {
+      return {
+        id: 'test_onboarding_user',
+        name: 'Test User',
+        email: 'test@cupid.com',
+        gender: 'male',
+        status: 'onboarding'
+      };
+    }
+    return getCurrentUser();
+  });
+
   const [activeState, setActiveState] = useState('Delhi NCR');
   const [showLoginInPhone, setShowLoginInPhone] = useState(false);
   const [isPlayingIntro, setIsPlayingIntro] = useState(false);
@@ -18,6 +31,7 @@ export default function App() {
   // Default to landing page for web visitors, but open matchmaking app directly for APK, PWA or saved users!
   const [currentView, setCurrentView] = useState(() => {
     const params = new URLSearchParams(window.location.search);
+    if (params.get('step')) return 'app';
     if (params.get('view') === 'admin') return 'admin';
     if (params.get('view') === 'app') return 'app';
     if (params.get('view') === 'landing') return 'landing';
