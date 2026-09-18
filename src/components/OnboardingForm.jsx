@@ -25,7 +25,18 @@ import {
   RefreshCw,
   Calendar,
   Ruler,
-  Box
+  Box,
+  Wine,
+  Flower2,
+  BookOpen,
+  Coffee,
+  Award,
+  Zap,
+  ThumbsUp,
+  Lightbulb,
+  Mail,
+  Phone,
+  MapPin
 } from 'lucide-react';
 import ScrollWheelPicker from './onboarding/ScrollWheelPicker';
 import CupidLogo from './CupidLogo';
@@ -507,10 +518,10 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 1: Personal Info (Name, Phone, Email, Hometown)                      */}
         {/* ========================================================================= */}
         {step === 1 && (
-          <div className="space-y-6 animate-slide-up">
-            <div className="text-left mb-3">
+          <div className="space-y-4 animate-slide-up">
+            <div className="text-left mb-2">
               <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                Step 01 • Basic Details
+                STEP 01 • BASIC DETAILS
               </span>
               <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">Personal Info</h2>
               <p className="text-xs text-slate-500 font-medium mt-1 leading-relaxed">
@@ -518,48 +529,68 @@ export default function OnboardingForm({ user, onComplete }) {
               </p>
             </div>
 
-            <div className="space-y-4">
+            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs space-y-4 text-left">
               <div>
-                <label className="form-label text-left mb-2 text-xs font-bold text-slate-700">Full Name *</label>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79] shrink-0">
+                    <User className="w-4 h-4" />
+                  </div>
+                  <label className="text-xs font-bold text-slate-900">Full Name *</label>
+                </div>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Aditya Chauhan"
-                  className="form-input text-sm h-14 rounded-2xl bg-slate-50 border-slate-200 focus:bg-white"
+                  className="form-input text-xs sm:text-sm h-12 rounded-2xl bg-slate-50/80 border-slate-200/80 focus:bg-white focus:border-pink-300"
                 />
               </div>
 
               <div>
-                <label className="form-label text-left mb-2 text-xs font-bold text-slate-700">Phone Number *</label>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79] shrink-0">
+                    <Phone className="w-4 h-4" />
+                  </div>
+                  <label className="text-xs font-bold text-slate-900">Phone Number *</label>
+                </div>
                 <input
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="+91 98765 43210"
-                  className="form-input text-sm h-14 rounded-2xl bg-slate-50 border-slate-200 focus:bg-white"
+                  className="form-input text-xs sm:text-sm h-12 rounded-2xl bg-slate-50/80 border-slate-200/80 focus:bg-white focus:border-pink-300"
                 />
               </div>
 
               <div>
-                <label className="form-label text-left mb-2 text-xs font-bold text-slate-700">Email Id *</label>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79] shrink-0">
+                    <Mail className="w-4 h-4" />
+                  </div>
+                  <label className="text-xs font-bold text-slate-900">Email Id *</label>
+                </div>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="yourname@gmail.com"
-                  className="form-input text-sm h-14 rounded-2xl bg-slate-50 border-slate-200 focus:bg-white"
+                  className="form-input text-xs sm:text-sm h-12 rounded-2xl bg-slate-50/80 border-slate-200/80 focus:bg-white focus:border-pink-300"
                 />
               </div>
 
               <div>
-                <label className="form-label text-left mb-2 text-xs font-bold text-slate-700">Hometown *</label>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79] shrink-0">
+                    <MapPin className="w-4 h-4" />
+                  </div>
+                  <label className="text-xs font-bold text-slate-900">Hometown *</label>
+                </div>
                 <input
                   type="text"
                   value={hometown}
                   onChange={(e) => setHometown(e.target.value)}
                   placeholder="e.g. Delhi / Noida / Gurgaon"
-                  className="form-input text-sm h-14 rounded-2xl bg-slate-50 border-slate-200 focus:bg-white"
+                  className="form-input text-xs sm:text-sm h-12 rounded-2xl bg-slate-50/80 border-slate-200/80 focus:bg-white focus:border-pink-300"
                 />
               </div>
             </div>
@@ -572,6 +603,9 @@ export default function OnboardingForm({ user, onComplete }) {
         {step === 2 && (
           <div className="space-y-4 animate-slide-up">
             <div className="text-left mb-2">
+              <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
+                STEP 02 • PROFILE MEDIA & SOCIAL
+              </span>
               <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">Your Photos & Insta</h2>
               <p className="text-xs text-slate-500 font-medium mt-1 leading-relaxed">
                 Upload 2 to 6 of your best clear photos & set your Instagram handle
@@ -859,10 +893,10 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 4: University, Branch & Year of Study                                */}
         {/* ========================================================================= */}
         {step === 4 && (
-          <div className="space-y-6 animate-slide-up">
-            <div className="text-left mb-3">
+          <div className="space-y-4 animate-slide-up">
+            <div className="text-left mb-2">
               <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                Step 04 • Campus & Academics
+                STEP 04 • CAMPUS & ACADEMICS
               </span>
               <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">University & Major</h2>
               <p className="text-xs text-slate-500 font-medium mt-1 leading-relaxed">
@@ -870,9 +904,14 @@ export default function OnboardingForm({ user, onComplete }) {
               </p>
             </div>
 
-            {/* University Selection */}
-            <div>
-              <label className="form-label text-left mb-2 text-xs font-bold text-slate-700">University *</label>
+            {/* University Selection Card */}
+            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs space-y-3 text-left">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
+                  <GraduationCap className="w-4 h-4" />
+                </div>
+                <label className="text-sm font-bold text-slate-900">University *</label>
+              </div>
               <CustomSelect
                 value={university}
                 onChange={(val) => setUniversity(val)}
@@ -887,14 +926,19 @@ export default function OnboardingForm({ user, onComplete }) {
                   placeholder="Type your university name..."
                   value={customUniversity}
                   onChange={(e) => setCustomUniversity(e.target.value)}
-                  className="form-input text-sm h-14 rounded-2xl mt-2"
+                  className="w-full h-12 bg-slate-50/80 border border-slate-200/80 rounded-2xl px-4 text-sm font-semibold text-slate-800 placeholder-slate-400 focus:bg-white focus:border-pink-300 outline-none transition-all mt-2"
                 />
               )}
             </div>
 
-            {/* Branch Selection */}
-            <div>
-              <label className="form-label text-left mb-2 text-xs font-bold text-slate-700">Branch *</label>
+            {/* Branch Selection Card */}
+            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs space-y-3 text-left">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
+                  <BookOpen className="w-4 h-4" />
+                </div>
+                <label className="text-sm font-bold text-slate-900">Branch *</label>
+              </div>
               <CustomSelect
                 value={branch}
                 onChange={(val) => setBranch(val)}
@@ -908,29 +952,38 @@ export default function OnboardingForm({ user, onComplete }) {
                   placeholder="Type your branch / major..."
                   value={customBranch}
                   onChange={(e) => setCustomBranch(e.target.value)}
-                  className="form-input text-sm h-14 rounded-2xl mt-2"
+                  className="w-full h-12 bg-slate-50/80 border border-slate-200/80 rounded-2xl px-4 text-sm font-semibold text-slate-800 placeholder-slate-400 focus:bg-white focus:border-pink-300 outline-none transition-all mt-2"
                 />
               )}
             </div>
 
-            {/* Year of Study */}
-            <div>
-              <label className="form-label text-left mb-2 text-xs font-bold text-slate-700">Year Of Study *</label>
-              <div className="grid grid-cols-3 gap-2.5">
-                {['1st Year', '2nd Year', '3rd Year', '4th Year', 'Graduate'].map((yr) => (
-                  <button
-                    key={yr}
-                    type="button"
-                    onClick={() => setYearOfStudy(yr)}
-                    className={`py-3 rounded-2xl text-xs font-bold border transition-all cursor-pointer ${
-                      yearOfStudy === yr
-                        ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-sm'
-                        : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-                    }`}
-                  >
-                    {yr}
-                  </button>
-                ))}
+            {/* Year of Study Card */}
+            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs space-y-3 text-left">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
+                  <Award className="w-4 h-4" />
+                </div>
+                <label className="text-sm font-bold text-slate-900">Year Of Study *</label>
+              </div>
+              <div className="flex flex-wrap gap-2.5">
+                {['1st Year', '2nd Year', '3rd Year', '4th Year', 'Graduate'].map((yr) => {
+                  const isSelected = yearOfStudy === yr;
+                  return (
+                    <button
+                      key={yr}
+                      type="button"
+                      onClick={() => setYearOfStudy(yr)}
+                      className={`px-4.5 py-2.5 rounded-full text-xs font-bold border transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
+                          : 'bg-white text-slate-800 border-slate-200/90 hover:border-pink-200 shadow-2xs'
+                      }`}
+                    >
+                      {isSelected && '✓ '}
+                      {yr}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -940,10 +993,10 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 5: Religion, Relationship Type & Habits                              */}
         {/* ========================================================================= */}
         {step === 5 && (
-          <div className="space-y-6 animate-slide-up">
-            <div className="text-left mb-3">
+          <div className="space-y-4 animate-slide-up">
+            <div className="text-left mb-2">
               <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                Step 05 • Beliefs & Lifestyle
+                STEP 05 • BELIEFS & LIFESTYLE
               </span>
               <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">Religion & Goals</h2>
               <p className="text-xs text-slate-500 font-medium mt-1 leading-relaxed">
@@ -951,71 +1004,98 @@ export default function OnboardingForm({ user, onComplete }) {
               </p>
             </div>
 
-            {/* Religion */}
-            <div>
-              <label className="form-label text-left mb-2 text-xs font-bold text-slate-700">Religion *</label>
+            {/* Religion Card */}
+            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs space-y-3 text-left">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
+                  <Flower2 className="w-4 h-4" />
+                </div>
+                <label className="text-sm font-bold text-slate-900">Religion *</label>
+              </div>
               <div className="flex flex-wrap gap-2.5">
-                {['Hindu', 'Muslim', 'Sikh', 'Christian', 'Others'].map((rel) => (
-                  <button
-                    key={rel}
-                    type="button"
-                    onClick={() => setReligion(rel)}
-                    className={`px-4 py-2.5 rounded-full text-xs font-bold border transition-all cursor-pointer ${
-                      religion === rel
-                        ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-sm'
-                        : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-                    }`}
-                  >
-                    {rel}
-                  </button>
-                ))}
+                {['Hindu', 'Muslim', 'Sikh', 'Christian', 'Others'].map((rel) => {
+                  const isSelected = religion === rel;
+                  return (
+                    <button
+                      key={rel}
+                      type="button"
+                      onClick={() => setReligion(rel)}
+                      className={`px-4.5 py-2.5 rounded-full text-xs font-bold border transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
+                          : 'bg-white text-slate-800 border-slate-200/90 hover:border-pink-200 shadow-2xs'
+                      }`}
+                    >
+                      {isSelected && '✓ '}
+                      {rel}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
-            {/* Relationship Type */}
-            <div>
-              <label className="form-label text-left mb-2 text-xs font-bold text-slate-700">Relationship Type *</label>
-              <div className="grid grid-cols-2 gap-3">
+            {/* Relationship Type Card */}
+            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs space-y-3 text-left">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
+                  <Heart className="w-4 h-4 fill-pink-100" />
+                </div>
+                <label className="text-sm font-bold text-slate-900">Relationship Type *</label>
+              </div>
+              <div className="grid grid-cols-2 gap-2.5">
                 {[
                   'Serious Relationship', 
                   'Short-Term Relationships', 
                   'Casuals / Hookups', 
                   'Friendship'
-                ].map((type) => (
-                  <button
-                    key={type}
-                    type="button"
-                    onClick={() => toggleArrayItem(relationshipType, setRelationshipType, type)}
-                    className={`p-3.5 rounded-2xl text-left text-xs font-bold border transition-all cursor-pointer ${
-                      relationshipType.includes(type)
-                        ? 'bg-rose-50 border-[#FF2E79] text-[#FF2E79] shadow-sm'
-                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
-                    }`}
-                  >
-                    {type}
-                  </button>
-                ))}
+                ].map((type) => {
+                  const isSelected = relationshipType.includes(type);
+                  return (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => toggleArrayItem(relationshipType, setRelationshipType, type)}
+                      className={`p-3.5 rounded-2xl text-left text-xs font-bold border transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-rose-50 border-[#FF2E79] text-[#FF2E79] shadow-xs'
+                          : 'bg-white border-slate-200/90 text-slate-800 hover:border-pink-200 shadow-2xs'
+                      }`}
+                    >
+                      {isSelected && '✓ '}
+                      {type}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
-            {/* Drinking / Smoking Habits */}
-            <div>
-              <label className="form-label text-left mb-2 text-xs font-bold text-slate-700">Drinking / Smoking Habits *</label>
+            {/* Drinking / Smoking Habits Card */}
+            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs space-y-3 text-left">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
+                  <Wine className="w-4 h-4" />
+                </div>
+                <label className="text-sm font-bold text-slate-900">Drinking / Smoking Habits *</label>
+              </div>
               <div className="flex flex-wrap gap-2.5">
-                {['Smoke', 'Drink', 'Drugs', 'Weed', 'None'].map((h) => (
-                  <button
-                    key={h}
-                    type="button"
-                    onClick={() => toggleArrayItem(habits, setHabits, h)}
-                    className={`px-4 py-2 rounded-full text-xs font-bold border transition-all cursor-pointer ${
-                      habits.includes(h)
-                        ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-sm'
-                        : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
-                    }`}
-                  >
-                    {h}
-                  </button>
-                ))}
+                {['Smoke', 'Drink', 'Drugs', 'Weed', 'None'].map((h) => {
+                  const isSelected = habits.includes(h);
+                  return (
+                    <button
+                      key={h}
+                      type="button"
+                      onClick={() => toggleArrayItem(habits, setHabits, h)}
+                      className={`px-4.5 py-2.5 rounded-full text-xs font-bold border transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
+                          : 'bg-white text-slate-800 border-slate-200/90 hover:border-pink-200 shadow-2xs'
+                      }`}
+                    >
+                      {isSelected && '✓ '}
+                      {h}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -1025,10 +1105,10 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 6: Personality Type, Qualities, Vibe & Exes                          */}
         {/* ========================================================================= */}
         {step === 6 && (
-          <div className="space-y-6 animate-slide-up">
-            <div className="text-left mb-3">
+          <div className="space-y-4 animate-slide-up">
+            <div className="text-left mb-2">
               <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                Step 06 • Your Vibe & Energy
+                STEP 06 • YOUR VIBE & ENERGY
               </span>
               <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">Personality & Exes</h2>
               <p className="text-xs text-slate-500 font-medium mt-1 leading-relaxed">
@@ -1036,79 +1116,109 @@ export default function OnboardingForm({ user, onComplete }) {
               </p>
             </div>
 
-            {/* Personality Type */}
-            <div>
-              <label className="form-label text-left mb-2 text-xs font-bold text-slate-700">Personality Type *</label>
-              <div className="grid grid-cols-3 gap-3">
-                {['Introvert', 'Ambivert', 'Extrovert'].map((p) => (
-                  <button
-                    key={p}
-                    type="button"
-                    onClick={() => setPersonalityType(p)}
-                    className={`py-3 rounded-2xl text-xs font-bold border transition-all cursor-pointer ${
-                      personalityType === p
-                        ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-sm'
-                        : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
-                    }`}
-                  >
-                    {p}
-                  </button>
-                ))}
+            {/* Personality Type Card */}
+            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs space-y-3 text-left">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
+                  <Smile className="w-4 h-4" />
+                </div>
+                <label className="text-sm font-bold text-slate-900">Personality Type *</label>
+              </div>
+              <div className="grid grid-cols-3 gap-2.5">
+                {['Introvert', 'Ambivert', 'Extrovert'].map((p) => {
+                  const isSelected = personalityType === p;
+                  return (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => setPersonalityType(p)}
+                      className={`py-3 rounded-2xl text-xs font-bold border transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
+                          : 'bg-white text-slate-800 border-slate-200/90 hover:border-pink-200 shadow-2xs'
+                      }`}
+                    >
+                      {isSelected && '✓ '}
+                      {p}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
-            {/* Qualities */}
-            <div>
-              <label className="form-label text-left mb-2 text-xs font-bold text-slate-700">Qualities ({qualities.length} selected) *</label>
+            {/* Qualities Card */}
+            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs space-y-3 text-left">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <label className="text-sm font-bold text-slate-900">Qualities ({qualities.length} selected) *</label>
+              </div>
               <div className="flex flex-wrap gap-2">
-                {QUALITIES_LIST.map((q) => (
-                  <button
-                    key={q}
-                    type="button"
-                    onClick={() => toggleArrayItem(qualities, setQualities, q)}
-                    className={`px-3.5 py-2 rounded-full text-xs font-bold border transition-all cursor-pointer ${
-                      qualities.includes(q)
-                        ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-sm'
-                        : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-                    }`}
-                  >
-                    {qualities.includes(q) && '✓ '}
-                    {q}
-                  </button>
-                ))}
+                {QUALITIES_LIST.map((q) => {
+                  const isSelected = qualities.includes(q);
+                  return (
+                    <button
+                      key={q}
+                      type="button"
+                      onClick={() => toggleArrayItem(qualities, setQualities, q)}
+                      className={`px-3.5 py-2.5 rounded-full text-xs font-bold border transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
+                          : 'bg-white text-slate-800 border-slate-200/90 hover:border-pink-200 shadow-2xs'
+                      }`}
+                    >
+                      {isSelected && '✓ '}
+                      {q}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
-            {/* Dating Vibe */}
-            <div>
-              <label className="form-label text-left mb-2 text-xs font-bold text-slate-700">Dating Vibe *</label>
-              <div className="grid grid-cols-2 gap-3">
-                {DATING_VIBES.map((v) => (
-                  <button
-                    key={v}
-                    type="button"
-                    onClick={() => toggleArrayItem(datingVibe, setDatingVibe, v)}
-                    className={`p-3 rounded-2xl text-xs font-bold border transition-all text-left cursor-pointer ${
-                      datingVibe.includes(v)
-                        ? 'bg-rose-50 border-[#FF2E79] text-[#FF2E79] shadow-sm'
-                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
-                    }`}
-                  >
-                    {v}
-                  </button>
-                ))}
+            {/* Dating Vibe Card */}
+            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs space-y-3 text-left">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
+                  <Coffee className="w-4 h-4" />
+                </div>
+                <label className="text-sm font-bold text-slate-900">Dating Vibe *</label>
+              </div>
+              <div className="grid grid-cols-2 gap-2.5">
+                {DATING_VIBES.map((v) => {
+                  const isSelected = datingVibe.includes(v);
+                  return (
+                    <button
+                      key={v}
+                      type="button"
+                      onClick={() => toggleArrayItem(datingVibe, setDatingVibe, v)}
+                      className={`p-3 rounded-2xl text-xs font-bold border transition-all text-left cursor-pointer ${
+                        isSelected
+                          ? 'bg-rose-50 border-[#FF2E79] text-[#FF2E79] shadow-xs'
+                          : 'bg-white border-slate-200/90 text-slate-800 hover:border-pink-200 shadow-2xs'
+                      }`}
+                    >
+                      {isSelected && '✓ '}
+                      {v}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
-            {/* Number of Exes */}
-            <div className="bg-slate-50/90 border border-slate-200/80 rounded-3xl p-4 text-center">
-              <label className="form-label text-left mb-2 text-xs font-bold text-slate-700">Number of Exes *</label>
-              <ScrollWheelPicker
-                items={EXES_RANGE}
-                value={numberOfExes}
+            {/* Number of Exes Card */}
+            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs space-y-3 text-left">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
+                  <Heart className="w-4 h-4 fill-pink-100" />
+                </div>
+                <label className="text-sm font-bold text-slate-900">Number of Exes *</label>
+              </div>
+              <CustomSelect
+                value={numberOfExes.toString()}
                 onChange={(val) => setNumberOfExes(val)}
-                visibleCount={3}
-                itemHeight={38}
+                options={['0', '1', '2', '3', '4', '5+']}
+                placeholder="Select number of exes..."
               />
             </div>
           </div>
@@ -1118,10 +1228,10 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 7: Partner Preferences — Age, Height & Gender                        */}
         {/* ========================================================================= */}
         {step === 7 && (
-          <div className="space-y-6 animate-slide-up">
-            <div className="text-left mb-3">
+          <div className="space-y-4 animate-slide-up">
+            <div className="text-left mb-2">
               <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                Step 07 • Ideal Match Criteria
+                STEP 07 • IDEAL MATCH CRITERIA
               </span>
               <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">Partner Stats</h2>
               <p className="text-xs text-slate-500 font-medium mt-1 leading-relaxed">
@@ -1129,16 +1239,22 @@ export default function OnboardingForm({ user, onComplete }) {
               </p>
             </div>
 
-            <div className="p-4 bg-rose-50/70 border border-rose-100 rounded-3xl text-left text-xs text-slate-600 leading-snug">
-              <strong>Cupid Note :</strong> More choices significantly increase the chances of finding your perfect match!
+            {/* Cupid Note Card */}
+            <div className="p-3.5 bg-pink-50/70 border border-pink-100/80 rounded-2xl flex items-center gap-3 text-xs text-slate-700 shadow-2xs text-left">
+              <div className="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center text-[#FF2E79] shrink-0">
+                <Lightbulb className="w-4 h-4 fill-pink-200" />
+              </div>
+              <span>
+                <strong>Cupid Note :</strong> More choices significantly increase the chances of finding your perfect match!
+              </span>
             </div>
 
-            {/* Preferred Age */}
-            <div className="bg-slate-50/80 border border-slate-200/80 rounded-3xl p-5">
-              <label className="form-label text-left mb-2 text-xs font-bold text-slate-700">
+            {/* Preferred Age Card */}
+            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs space-y-3 text-left">
+              <label className="text-sm font-bold text-slate-900 block">
                 Preferred Age ({prefMinAge} - {prefMaxAge} yrs) *
               </label>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 pt-1">
                 <input
                   type="range"
                   min="18"
@@ -1147,7 +1263,7 @@ export default function OnboardingForm({ user, onComplete }) {
                   onChange={(e) => setPrefMinAge(Math.min(Number(e.target.value), prefMaxAge - 1))}
                   className="w-full accent-[#FF2E79]"
                 />
-                <span className="text-xs font-bold text-slate-700 shrink-0">to</span>
+                <span className="text-xs font-bold text-slate-500 shrink-0 px-1">to</span>
                 <input
                   type="range"
                   min="18"
@@ -1159,35 +1275,38 @@ export default function OnboardingForm({ user, onComplete }) {
               </div>
             </div>
 
-            {/* Preferred Height */}
-            <div>
-              <label className="form-label text-left mb-2 text-xs font-bold text-slate-700">Preferred Height *</label>
+            {/* Preferred Height Card */}
+            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs space-y-3 text-left">
+              <label className="text-sm font-bold text-slate-900 block">Preferred Height *</label>
               <CustomSelect
                 value={prefHeight}
                 onChange={(val) => setPrefHeight(val)}
-                options={[...HEIGHT_RANGE.map(h => `${h} & above`), 'Any Height']}
+                options={[...HEIGHT_RANGE.map(h => `${h}`), 'Any Height']}
                 placeholder="Select preferred height..."
               />
             </div>
 
-            {/* Preferred Gender */}
-            <div>
-              <label className="form-label text-left mb-2 text-xs font-bold text-slate-700">Preferred Gender *</label>
+            {/* Preferred Gender Card */}
+            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs space-y-3 text-left">
+              <label className="text-sm font-bold text-slate-900 block">Preferred Gender *</label>
               <div className="grid grid-cols-3 gap-3">
-                {['Male', 'Female', 'Others'].map((g) => (
-                  <button
-                    key={g}
-                    type="button"
-                    onClick={() => setPrefGender(g)}
-                    className={`py-3 rounded-2xl text-xs font-bold border transition-all cursor-pointer ${
-                      prefGender === g
-                        ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-sm'
-                        : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
-                    }`}
-                  >
-                    {g}
-                  </button>
-                ))}
+                {['Male', 'Female', 'Others'].map((g) => {
+                  const isSelected = prefGender === g;
+                  return (
+                    <button
+                      key={g}
+                      type="button"
+                      onClick={() => setPrefGender(g)}
+                      className={`py-3.5 rounded-2xl text-xs sm:text-sm font-bold transition-all border flex items-center justify-center cursor-pointer ${
+                        isSelected
+                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
+                          : 'bg-white text-slate-800 border-slate-200/90 hover:border-pink-200 shadow-2xs'
+                      }`}
+                    >
+                      {g}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -1197,10 +1316,10 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 8: Partner Preferences — University, Branch & Year of Study          */}
         {/* ========================================================================= */}
         {step === 8 && (
-          <div className="space-y-6 animate-slide-up">
-            <div className="text-left mb-3">
+          <div className="space-y-4 animate-slide-up">
+            <div className="text-left mb-2">
               <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                Step 08 • Campus Criteria
+                STEP 07 • IDEAL MATCH CRITERIA
               </span>
               <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">Preferred University</h2>
               <p className="text-xs text-slate-500 font-medium mt-1 leading-relaxed">
@@ -1208,59 +1327,64 @@ export default function OnboardingForm({ user, onComplete }) {
               </p>
             </div>
 
-            {/* Preferred University */}
-            <div>
-              <label className="form-label text-left mb-2 text-xs font-bold text-slate-700">Preferred University *</label>
-              <div className="flex flex-wrap gap-2.5 max-h-44 overflow-y-auto no-scrollbar border border-slate-200/80 p-4 rounded-3xl bg-slate-50/70">
-                {['Any University', ...POPULAR_UNIVERSITIES, 'Others'].map((u) => (
-                  <button
-                    key={u}
-                    type="button"
-                    onClick={() => toggleArrayItem(prefUniversity, setPrefUniversity, u)}
-                    className={`px-3.5 py-2 rounded-full text-xs font-bold border transition-all cursor-pointer ${
-                      prefUniversity.includes(u)
-                        ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-sm'
-                        : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-                    }`}
-                  >
-                    {prefUniversity.includes(u) && '✓ '}
-                    {u}
-                  </button>
-                ))}
+            {/* Preferred University Container */}
+            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs space-y-3 text-left">
+              <label className="text-sm font-bold text-slate-900 block">Preferred University *</label>
+              <div className="flex flex-wrap gap-2.5">
+                {['Any University', ...POPULAR_UNIVERSITIES].map((u) => {
+                  const isSelected = prefUniversity.includes(u);
+                  return (
+                    <button
+                      key={u}
+                      type="button"
+                      onClick={() => toggleArrayItem(prefUniversity, setPrefUniversity, u)}
+                      className={`px-4.5 py-2.5 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
+                          : 'bg-white text-slate-800 border-slate-200/90 hover:border-pink-200 shadow-2xs'
+                      }`}
+                    >
+                      {isSelected && '✓ '}
+                      {u}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
-            {/* Preferred Branch */}
-            <div>
-              <label className="form-label text-left mb-2 text-xs font-bold text-slate-700">Preferred Branch *</label>
-              <input
-                type="text"
+            {/* Preferred Branch Card */}
+            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs space-y-3 text-left">
+              <label className="text-sm font-bold text-slate-900 block">Preferred Branch *</label>
+              <CustomSelect
                 value={prefBranch}
-                onChange={(e) => setPrefBranch(e.target.value)}
-                placeholder="e.g. Any Branch or CSE / Medical"
-                className="form-input text-xs h-14 rounded-2xl"
+                onChange={(val) => setPrefBranch(val)}
+                options={['Any Branch', ...BRANCH_OPTIONS]}
+                placeholder="Select preferred branch..."
               />
             </div>
 
-            {/* Preferred Year of Study */}
-            <div>
-              <label className="form-label text-left mb-2 text-xs font-bold text-slate-700">Preferred year of study *</label>
+            {/* Preferred Year Of Study Container */}
+            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs space-y-3 text-left">
+              <label className="text-sm font-bold text-slate-900 block">Preferred year of study *</label>
               <div className="flex flex-wrap gap-2.5">
-                {['Any Year', '1st Year', '2nd Year', '3rd Year', '4th Year', 'Graduate'].map((yr) => (
-                  <button
-                    key={yr}
-                    type="button"
-                    onClick={() => toggleArrayItem(prefYearOfStudy, setPrefYearOfStudy, yr)}
-                    className={`px-4 py-2 rounded-full text-xs font-bold border transition-all cursor-pointer ${
-                      prefYearOfStudy.includes(yr)
-                        ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-sm'
-                        : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-                    }`}
-                  >
-                    {prefYearOfStudy.includes(yr) && '✓ '}
-                    {yr}
-                  </button>
-                ))}
+                {['Any Year', '1st Year', '2nd Year', '3rd Year', '4th Year', 'Graduate'].map((yr) => {
+                  const isSelected = prefYearOfStudy.includes(yr);
+                  return (
+                    <button
+                      key={yr}
+                      type="button"
+                      onClick={() => toggleArrayItem(prefYearOfStudy, setPrefYearOfStudy, yr)}
+                      className={`px-4.5 py-2.5 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
+                          : 'bg-white text-slate-800 border-slate-200/90 hover:border-pink-200 shadow-2xs'
+                      }`}
+                    >
+                      {isSelected && '✓ '}
+                      {yr}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -1270,10 +1394,10 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 9: Partner Preferences — Religion, Habits & Exes                     */}
         {/* ========================================================================= */}
         {step === 9 && (
-          <div className="space-y-6 animate-slide-up">
-            <div className="text-left mb-3">
+          <div className="space-y-4 animate-slide-up">
+            <div className="text-left mb-2">
               <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                Step 09 • Partner Lifestyle
+                STEP 09 • PARTNER LIFESTYLE
               </span>
               <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">Habits & Exes</h2>
               <p className="text-xs text-slate-500 font-medium mt-1 leading-relaxed">
@@ -1281,57 +1405,83 @@ export default function OnboardingForm({ user, onComplete }) {
               </p>
             </div>
 
-            {/* Preferred Religion */}
-            <div>
-              <label className="form-label text-left mb-2 text-xs font-bold text-slate-700">Preferred Religion *</label>
-              <div className="flex flex-wrap gap-2.5">
-                {['Any', 'Hindu', 'Muslim', 'Sikh', 'Christian', 'Others'].map((r) => (
-                  <button
-                    key={r}
-                    type="button"
-                    onClick={() => toggleArrayItem(prefReligion, setPrefReligion, r)}
-                    className={`px-4 py-2.5 rounded-full text-xs font-bold border transition-all cursor-pointer ${
-                      prefReligion.includes(r)
-                        ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-sm'
-                        : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-                    }`}
-                  >
-                    {r}
-                  </button>
-                ))}
+            {/* Translucent Glass Card Wrapper */}
+            <div className="bg-white/90 backdrop-blur-md rounded-[32px] p-5 border border-slate-100/90 shadow-xs space-y-6 text-left relative overflow-hidden">
+              
+              {/* Preferred Religion */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79] shrink-0">
+                    <Flower2 className="w-4 h-4" />
+                  </div>
+                  <label className="text-sm font-bold text-slate-900">Preferred Religion *</label>
+                </div>
+                <div className="flex flex-wrap gap-2.5">
+                  {['Any', 'Hindu', 'Muslim', 'Sikh', 'Christian', 'Others'].map((r) => {
+                    const isSelected = prefReligion.includes(r);
+                    return (
+                      <button
+                        key={r}
+                        type="button"
+                        onClick={() => toggleArrayItem(prefReligion, setPrefReligion, r)}
+                        className={`px-4.5 py-2.5 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
+                            : 'bg-white text-slate-800 border-slate-200/90 hover:border-pink-200 shadow-2xs'
+                        }`}
+                      >
+                        {r}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
 
-            {/* Preferred Drinking / Smoking */}
-            <div>
-              <label className="form-label text-left mb-2 text-xs font-bold text-slate-700">Preferred Habits *</label>
-              <div className="flex flex-wrap gap-2.5">
-                {['None', 'Drink', 'Smoke', 'Weed', 'Doesn\'t matter'].map((h) => (
-                  <button
-                    key={h}
-                    type="button"
-                    onClick={() => toggleArrayItem(prefHabits, setPrefHabits, h)}
-                    className={`px-4 py-2 rounded-full text-xs font-bold border transition-all cursor-pointer ${
-                      prefHabits.includes(h)
-                        ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-sm'
-                        : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-                    }`}
-                  >
-                    {h}
-                  </button>
-                ))}
+              {/* Preferred Habits */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79] shrink-0">
+                    <Wine className="w-4 h-4" />
+                  </div>
+                  <label className="text-sm font-bold text-slate-900">Preferred Habits *</label>
+                </div>
+                <div className="flex flex-wrap gap-2.5">
+                  {['None', 'Drink', 'Smoke', 'Weed', 'Doesn\'t matter'].map((h) => {
+                    const isSelected = prefHabits.includes(h);
+                    return (
+                      <button
+                        key={h}
+                        type="button"
+                        onClick={() => toggleArrayItem(prefHabits, setPrefHabits, h)}
+                        className={`px-4.5 py-2.5 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
+                            : 'bg-white text-slate-800 border-slate-200/90 hover:border-pink-200 shadow-2xs'
+                        }`}
+                      >
+                        {h}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
 
-            {/* Preferred Number of Exes */}
-            <div>
-              <label className="form-label text-left mb-2 text-xs font-bold text-slate-700">Preferred Number Of Exes *</label>
-              <CustomSelect
-                value={prefExes}
-                onChange={(val) => setPrefExes(val)}
-                options={['0 (No exes)', '1-2 exes', '3+ exes', "Doesn't matter"]}
-                placeholder="Select preferred number of exes..."
-              />
+              {/* Preferred Number Of Exes */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79] shrink-0">
+                    <Heart className="w-4 h-4 fill-pink-100" />
+                  </div>
+                  <label className="text-sm font-bold text-slate-900">Preferred Number Of Exes *</label>
+                </div>
+                <CustomSelect
+                  value={prefExes}
+                  onChange={(val) => setPrefExes(val)}
+                  options={["Doesn't matter", "0 (No exes)", "1-2 exes", "3+ exes"]}
+                  placeholder="Select preferred number of exes..."
+                />
+              </div>
+
             </div>
           </div>
         )}
@@ -1340,10 +1490,10 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 10: Partner Preferences — Personality, Qualities & Vibe              */}
         {/* ========================================================================= */}
         {step === 10 && (
-          <div className="space-y-6 animate-slide-up">
-            <div className="text-left mb-3">
+          <div className="space-y-4 animate-slide-up">
+            <div className="text-left mb-2">
               <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                Step 10 • Energy & Persona
+                STEP 10 • ENERGY & PERSONA
               </span>
               <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">Personality & Vibe</h2>
               <p className="text-xs text-slate-500 font-medium mt-1 leading-relaxed">
@@ -1351,67 +1501,77 @@ export default function OnboardingForm({ user, onComplete }) {
               </p>
             </div>
 
-            {/* Preferred Personality Type */}
-            <div>
-              <label className="form-label text-left mb-2 text-xs font-bold text-slate-700">Preferred Personality *</label>
+            {/* Preferred Personality Card */}
+            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs space-y-3 text-left">
+              <label className="text-sm font-bold text-slate-900 block">Preferred Personality *</label>
               <div className="grid grid-cols-4 gap-2">
-                {['Introvert', 'Ambivert', 'Extrovert', 'Any'].map((p) => (
-                  <button
-                    key={p}
-                    type="button"
-                    onClick={() => setPrefPersonality(p)}
-                    className={`py-3 rounded-2xl text-xs font-bold border transition-all cursor-pointer ${
-                      prefPersonality === p
-                        ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-sm'
-                        : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
-                    }`}
-                  >
-                    {p}
-                  </button>
-                ))}
+                {['Introvert', 'Ambivert', 'Extrovert', 'Any'].map((p) => {
+                  const isSelected = prefPersonality === p;
+                  return (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => setPrefPersonality(p)}
+                      className={`py-3 rounded-2xl text-xs font-bold border transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
+                          : 'bg-white text-slate-800 border-slate-200/90 hover:border-pink-200 shadow-2xs'
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
-            {/* Preferred Qualities */}
-            <div>
-              <label className="form-label text-left mb-2 text-xs font-bold text-slate-700">Preferred Qualities *</label>
+            {/* Preferred Qualities Card */}
+            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs space-y-3 text-left">
+              <label className="text-sm font-bold text-slate-900 block">Preferred Qualities *</label>
               <div className="flex flex-wrap gap-2.5">
-                {QUALITIES_LIST.map((q) => (
-                  <button
-                    key={q}
-                    type="button"
-                    onClick={() => toggleArrayItem(prefQualities, setPrefQualities, q)}
-                    className={`px-3.5 py-2 rounded-full text-xs font-bold border transition-all cursor-pointer ${
-                      prefQualities.includes(q)
-                        ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-sm'
-                        : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-                    }`}
-                  >
-                    {prefQualities.includes(q) && '✓ '}
-                    {q}
-                  </button>
-                ))}
+                {QUALITIES_LIST.map((q) => {
+                  const isSelected = prefQualities.includes(q);
+                  return (
+                    <button
+                      key={q}
+                      type="button"
+                      onClick={() => toggleArrayItem(prefQualities, setPrefQualities, q)}
+                      className={`px-4 py-2.5 rounded-full text-xs font-bold border transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
+                          : 'bg-white text-slate-800 border-slate-200/90 hover:border-pink-200 shadow-2xs'
+                      }`}
+                    >
+                      {isSelected && '✓ '}
+                      {q}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
-            {/* Preferred Dating Vibe */}
-            <div>
-              <label className="form-label text-left mb-2 text-xs font-bold text-slate-700">Preferred Dating Vibe *</label>
-              <div className="grid grid-cols-2 gap-3">
-                {DATING_VIBES.map((v) => (
-                  <button
-                    key={v}
-                    type="button"
-                    onClick={() => toggleArrayItem(prefDatingVibe, setPrefDatingVibe, v)}
-                    className={`p-3.5 rounded-2xl text-xs font-bold border transition-all text-left cursor-pointer ${
-                      prefDatingVibe.includes(v)
-                        ? 'bg-rose-50 border-[#FF2E79] text-[#FF2E79] shadow-sm'
-                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
-                    }`}
-                  >
-                    {v}
-                  </button>
-                ))}
+            {/* Preferred Dating Vibe Card */}
+            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs space-y-3 text-left">
+              <label className="text-sm font-bold text-slate-900 block">Preferred Dating Vibe *</label>
+              <div className="grid grid-cols-2 gap-2.5">
+                {DATING_VIBES.map((v) => {
+                  const isSelected = prefDatingVibe.includes(v);
+                  return (
+                    <button
+                      key={v}
+                      type="button"
+                      onClick={() => toggleArrayItem(prefDatingVibe, setPrefDatingVibe, v)}
+                      className={`p-3.5 rounded-2xl text-xs font-bold border transition-all text-left cursor-pointer ${
+                        isSelected
+                          ? 'bg-rose-50 border-[#FF2E79] text-[#FF2E79] shadow-xs'
+                          : 'bg-white border-slate-200/90 text-slate-800 hover:border-pink-200 shadow-2xs'
+                      }`}
+                    >
+                      {isSelected && '✓ '}
+                      {v}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -1421,10 +1581,10 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 11: Non-Negotiables (Strict Deal-Breakers)                            */}
         {/* ========================================================================= */}
         {step === 11 && (
-          <div className="space-y-6 animate-slide-up">
-            <div className="text-left mb-3">
+          <div className="space-y-4 animate-slide-up">
+            <div className="text-left mb-2">
               <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                Step 11 • Strict Filters
+                STEP 11 • STRICT FILTERS
               </span>
               <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">Non-Negotiables</h2>
               <p className="text-xs text-slate-500 font-medium mt-1 leading-relaxed">
@@ -1432,34 +1592,37 @@ export default function OnboardingForm({ user, onComplete }) {
               </p>
             </div>
 
-            <div className="bg-amber-50/90 border border-amber-200/80 rounded-3xl p-5 text-left space-y-2 shadow-sm">
-              <p className="text-xs text-amber-950 leading-relaxed font-medium">
+            <div className="p-4 bg-pink-50/70 border border-pink-100/80 rounded-3xl text-left space-y-1.5 shadow-2xs">
+              <p className="text-xs text-slate-700 leading-relaxed font-medium">
                 These are the deal-breakers for you – the parameters on which you are not willing to compromise at all. Think of them as your absolute must-haves.
               </p>
-              <p className="text-xs font-black text-amber-800">
+              <p className="text-xs font-black text-[#FF2E79]">
                 Cupid Note : Fewer non-negotiables lead to higher match probabilities!
               </p>
             </div>
 
-            {/* Non-Negotiable Checklist */}
-            <div>
-              <label className="form-label text-left mb-2 text-xs font-bold text-slate-700">My Non Negotiables Are *</label>
-              <div className="flex flex-wrap gap-2.5 max-h-52 overflow-y-auto no-scrollbar border border-slate-200/80 p-4 rounded-3xl bg-slate-50/70">
-                {NON_NEGOTIABLES_LIST.map((item) => (
-                  <button
-                    key={item}
-                    type="button"
-                    onClick={() => toggleArrayItem(nonNegotiables, setNonNegotiables, item)}
-                    className={`px-4 py-2 rounded-full text-xs font-bold border transition-all cursor-pointer ${
-                      nonNegotiables.includes(item)
-                        ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
-                        : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
-                    }`}
-                  >
-                    {nonNegotiables.includes(item) && '✓ '}
-                    {item}
-                  </button>
-                ))}
+            {/* Non-Negotiable Checklist Card */}
+            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-xs space-y-3 text-left">
+              <label className="text-sm font-bold text-slate-900 block">My Non Negotiables Are *</label>
+              <div className="flex flex-wrap gap-2.5">
+                {NON_NEGOTIABLES_LIST.map((item) => {
+                  const isSelected = nonNegotiables.includes(item);
+                  return (
+                    <button
+                      key={item}
+                      type="button"
+                      onClick={() => toggleArrayItem(nonNegotiables, setNonNegotiables, item)}
+                      className={`px-4 py-2.5 rounded-full text-xs font-bold border transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
+                          : 'bg-white text-slate-800 border-slate-200/90 hover:border-pink-200 shadow-2xs'
+                      }`}
+                    >
+                      {isSelected && '✓ '}
+                      {item}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
