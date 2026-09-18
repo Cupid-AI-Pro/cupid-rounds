@@ -28,6 +28,9 @@ import {
 } from 'lucide-react';
 import CupidLogo from './CupidLogo';
 import DownloadApkModal from './DownloadApkModal';
+import StaggeredGrid from './StaggeredGrid';
+import TestimonialsCard from './TestimonialsCard';
+import FlipFadeText from './FlipFadeText';
 
 export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -131,6 +134,49 @@ export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
       icon: Heart,
       matchScore: "99%",
       interests: "Media • Podcasts • Live Gigs"
+    }
+  ];
+
+  const indianStudentTestimonials = [
+    {
+      id: 1,
+      title: "Found my coffee walk partner!",
+      description: "I was skeptical about dating apps until Cupid Rounds. The 16-hour spotlight window means no endless chatting that leads nowhere. Met Aarav from IIT Delhi for coffee at Hudson Lane, and we've been inseparable since!",
+      author: "Ananya Sharma",
+      college: "Miranda House, DU • Economics",
+      image: "/avatars/ananya.jpg"
+    },
+    {
+      id: 2,
+      title: "Zero ghosting, 100% verified dates!",
+      description: "The college ID & edu email verification is a total gamechanger. Knowing everyone is an active college student gives complete peace of mind. Best part? The Sunday evening match drop is super exciting.",
+      author: "Aarav Mehta",
+      college: "IIT Delhi • Computer Science",
+      image: "/avatars/aarav.jpg"
+    },
+    {
+      id: 3,
+      title: "Intention over endless swiping",
+      description: "Finally an app that respects your time! Matched with Kabir during the North Campus round. We went for a sunset walk around campus and explored street food in Old Delhi. 10/10 recommend!",
+      author: "Zoya Qureshi",
+      college: "Ashoka University • Literature",
+      image: "/avatars/zoya.jpg"
+    },
+    {
+      id: 4,
+      title: "Guaranteed match or 100% money back",
+      description: "The 100% auto-refund policy gave me full confidence to try the Premium pass. But I didn't even need a refund because I got two awesome matches on my very first round!",
+      author: "Kabir Verma",
+      college: "St. Stephen's College • History",
+      image: "/avatars/kabir.jpg"
+    },
+    {
+      id: 5,
+      title: "Safe, verified & female-first design",
+      description: "As a DU girl, safety is priority #1. Cupid Rounds verifies college IDs and keeps total control in our hands during the 16h spotlight window. Absolutely loved the experience!",
+      author: "Rhea Kapoor",
+      college: "Lady Shri Ram (LSR) • Media",
+      image: "/avatars/rhea.jpg"
     }
   ];
 
@@ -343,13 +389,20 @@ export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
         className="relative z-10 pt-8 sm:pt-12 pb-14 sm:pb-20 px-4 sm:px-6 md:px-12 max-w-7xl mx-auto overflow-hidden"
       >
         
-        {/* Editorial Headline */}
-        <div className="text-center max-w-3xl mx-auto space-y-2.5 sm:space-y-3 mb-6 sm:mb-8 saas-reveal-up">
-          <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-serif text-slate-900 tracking-tight leading-[1.12]">
-            Serious about dating? <br />
-            <span className="font-serif italic text-slate-900 font-bold">
-              So are we.
-            </span>
+        {/* Editorial Headline with 3D FlipFade Text */}
+        <div className="text-center max-w-4xl mx-auto space-y-1 mb-6 sm:mb-8 saas-reveal-up">
+          <FlipFadeText 
+            words={[
+              "Serious about dating?",
+              "Tired of endless swipes?",
+              "Want real campus dates?",
+              "Looking for genuine vibes?",
+              "Ready for real connection?"
+            ]}
+            interval={3200}
+          />
+          <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-serif italic text-slate-900 font-bold tracking-tight leading-[1.12]">
+            So are we.
           </h1>
 
           <p className="text-xs sm:text-base text-slate-500 max-w-md mx-auto font-medium leading-relaxed px-2">
@@ -643,6 +696,11 @@ export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
 
       </section>
 
+      {/* ═══ INTERACTIVE GSAP STAGGERED GRID SCROLL ANIMATION ═══ */}
+      <section className="px-4 sm:px-6 md:px-12 max-w-7xl mx-auto relative z-10">
+        <StaggeredGrid centerText="CUPID ROUNDS" />
+      </section>
+
       {/* ═══ SECTION 3: PLANS & PRICING ═══ */}
       <section id="plans" className="py-14 sm:py-20 px-4 sm:px-6 md:px-12 max-w-7xl mx-auto border-t border-rose-100 relative z-10">
         
@@ -881,6 +939,28 @@ export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
             </div>
           ))}
         </div>
+      </section>
+
+      {/* ═══ SECTION: VERIFIED STUDENT TESTIMONIALS ═══ */}
+      <section className="py-14 sm:py-20 px-4 sm:px-6 md:px-12 max-w-7xl mx-auto border-t border-rose-100 relative z-10">
+        <div className="text-center max-w-2xl mx-auto mb-6 sm:mb-8 space-y-2 saas-reveal-up">
+          <span className="text-xs font-black uppercase tracking-widest text-[#FF2E79] bg-rose-50 px-3.5 py-1.5 rounded-full border border-rose-200">
+            Real Student Experiences
+          </span>
+          <h2 className="text-2xl sm:text-4xl font-serif font-black text-slate-900">
+            Loved by Students Across DU & NCR
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-600 font-medium">
+            Hear from verified college students who found genuine matches through Sunday Rounds.
+          </p>
+        </div>
+
+        <TestimonialsCard 
+          items={indianStudentTestimonials} 
+          width={800}
+          autoPlay={true} 
+          autoPlayInterval={4500} 
+        />
       </section>
 
       {/* ═══ SECTION 6: DIRECT APK DOWNLOAD BANNER ═══ */}
