@@ -445,24 +445,24 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
   return (
     <div className="flex-1 flex flex-col p-4 sm:p-6 h-full justify-between animate-slide-up relative z-10 select-none overflow-y-auto bg-gradient-to-b from-[#FFF5F8] via-[#FFFAFC] to-white">
       
-      {/* Top Header Row with Floating Back Button, Truly Centered Logo & Cursive Artwork */}
-      <div className="relative w-full flex items-center justify-center pt-2 pb-4 mb-2 min-h-[60px]">
+      {/* Top Header Row with Floating Back Button, Truly Centered Logo & Non-Overlapping Cursive Artwork */}
+      <div className="relative w-full pt-1 pb-4 mb-3 min-h-[64px] flex items-center justify-center">
         {/* Floating Back Arrow */}
         <button 
           onClick={() => { setShowLoginInPhone(false); setError(''); }}
-          className="absolute left-0 top-1 w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-slate-700 hover:bg-slate-50 transition-all border border-rose-100/70 cursor-pointer active:scale-95 z-20"
+          className="absolute left-0 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-slate-700 hover:bg-slate-50 transition-all border border-rose-100/70 cursor-pointer active:scale-95 z-20"
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
 
         {/* Truly Centered Logo */}
-        <div className="flex flex-col items-center justify-center text-center mx-auto z-10">
+        <div className="flex flex-col items-center justify-center text-center z-10 px-10">
           <CupidLogo size="sm" showText={true} textColor="dark" textSubtitle={`${activeState}  •  ROUND 1`} />
         </div>
 
-        {/* Decorative Top-Right Cursive Handwriting */}
-        <div className="absolute right-0 top-0 text-right pointer-events-none select-none z-10">
-          <span className="font-cursive text-[#E085A3] font-semibold text-[17px] sm:text-[19px] leading-tight block rotate-[-4deg]">
+        {/* Decorative Top-Right Cursive Handwriting (Zero Overlap Guarantee) */}
+        <div className="absolute right-0 top-0 text-right pointer-events-none select-none z-0">
+          <span className="font-cursive text-[#E085A3] font-semibold text-[13px] sm:text-[16px] leading-tight block rotate-[-4deg] opacity-90">
             Good People<br />Brighter Stories ♡
           </span>
         </div>
@@ -487,7 +487,7 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
           
           <button 
             onClick={() => { setIsWaitlisted(false); setIsLogin(true); }}
-            className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-full cursor-pointer transition-colors"
+            className="w-full h-13 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-full cursor-pointer transition-colors"
           >
             Go Back
           </button>
@@ -495,14 +495,14 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
       ) : (
         /* Main Card Container */
         <div className="flex-1 flex flex-col justify-between my-auto w-full max-w-md mx-auto">
-          <div className="bg-white rounded-[32px] p-5 sm:p-6 border border-rose-100/80 shadow-[0_20px_50px_rgba(255,46,121,0.08)]">
+          <div className="bg-white rounded-[32px] p-5 sm:p-7 border border-rose-100/80 shadow-[0_20px_50px_rgba(255,46,121,0.08)]">
             
             {/* Segmented Pill Tabs */}
-            <div className="bg-[#F6F6FA] p-1.5 rounded-[22px] flex gap-2 mb-5 border border-slate-100">
+            <div className="bg-[#F6F6FA] p-1.5 rounded-[22px] flex gap-2 mb-6 border border-slate-100">
               <button
                 type="button"
                 onClick={() => { setIsLogin(false); setError(''); }}
-                className={`flex-1 py-3 rounded-[18px] text-xs sm:text-sm font-extrabold transition-all text-center cursor-pointer ${
+                className={`flex-1 py-3.5 rounded-[18px] text-xs sm:text-sm font-extrabold transition-all text-center cursor-pointer ${
                   !isLogin 
                     ? 'bg-[#FF2E79] text-white shadow-[0_4px_14px_rgba(255,46,121,0.35)]' 
                     : 'text-[#64748B] hover:text-slate-800 font-bold'
@@ -513,7 +513,7 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
               <button
                 type="button"
                 onClick={() => { setIsLogin(true); setError(''); }}
-                className={`flex-1 py-3 rounded-[18px] text-xs sm:text-sm font-extrabold transition-all text-center cursor-pointer ${
+                className={`flex-1 py-3.5 rounded-[18px] text-xs sm:text-sm font-extrabold transition-all text-center cursor-pointer ${
                   isLogin 
                     ? 'bg-[#FF2E79] text-white shadow-[0_4px_14px_rgba(255,46,121,0.35)]' 
                     : 'text-[#64748B] hover:text-slate-800 font-bold'
@@ -524,7 +524,7 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
             </div>
 
             {error && (
-              <div className="mb-4 bg-rose-50 border border-rose-200 text-rose-600 px-3.5 py-2.5 rounded-2xl text-xs font-semibold flex items-center gap-2">
+              <div className="mb-4 bg-rose-50 border border-rose-200 text-rose-600 px-4 py-3 rounded-2xl text-xs font-semibold flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{error}</span>
               </div>
@@ -535,7 +535,7 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
               <form onSubmit={handleLogin} className="space-y-4">
                 <div>
                   <label className="text-[13px] font-semibold text-slate-800 text-left mb-2 block">Email Address or User ID *</label>
-                  <div className="relative flex items-center bg-[#F8F9FD] border border-slate-200/80 rounded-2xl h-14 px-4 focus-within:bg-white focus-within:border-[#FF2E79] focus-within:ring-4 focus-within:ring-[#FF2E79]/10 transition-all group">
+                  <div className="relative flex items-center bg-[#F8F9FD] border border-slate-200/90 rounded-2xl h-15 px-4 focus-within:bg-white focus-within:border-[#FF2E79] focus-within:ring-4 focus-within:ring-[#FF2E79]/10 transition-all group">
                     <Mail className="w-5 h-5 text-slate-400 group-focus-within:text-[#FF2E79] shrink-0 mr-3 transition-colors pointer-events-none" />
                     <input
                       type="text"
@@ -549,7 +549,7 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
 
                 <div>
                   <label className="text-[13px] font-semibold text-slate-800 text-left mb-2 block">Password *</label>
-                  <div className="relative flex items-center bg-[#F8F9FD] border border-slate-200/80 rounded-2xl h-14 px-4 focus-within:bg-white focus-within:border-[#FF2E79] focus-within:ring-4 focus-within:ring-[#FF2E79]/10 transition-all group">
+                  <div className="relative flex items-center bg-[#F8F9FD] border border-slate-200/90 rounded-2xl h-15 px-4 focus-within:bg-white focus-within:border-[#FF2E79] focus-within:ring-4 focus-within:ring-[#FF2E79]/10 transition-all group">
                     <Lock className="w-5 h-5 text-slate-400 group-focus-within:text-[#FF2E79] shrink-0 mr-3 transition-colors pointer-events-none" />
                     <input
                       type={showLoginPassword ? 'text' : 'password'}
@@ -568,10 +568,10 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
                   </div>
                 </div>
 
-                {/* Big Prominent 60px Hot Pink Pill Submit Button */}
+                {/* Extra Chunky 64px Hot Pink Pill Submit Button */}
                 <button 
                   type="submit" 
-                  className="w-full h-15 bg-[#FF2E79] hover:bg-[#e02447] text-white font-extrabold text-sm sm:text-base tracking-wide rounded-full flex items-center justify-center gap-2 shadow-[0_12px_28px_rgba(255,46,121,0.4)] transition-all active:scale-[0.98] cursor-pointer mt-6"
+                  className="w-full h-16 bg-[#FF2E79] hover:bg-[#e02447] text-white font-extrabold text-base tracking-wide rounded-full flex items-center justify-center gap-2.5 shadow-[0_14px_32px_rgba(255,46,121,0.42)] transition-all active:scale-[0.98] cursor-pointer mt-6"
                 >
                   <span>Access Match Dashboard</span>
                   <ArrowRight className="w-5 h-5 stroke-[2.5]" />
@@ -584,7 +584,7 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
                 {/* Full Name */}
                 <div>
                   <label className="text-[13px] font-semibold text-slate-800 text-left mb-2 block">Your Full Name *</label>
-                  <div className="relative flex items-center bg-[#F8F9FD] border border-slate-200/80 rounded-2xl h-14 px-4 focus-within:bg-white focus-within:border-[#FF2E79] focus-within:ring-4 focus-within:ring-[#FF2E79]/10 transition-all group">
+                  <div className="relative flex items-center bg-[#F8F9FD] border border-slate-200/90 rounded-2xl h-15 px-4 focus-within:bg-white focus-within:border-[#FF2E79] focus-within:ring-4 focus-within:ring-[#FF2E79]/10 transition-all group">
                     <User className="w-5 h-5 text-slate-400 group-focus-within:text-[#FF2E79] shrink-0 mr-3 transition-colors pointer-events-none" />
                     <input
                       type="text"
@@ -599,7 +599,7 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
                 {/* Email Address */}
                 <div>
                   <label className="text-[13px] font-semibold text-slate-800 text-left mb-2 block">Email Address *</label>
-                  <div className="relative flex items-center bg-[#F8F9FD] border border-slate-200/80 rounded-2xl h-14 px-4 focus-within:bg-white focus-within:border-[#FF2E79] focus-within:ring-4 focus-within:ring-[#FF2E79]/10 transition-all group">
+                  <div className="relative flex items-center bg-[#F8F9FD] border border-slate-200/90 rounded-2xl h-15 px-4 focus-within:bg-white focus-within:border-[#FF2E79] focus-within:ring-4 focus-within:ring-[#FF2E79]/10 transition-all group">
                     <Mail className="w-5 h-5 text-slate-400 group-focus-within:text-[#FF2E79] shrink-0 mr-3 transition-colors pointer-events-none" />
                     <input
                       type="email"
@@ -614,7 +614,7 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
                 {/* Create Password */}
                 <div>
                   <label className="text-[13px] font-semibold text-slate-800 text-left mb-2 block">Create Password *</label>
-                  <div className="relative flex items-center bg-[#F8F9FD] border border-slate-200/80 rounded-2xl h-14 px-4 focus-within:bg-white focus-within:border-[#FF2E79] focus-within:ring-4 focus-within:ring-[#FF2E79]/10 transition-all group">
+                  <div className="relative flex items-center bg-[#F8F9FD] border border-slate-200/90 rounded-2xl h-15 px-4 focus-within:bg-white focus-within:border-[#FF2E79] focus-within:ring-4 focus-within:ring-[#FF2E79]/10 transition-all group">
                     <Lock className="w-5 h-5 text-slate-400 group-focus-within:text-[#FF2E79] shrink-0 mr-3 transition-colors pointer-events-none" />
                     <input
                       type={showRegPassword ? 'text' : 'password'}
@@ -646,7 +646,7 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
                         key={g.id}
                         type="button"
                         onClick={() => setRegGender(g.id)}
-                        className={`h-13 rounded-2xl text-xs sm:text-sm font-extrabold transition-all border flex items-center justify-center gap-2 cursor-pointer ${
+                        className={`h-14 rounded-2xl text-xs sm:text-sm font-extrabold transition-all border flex items-center justify-center gap-2 cursor-pointer ${
                           regGender === g.id
                             ? 'bg-[#FFF0F5] text-[#FF2E79] border-2 border-[#FF2E79] shadow-xs'
                             : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
@@ -673,10 +673,10 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
                   />
                 </div>
 
-                {/* Big Prominent 60px Hot Pink Pill Submit Button (Exact reference match!) */}
+                {/* Extra Chunky 64px Hot Pink Pill Submit Button (Exact reference match!) */}
                 <button 
                   type="submit" 
-                  className="w-full h-15 bg-[#FF2E79] hover:bg-[#e02447] text-white font-extrabold text-sm sm:text-base tracking-wide rounded-full flex items-center justify-center gap-2 shadow-[0_12px_28px_rgba(255,46,121,0.4)] transition-all active:scale-[0.98] cursor-pointer mt-6"
+                  className="w-full h-16 bg-[#FF2E79] hover:bg-[#e02447] text-white font-extrabold text-base tracking-wide rounded-full flex items-center justify-center gap-2.5 shadow-[0_14px_32px_rgba(255,46,121,0.42)] transition-all active:scale-[0.98] cursor-pointer mt-6"
                 >
                   <span>Continue to Round Setup</span>
                   <ArrowRight className="w-5 h-5 stroke-[2.5]" />
@@ -686,7 +686,7 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
           </div>
 
           {/* Footer Text */}
-          <div className="pt-4 pb-1 text-center">
+          <div className="pt-5 pb-1 text-center">
             <span className="text-[10px] font-bold text-slate-400 tracking-[0.22em] uppercase">
               SAFETY  •  PRIVACY  •  REAL CONNECTIONS
             </span>
