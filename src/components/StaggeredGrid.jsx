@@ -106,13 +106,14 @@ export function StaggeredGrid({
       if (gridFullRef.current) {
         const gridFullItems = gridFullRef.current.querySelectorAll('.grid__item');
         const computedStyle = getComputedStyle(gridFullRef.current);
-        const numColumns = computedStyle.getPropertyValue('grid-template-columns').split(' ').length || 7;
+        const columnsRaw = computedStyle.getPropertyValue('grid-template-columns').split(' ').length;
+        const numColumns = columnsRaw > 0 ? columnsRaw : (window.innerWidth < 768 ? 3 : 7);
         const middleColumnIndex = Math.floor(numColumns / 2);
 
         const columns = Array.from({ length: numColumns }, () => []);
         gridFullItems.forEach((item) => {
           const colAttr = item.getAttribute('data-col');
-          const columnIndex = colAttr !== null ? parseInt(colAttr, 10) : 0;
+          const columnIndex = colAttr !== null ? parseInt(colAttr, 10) % numColumns : 0;
           if (columns[columnIndex]) {
             columns[columnIndex].push(item);
           }
@@ -120,7 +121,7 @@ export function StaggeredGrid({
 
         columns.forEach((columnItems, columnIndex) => {
           if (!columnItems || columnItems.length === 0) return;
-          const delayFactor = Math.abs(columnIndex - middleColumnIndex) * 0.18;
+          const delayFactor = Math.abs(columnIndex - middleColumnIndex) * 0.16;
           const innerImgs = columnItems.map(item => item.querySelector('.grid__item-img')).filter(Boolean);
 
           const tl = gsap.timeline({
@@ -134,7 +135,7 @@ export function StaggeredGrid({
           });
 
           tl.from(columnItems, {
-            yPercent: 260,
+            yPercent: 220,
             autoAlpha: 0,
             delay: delayFactor,
             ease: 'sine.out',
@@ -148,9 +149,10 @@ export function StaggeredGrid({
           }
         });
 
-        // 3. Bento Center Container Highlight Animation - Shift DOWNWARDS into spacious vacant area
+        // 3. Bento Center Container Highlight Animation - Responsive shift for mobile & desktop
         const bentoContainer = gridFullRef.current.querySelector('.bento-container');
         if (bentoContainer) {
+          const isMobile = window.innerWidth < 768;
           const tlBento = gsap.timeline({
             scrollTrigger: {
               trigger: gridFullRef.current,
@@ -162,10 +164,9 @@ export function StaggeredGrid({
             }
           });
 
-          // Shift downwards (y: 110) with initial mt-12 so top edge is completely clear of top rows!
           tlBento.to(bentoContainer, {
-            y: 110,
-            scale: 1.12,
+            y: isMobile ? 40 : 100,
+            scale: isMobile ? 1.04 : 1.12,
             transformOrigin: 'top center',
             zIndex: 100,
             ease: 'power2.out',
@@ -200,11 +201,11 @@ export function StaggeredGrid({
 
   const activeImages = images.length > 0 ? images : indianAndCartoonImages;
 
-  // Fill grid to 21 slots with index 16 as the Bento group
+  // Fill grid slots
   const mixedGridItems = Array.from({ length: 21 }, (_, i) => activeImages[i % activeImages.length]);
-  mixedGridItems[16] = 'BENTO_GROUP';
+  mixedGridItems[14] = 'BENTO_GROUP'; // Slot 14 for middle row alignment
 
-  // Bento Cards - Authentic Indian Students & Campus Life
+  // Bento Cards
   const defaultBentoItems = [
     {
       id: 1,
@@ -256,10 +257,10 @@ export function StaggeredGrid({
   ];
 
   return (
-    <div className={cn("relative w-full pt-4 pb-8 my-2 bg-transparent text-slate-900 overflow-visible", className)}>
+    <div className={cn("relative w-full pt-4 pb-12 sm:pb-16 my-2 bg-transparent text-slate-900 overflow-visible", className)}>
       
       {/* Background Glow Ring */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-rose-200/30 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] sm:w-[550px] h-[350px] sm:h-[550px] bg-rose-200/30 rounded-full blur-3xl pointer-events-none" />
 
       {/* Section Header */}
       <section className="grid place-items-center w-full relative mb-4 px-4 text-center">
@@ -274,11 +275,11 @@ export function StaggeredGrid({
         </p>
       </section>
 
-      {/* 7x5 Staggered Grid Section */}
-      <section className="grid place-items-center w-full relative px-1 sm:px-4">
+      {/* Responsive Staggered Grid Section: 3 columns on Mobile, 7 columns on Desktop */}
+      <section className="grid place-items-center w-full relative px-2 sm:px-4">
         <div 
           ref={gridFullRef} 
-          className="grid--full relative w-full my-2 h-auto aspect-[1.1] sm:aspect-[1.35] max-w-7xl p-2 sm:p-4 grid gap-2 sm:gap-3.5 grid-cols-7 grid-rows-5"
+          className="grid--full relative w-full my-2 h-auto max-w-7xl p-1.5 sm:p-4 grid gap-2.5 sm:gap-3.5 grid-cols-3 md:grid-cols-7"
         >
           {mixedGridItems.map((item, i) => {
             if (item === 'BENTO_GROUP') {
@@ -287,8 +288,8 @@ export function StaggeredGrid({
               return (
                 <div 
                   key="bento-group" 
-                  data-col={2} 
-                  className="grid__item bento-container col-span-3 row-span-1 relative z-20 flex items-center justify-center gap-1.5 sm:gap-2 h-full w-full will-change-transform bg-white/95 backdrop-blur-xl p-1.5 rounded-2xl border-2 border-rose-200/90 shadow-xl shadow-rose-950/5 mt-12 sm:mt-16"
+                  data-col={i % 3} 
+                  className="grid__item bento-container col-span-3 md:col-span-3 row-span-1 relative z-20 flex items-center justify-center gap-1.5 sm:gap-2 h-44 sm:h-52 md:h-full w-full will-change-transform bg-white/95 backdrop-blur-xl p-1.5 sm:p-2 rounded-2xl border-2 border-rose-200/90 shadow-xl shadow-rose-950/5 mt-4 sm:mt-10"
                 >
                   {activeBentoItems.map((bentoItem, index) => {
                     const isActive = activeBento === index;
@@ -301,7 +302,7 @@ export function StaggeredGrid({
                             ? "bg-slate-900 shadow-xl"
                             : "bg-slate-100 hover:bg-rose-50"
                         )}
-                        style={{ width: isActive ? "58%" : "14%" }}
+                        style={{ width: isActive ? "62%" : "12%" }}
                         onMouseEnter={() => setActiveBento(index)}
                         onClick={() => setActiveBento(index)}
                       >
@@ -334,9 +335,9 @@ export function StaggeredGrid({
                             </div>
 
                             {/* Card Footer Text */}
-                            <div className="absolute bottom-0 left-0 w-full p-3 flex items-end justify-between z-20">
+                            <div className="absolute bottom-0 left-0 w-full p-2.5 sm:p-3 flex items-end justify-between z-20">
                               <div className="flex flex-col relative z-10 text-left">
-                                <span className="text-[9px] font-black text-rose-300 uppercase tracking-widest leading-none mb-0.5">{bentoItem.subtitle}</span>
+                                <span className="text-[8px] sm:text-[9px] font-black text-rose-300 uppercase tracking-widest leading-none mb-0.5">{bentoItem.subtitle}</span>
                                 <h3 className="text-xs sm:text-sm font-bold text-white drop-shadow-md leading-tight tracking-tight">{bentoItem.title}</h3>
                               </div>
                               <div className="text-white bg-white/20 backdrop-blur-md p-1.5 rounded-lg border border-white/30 shadow-md">
@@ -354,7 +355,7 @@ export function StaggeredGrid({
                           <div className="text-slate-600 group-hover:text-[#FF2E79] transition-colors">
                             {bentoItem.icon}
                           </div>
-                          <span className="text-[8px] font-bold text-slate-500 group-hover:text-slate-800 transition-colors uppercase tracking-widest text-center truncate max-w-full">
+                          <span className="text-[8px] font-bold text-slate-500 group-hover:text-slate-800 transition-colors uppercase tracking-widest text-center truncate max-w-full hidden sm:block">
                             {bentoItem.title}
                           </span>
                         </div>
@@ -365,8 +366,8 @@ export function StaggeredGrid({
               );
             }
 
-            // Skip slots occupied by Bento container
-            if (i === 17 || i === 18) return null;
+            // Skip slots occupied by Bento container on desktop
+            if (i === 15 || i === 16) return null;
 
             if (typeof item === 'string') {
               const { label, icon: Icon } = cardLabelsAndIcons[i % cardLabelsAndIcons.length];
@@ -374,10 +375,10 @@ export function StaggeredGrid({
               return (
                 <figure 
                   key={`img-${i}`} 
-                  data-col={i % 7} 
+                  data-col={i % 3} 
                   className="grid__item m-0 relative z-10 [perspective:800px] will-change-[transform,opacity] group cursor-pointer"
                 >
-                  <div className="grid__item-img w-full h-full [backface-visibility:hidden] will-change-transform rounded-2xl overflow-hidden shadow-md border border-rose-100/80 bg-white flex items-center justify-center transition-all duration-500 ease-out group-hover:scale-105 group-hover:shadow-xl group-hover:border-rose-400 group-hover:ring-2 group-hover:ring-rose-400/20">
+                  <div className="grid__item-img w-full aspect-[4/5] [backface-visibility:hidden] will-change-transform rounded-2xl overflow-hidden shadow-md border border-rose-100/80 bg-white flex items-center justify-center transition-all duration-500 ease-out group-hover:scale-105 group-hover:shadow-xl group-hover:border-rose-400 group-hover:ring-2 group-hover:ring-rose-400/20">
                     
                     {/* Image */}
                     <img 
@@ -387,16 +388,16 @@ export function StaggeredGrid({
                     />
 
                     {/* Gradient Overlay for Text Visibility */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/30 to-transparent opacity-40 group-hover:opacity-85 transition-opacity duration-500 z-0" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/30 to-transparent opacity-50 group-hover:opacity-85 transition-opacity duration-500 z-0" />
 
-                    {/* Hover Content */}
+                    {/* Content */}
                     <div className="relative z-10 flex flex-col items-center justify-center gap-1 p-2 text-center">
-                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/90 backdrop-blur-sm border border-rose-200 flex items-center justify-center text-[#FF2E79] shadow-sm transition-all duration-300 group-hover:scale-110 group-hover:bg-[#FF2E79] group-hover:text-white">
-                        <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                      <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-white/90 backdrop-blur-sm border border-rose-200 flex items-center justify-center text-[#FF2E79] shadow-sm transition-all duration-300 group-hover:scale-110 group-hover:bg-[#FF2E79] group-hover:text-white">
+                        <Icon className="w-3 h-3 sm:w-4 sm:h-4" />
                       </div>
-                      <div className="text-center opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300 delay-75">
-                        <span className="block text-[8px] font-extrabold text-pink-300 uppercase tracking-widest mb-0.5">Explore</span>
-                        <span className="block text-[10px] sm:text-xs font-black text-white tracking-tight">{label}</span>
+                      <div className="text-center opacity-90 group-hover:opacity-100 transform translate-y-0 transition-all duration-300">
+                        <span className="block text-[7px] sm:text-[8px] font-extrabold text-pink-300 uppercase tracking-widest mb-0.5">Explore</span>
+                        <span className="block text-[9px] sm:text-xs font-black text-white tracking-tight">{label}</span>
                       </div>
                     </div>
                   </div>
