@@ -447,40 +447,47 @@ export default function OnboardingForm({ user, onComplete }) {
   }
 
   return (
-    <div className="flex-1 flex flex-col justify-between p-6 md:p-8 h-full bg-white relative select-none font-sans">
+    <div className="flex-1 flex flex-col justify-between p-4 sm:p-5 h-full bg-gradient-to-b from-rose-100/50 via-pink-50/30 to-white/90 relative select-none font-sans overflow-y-auto">
       
-      {/* Top Header & Smooth Progress Bar */}
-      <div className="sticky top-0 bg-white/95 backdrop-blur-md pt-2 pb-4 z-20 border-b border-slate-100">
-        <div className="flex items-center justify-between mb-3">
+      {/* Top Header & Smooth Progress Bar with Cursive Tagline */}
+      <div className="sticky top-0 bg-white/90 backdrop-blur-xl pt-2 pb-3 z-30 border-b border-rose-100/60 -mx-4 px-4 sm:-mx-5 sm:px-5">
+        <div className="flex items-center justify-between mb-2">
           {step > 1 ? (
             <button
               onClick={handleBack}
-              className="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-700 transition-colors cursor-pointer shadow-sm"
+              className="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center text-slate-700 hover:bg-slate-50 transition-all border border-rose-100/80 cursor-pointer active:scale-95"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
           ) : (
-            <div className="w-10"></div>
+            <div className="w-9 h-9"></div>
           )}
 
-          <CupidLogo size="sm" showText={true} textColor="dark" />
+          <CupidLogo size="xs" showText={true} textColor="dark" textSubtitle={`${user.state || 'DELHI NCR'} • ROUND 1`} />
 
-          <span className="text-xs font-black text-slate-700 bg-slate-100 px-3.5 py-1.5 rounded-full border border-slate-200/60">
-            {step} <span className="text-slate-400 font-medium">/</span> {totalSteps}
-          </span>
+          <div className="text-right pointer-events-none select-none">
+            <span className="font-cursive text-rose-400 font-bold text-sm sm:text-base leading-tight block rotate-[-4deg]">
+              Good People<br />Brighter Stories ♡
+            </span>
+          </div>
         </div>
 
         {/* Stepper Progress Bar */}
-        <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-gradient-to-r from-[#FF2E79] via-pink-500 to-rose-400 rounded-full transition-all duration-300 ease-out"
-            style={{ width: `${(step / totalSteps) * 100}%` }}
-          ></div>
+        <div className="flex items-center gap-2">
+          <div className="flex-1 h-2 bg-rose-100/70 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-[#FF2E79] via-pink-500 to-rose-400 rounded-full transition-all duration-300 ease-out"
+              style={{ width: `${(step / totalSteps) * 100}%` }}
+            ></div>
+          </div>
+          <span className="text-[11px] font-black text-slate-700 bg-white px-2.5 py-0.5 rounded-full border border-rose-100 shadow-2xs">
+            {step}<span className="text-slate-400 font-medium">/</span>{totalSteps}
+          </span>
         </div>
       </div>
 
-      {/* Main Multi-Step Form Body — High Breathing Room & Elegant Padding */}
-      <div className="flex-1 flex flex-col justify-between py-6 overflow-y-auto no-scrollbar space-y-6">
+      {/* Main Multi-Step Form Body — Card Wrapper */}
+      <div className="flex-1 flex flex-col justify-between py-4 overflow-y-auto no-scrollbar space-y-6">
         
         {/* ========================================================================= */}
         {/* STEP 1: Personal Info (Name, Phone, Email, Hometown)                      */}

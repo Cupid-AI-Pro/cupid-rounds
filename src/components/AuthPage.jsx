@@ -441,19 +441,31 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
     );
   }
 
-  // LOGIN / REGISTER / WAITLIST FORM VIEW (High Contrast Ultra-Legible Card)
+  // LOGIN / REGISTER / WAITLIST FORM VIEW (Matches Reference Screenshot Perfectly)
   return (
-    <div className="flex-1 flex flex-col p-4 h-full justify-between animate-slide-up relative z-10 select-none overflow-y-auto">
+    <div className="flex-1 flex flex-col p-4 sm:p-5 h-full justify-between animate-slide-up relative z-10 select-none overflow-y-auto bg-gradient-to-b from-rose-100/50 via-pink-50/30 to-white/90">
       
-      {/* Top Header Row with Centered Logo & Absolute Left Back Button */}
-      <div className="relative flex items-center justify-center pb-2.5 border-b border-slate-100 mb-3 min-h-[36px]">
+      {/* Top Header Row with Floating Back Button, Centered Logo & Cursive Artwork */}
+      <div className="relative flex items-center justify-between pt-1 pb-3 mb-2 min-h-[50px]">
+        {/* Floating Back Arrow */}
         <button 
           onClick={() => { setShowLoginInPhone(false); setError(''); }}
-          className="absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 transition-colors cursor-pointer"
+          className="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center text-slate-700 hover:bg-slate-50 transition-all border border-rose-100/80 cursor-pointer active:scale-95"
         >
-          <ChevronLeft className="w-4 h-4" />
+          <ChevronLeft className="w-5 h-5" />
         </button>
-        <CupidLogo size="xs" showText={true} textColor="dark" textSubtitle={`${activeState} • Round 1`} />
+
+        {/* Center Logo */}
+        <div className="flex flex-col items-center">
+          <CupidLogo size="xs" showText={true} textColor="dark" textSubtitle={`${activeState} • ROUND 1`} />
+        </div>
+
+        {/* Decorative Top-Right Cursive Handwriting */}
+        <div className="text-right pointer-events-none select-none">
+          <span className="font-cursive text-rose-400 font-bold text-base leading-tight block rotate-[-4deg] drop-shadow-xs">
+            Good People<br />Brighter Stories ♡
+          </span>
+        </div>
       </div>
 
       {isWaitlisted ? (
@@ -482,18 +494,18 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
         </div>
       ) : (
         /* Main Card Container */
-        <div className="flex-1 flex flex-col justify-between">
-          <div className="bg-white rounded-3xl p-4 sm:p-5 border border-slate-200/90 shadow-[0_16px_40px_-10px_rgba(255,45,85,0.12)]">
+        <div className="flex-1 flex flex-col justify-between my-auto">
+          <div className="bg-white/95 rounded-[30px] p-4 sm:p-5 border border-rose-100/90 shadow-[0_20px_50px_-15px_rgba(255,46,121,0.14)]">
             
             {/* Interactive Segmented Pill Tabs */}
             <div className="bg-slate-100/80 p-1 rounded-full flex gap-1 mb-4 border border-slate-200/60">
               <button
                 type="button"
                 onClick={() => { setIsLogin(false); setError(''); }}
-                className={`flex-1 py-2 rounded-full text-xs font-extrabold transition-all text-center cursor-pointer ${
+                className={`flex-1 py-2.5 rounded-full text-xs font-black transition-all text-center cursor-pointer ${
                   !isLogin 
-                    ? 'bg-[#FF2E79] text-white shadow-md' 
-                    : 'text-slate-500 hover:text-slate-800'
+                    ? 'bg-[#FF2E79] text-white shadow-[0_4px_12px_rgba(255,46,121,0.35)]' 
+                    : 'text-slate-500 hover:text-slate-800 font-bold'
                 }`}
               >
                 Create Profile
@@ -501,10 +513,10 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
               <button
                 type="button"
                 onClick={() => { setIsLogin(true); setError(''); }}
-                className={`flex-1 py-2 rounded-full text-xs font-extrabold transition-all text-center cursor-pointer ${
+                className={`flex-1 py-2.5 rounded-full text-xs font-black transition-all text-center cursor-pointer ${
                   isLogin 
-                    ? 'bg-[#FF2E79] text-white shadow-md' 
-                    : 'text-slate-500 hover:text-slate-800'
+                    ? 'bg-[#FF2E79] text-white shadow-[0_4px_12px_rgba(255,46,121,0.35)]' 
+                    : 'text-slate-500 hover:text-slate-800 font-bold'
                 }`}
               >
                 Sign In
@@ -522,12 +534,12 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
               /* LOGIN form */
               <form onSubmit={handleLogin} className="space-y-3">
                 <div>
-                  <label className="form-label text-left mb-1">Email or User ID</label>
-                  <div className="relative">
-                    <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <label className="text-[11px] font-bold text-slate-700 text-left mb-1 block">Email Address or User ID *</label>
+                  <div className="relative group">
+                    <Mail className="w-4 h-4 text-slate-400 group-focus-within:text-[#FF2E79] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none transition-colors" />
                     <input
                       type="text"
-                      className="form-input form-input-icon pl-11"
+                      className="w-full h-12 bg-slate-50/80 border border-slate-200/90 rounded-2xl pl-10 pr-3 text-xs sm:text-sm font-semibold text-slate-800 placeholder-slate-400 focus:bg-white focus:border-[#FF2E79] focus:ring-3 focus:ring-[#FF2E79]/15 focus:outline-none transition-all"
                       placeholder="e.g. rahul_verma@gmail.com"
                       value={loginEmail}
                       onChange={(e) => setLoginEmail(e.target.value)}
@@ -536,12 +548,12 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
                 </div>
 
                 <div>
-                  <label className="form-label text-left mb-1">Password / Security PIN</label>
-                  <div className="relative">
-                    <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <label className="text-[11px] font-bold text-slate-700 text-left mb-1 block">Password *</label>
+                  <div className="relative group">
+                    <Lock className="w-4 h-4 text-slate-400 group-focus-within:text-[#FF2E79] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none transition-colors" />
                     <input
                       type={showLoginPassword ? 'text' : 'password'}
-                      className="form-input form-input-icon-both pl-11 pr-11"
+                      className="w-full h-12 bg-slate-50/80 border border-slate-200/90 rounded-2xl pl-10 pr-10 text-xs sm:text-sm font-semibold text-slate-800 placeholder-slate-400 focus:bg-white focus:border-[#FF2E79] focus:ring-3 focus:ring-[#FF2E79]/15 focus:outline-none transition-all"
                       placeholder="Enter your password"
                       value={loginPassword}
                       onChange={(e) => setLoginPassword(e.target.value)}
@@ -558,7 +570,7 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
 
                 <button 
                   type="submit" 
-                  className="w-full h-12 bg-[#FF2E79] hover:bg-[#e02447] text-white font-extrabold text-xs tracking-wide rounded-full flex items-center justify-center gap-2 shadow-[0_8px_20px_rgba(255,45,85,0.35)] transition-transform active:scale-[0.98] cursor-pointer mt-2"
+                  className="w-full h-13 bg-[#FF2E79] hover:bg-[#e02447] text-white font-extrabold text-xs sm:text-sm tracking-wide rounded-full flex items-center justify-center gap-2 shadow-[0_10px_25px_-4px_rgba(255,46,121,0.4)] transition-all active:scale-[0.98] cursor-pointer mt-4"
                 >
                   <span>Access Match Dashboard</span>
                   <ArrowRight className="w-4 h-4" />
@@ -566,16 +578,16 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
               </form>
             ) : (
               /* REGISTER form */
-              <form onSubmit={handleRegister} className="space-y-2.5">
+              <form onSubmit={handleRegister} className="space-y-3">
                 
                 {/* Full Name */}
                 <div>
-                  <label className="form-label text-left mb-1">Your Full Name *</label>
-                  <div className="relative">
-                    <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <label className="text-[11px] font-bold text-slate-700 text-left mb-1 block">Your Full Name *</label>
+                  <div className="relative group">
+                    <User className="w-4 h-4 text-slate-400 group-focus-within:text-[#FF2E79] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none transition-colors" />
                     <input
                       type="text"
-                      className="form-input form-input-icon pl-11"
+                      className="w-full h-12 bg-slate-50/80 border border-slate-200/90 rounded-2xl pl-10 pr-3 text-xs sm:text-sm font-semibold text-slate-800 placeholder-slate-400 focus:bg-white focus:border-[#FF2E79] focus:ring-3 focus:ring-[#FF2E79]/15 focus:outline-none transition-all"
                       placeholder="e.g. Aditya Chauhan"
                       value={regName}
                       onChange={(e) => setRegName(e.target.value)}
@@ -585,12 +597,12 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
 
                 {/* Email Address */}
                 <div>
-                  <label className="form-label text-left mb-1">Email Address *</label>
-                  <div className="relative">
-                    <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <label className="text-[11px] font-bold text-slate-700 text-left mb-1 block">Email Address *</label>
+                  <div className="relative group">
+                    <Mail className="w-4 h-4 text-slate-400 group-focus-within:text-[#FF2E79] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none transition-colors" />
                     <input
                       type="email"
-                      className="form-input form-input-icon pl-11"
+                      className="w-full h-12 bg-slate-50/80 border border-slate-200/90 rounded-2xl pl-10 pr-3 text-xs sm:text-sm font-semibold text-slate-800 placeholder-slate-400 focus:bg-white focus:border-[#FF2E79] focus:ring-3 focus:ring-[#FF2E79]/15 focus:outline-none transition-all"
                       placeholder="yourname@gmail.com"
                       value={regEmail}
                       onChange={(e) => setRegEmail(e.target.value)}
@@ -600,12 +612,12 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
 
                 {/* Create Password */}
                 <div>
-                  <label className="form-label text-left mb-1">Create Password *</label>
-                  <div className="relative">
-                    <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <label className="text-[11px] font-bold text-slate-700 text-left mb-1 block">Create Password *</label>
+                  <div className="relative group">
+                    <Lock className="w-4 h-4 text-slate-400 group-focus-within:text-[#FF2E79] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none transition-colors" />
                     <input
                       type={showRegPassword ? 'text' : 'password'}
-                      className="form-input form-input-icon-both pl-11 pr-11"
+                      className="w-full h-12 bg-slate-50/80 border border-slate-200/90 rounded-2xl pl-10 pr-10 text-xs sm:text-sm font-semibold text-slate-800 placeholder-slate-400 focus:bg-white focus:border-[#FF2E79] focus:ring-3 focus:ring-[#FF2E79]/15 focus:outline-none transition-all"
                       placeholder="Create a secure password"
                       value={regPassword}
                       onChange={(e) => setRegPassword(e.target.value)}
@@ -622,8 +634,8 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
 
                 {/* Tactile Gender Selector Cards */}
                 <div>
-                  <label className="form-label text-left mb-1">Gender *</label>
-                  <div className="grid grid-cols-3 gap-1.5">
+                  <label className="text-[11px] font-bold text-slate-700 text-left mb-1 block">Gender *</label>
+                  <div className="grid grid-cols-3 gap-2">
                     {[
                       { id: 'male', label: 'Male', icon: '♂' },
                       { id: 'female', label: 'Female', icon: '♀' },
@@ -633,13 +645,13 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
                         key={g.id}
                         type="button"
                         onClick={() => setRegGender(g.id)}
-                        className={`py-2 rounded-xl text-xs font-bold transition-all border flex items-center justify-center gap-1 cursor-pointer ${
+                        className={`h-11 rounded-2xl text-xs font-bold transition-all border flex items-center justify-center gap-1.5 cursor-pointer ${
                           regGender === g.id
-                            ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-sm'
-                            : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                            ? 'bg-rose-50/90 text-[#FF2E79] border-[#FF2E79] shadow-xs font-extrabold ring-1 ring-[#FF2E79]/20'
+                            : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
                         }`}
                       >
-                        <span>{g.icon}</span>
+                        <span className="text-sm">{g.icon}</span>
                         <span>{g.label}</span>
                       </button>
                     ))}
@@ -648,7 +660,7 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
 
                 {/* State Round Selector */}
                 <div>
-                  <label className="form-label text-left mb-1">Active State Round *</label>
+                  <label className="text-[11px] font-bold text-slate-700 text-left mb-1 block">Active State Round *</label>
                   <CustomSelect
                     value={regState}
                     onChange={(val) => setRegState(val)}
@@ -663,13 +675,20 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
                 {/* Submit Button */}
                 <button 
                   type="submit" 
-                  className="w-full h-12 bg-[#FF2E79] hover:bg-[#e02447] text-white font-extrabold text-xs tracking-wide rounded-full flex items-center justify-center gap-2 shadow-[0_8px_20px_rgba(255,45,85,0.35)] transition-transform active:scale-[0.98] cursor-pointer mt-3"
+                  className="w-full h-13 bg-[#FF2E79] hover:bg-[#e02447] text-white font-extrabold text-xs sm:text-sm tracking-wide rounded-full flex items-center justify-center gap-2 shadow-[0_10px_25px_-4px_rgba(255,46,121,0.4)] transition-all active:scale-[0.98] cursor-pointer mt-4"
                 >
                   <span>Continue to Round Setup</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className="w-4 h-4 stroke-[2.5]" />
                 </button>
               </form>
             )}
+          </div>
+
+          {/* Footer Text */}
+          <div className="pt-3 pb-1 text-center">
+            <span className="text-[10px] font-bold text-slate-400 tracking-[0.2em] uppercase">
+              SAFETY • PRIVACY • REAL CONNECTIONS
+            </span>
           </div>
         </div>
       )}
