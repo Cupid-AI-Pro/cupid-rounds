@@ -19,48 +19,18 @@
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-      // Live Over-The-Air (OTA) Instant Auto-Update Engine
+      // Clear browser cache & unregister old Service Workers to ensure instant live updates
       if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').then((registration) => {
-            console.log('[Live OTA] Service Worker Registered');
-
-            // Force immediate update check on load
-            registration.update().catch(() => {});
-
-            // Auto-check for updates every 15 seconds while app is active
-            setInterval(() => {
-              registration.update().catch(() => {});
-            }, 15000);
-
-            // Auto-check on visibility/tab change
-            document.addEventListener('visibilitychange', () => {
-              if (document.visibilityState === 'visible') {
-                registration.update().catch(() => {});
-              }
-            });
-
-            // When new version is detected, auto reload to reflect live updates
-            registration.addEventListener('updatefound', () => {
-              const newWorker = registration.installing;
-              if (newWorker) {
-                newWorker.addEventListener('statechange', () => {
-                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                    console.log('[Live OTA] Fresh update ready! Reloading app...');
-                    window.location.reload();
-                  }
-                });
-              }
-            });
-          }).catch(err => console.log('SW reg error:', err));
+        navigator.serviceWorker.getRegistrations().then((registrations) => {
+          for (let registration of registrations) {
+            registration.unregister();
+          }
         });
-
-        // Controller change listener for instant reload
-        let refreshing = false;
-        navigator.serviceWorker.addEventListener('controllerchange', () => {
-          if (!refreshing) {
-            refreshing = true;
-            window.location.reload();
+      }
+      if ('caches' in window) {
+        caches.keys().then((names) => {
+          for (let name of names) {
+            caches.delete(name);
           }
         });
       }
