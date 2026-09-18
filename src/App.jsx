@@ -133,9 +133,51 @@ export default function App() {
     );
   }
 
-  // 3. ORIGINAL LIGHT-THEME APP VIEW (Edge-to-Edge on Mobile, Centered Phone Frame on Desktop)
+  // 3. APP VIEW: 100% Edge-to-Edge Fullscreen on Mobile, Centered Phone Mockup on Desktop
+  const isMobileScreen = typeof window !== 'undefined' && (
+    /Android|iPhone|iPad|iPod|Mobile|wv|Capacitor/i.test(window.navigator.userAgent) ||
+    window.innerWidth <= 768 ||
+    window.matchMedia('(max-width: 768px)').matches
+  );
+
+  if (isMobileScreen) {
+    return (
+      <div className="w-full h-[100dvh] min-h-[100dvh] bg-white flex flex-col relative overflow-hidden select-none">
+        {/* Fullscreen Mobile App Content */}
+        <div className="flex-1 flex flex-col overflow-y-auto relative bg-white">
+          {isPlayingIntro ? (
+            <CinematicLoadingScreen 
+              onComplete={() => setIsPlayingIntro(false)} 
+              activeState={activeState} 
+              duration={3800} 
+            />
+          ) : !currentUser ? (
+            <AuthPage 
+              onLoginSuccess={handleLoginSuccess} 
+              activeState={activeState}
+              showLoginInPhone={showLoginInPhone}
+              setShowLoginInPhone={setShowLoginInPhone}
+            />
+          ) : currentUser.status === 'onboarding' ? (
+            <OnboardingForm 
+              user={currentUser} 
+              onComplete={handleOnboardingComplete}
+            />
+          ) : (
+            <UserDashboard 
+              user={currentUser} 
+              onUpdateUser={handleUpdateUser}
+              onLogout={handleLogout}
+            />
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Desktop Desktop Phone Mockup View
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center select-none overflow-x-hidden relative">
+    <div className="min-h-screen bg-slate-100 flex flex-col justify-center items-center select-none overflow-x-hidden relative">
       
       {/* Ambient background glows */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
@@ -144,7 +186,7 @@ export default function App() {
       </div>
 
       {/* Top Desktop navigation bar to easily go back to landing page */}
-      <div className="hidden md:flex w-full max-w-md items-center justify-between py-3 px-4 text-xs font-bold text-slate-500 z-10">
+      <div className="flex w-full max-w-md items-center justify-between py-3 px-4 text-xs font-bold text-slate-500 z-10">
         <button 
           onClick={() => setCurrentView('landing')} 
           className="flex items-center gap-1.5 hover:text-[#FF2E79] transition-colors cursor-pointer"
@@ -162,13 +204,11 @@ export default function App() {
         </button>
       </div>
 
-      {/* Main Native Screen Container:
-          - On mobile: 100% full screen height and width without black frames
-          - On desktop: Clean centered mobile frame with light border */}
-      <div className="w-full max-w-[412px] h-[100dvh] md:h-[844px] md:max-h-[92vh] md:rounded-[48px] phone-screen md:border-[8px] md:border-white shadow-[0_25px_70px_-15px_rgba(255,46,121,0.18),0_15px_35px_-5px_rgba(0,0,0,0.08)] overflow-hidden flex flex-col relative z-10">
+      {/* Desktop Simulated Phone Container */}
+      <div className="w-[412px] max-w-[412px] h-[844px] max-h-[92vh] rounded-[48px] phone-screen border-[8px] border-white shadow-[0_25px_70px_-15px_rgba(255,46,121,0.18),0_15px_35px_-5px_rgba(0,0,0,0.08)] overflow-hidden flex flex-col relative z-10 bg-white">
         
         {/* Dynamic Island for desktop simulation */}
-        <div className="hidden md:block absolute top-2.5 left-1/2 -translate-x-1/2 w-28 h-4 bg-slate-900 rounded-full z-50"></div>
+        <div className="absolute top-2.5 left-1/2 -translate-x-1/2 w-28 h-4 bg-slate-900 rounded-full z-50"></div>
 
         {/* Screen Content Wrapper */}
         <div className="flex-1 flex flex-col overflow-y-auto relative bg-transparent">
