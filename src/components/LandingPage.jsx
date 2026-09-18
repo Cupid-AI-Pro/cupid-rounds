@@ -783,7 +783,7 @@ export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                  <span>Full refund if unmatched</span>
+                  <span>Standard non-refundable entry</span>
                 </li>
               </ul>
             </div>
