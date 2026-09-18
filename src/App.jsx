@@ -12,7 +12,7 @@ import { Sparkles, Phone, ShieldCheck, ArrowLeft, Globe } from 'lucide-react';
 export default function App() {
   const [currentUser, setLocalCurrentUser] = useState(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get('step')) {
+    if (params.get('step') || params.get('reset')) {
       return {
         id: 'test_onboarding_user',
         name: 'Test User',
@@ -31,7 +31,7 @@ export default function App() {
   // Default to landing page for web visitors, but open matchmaking app directly for APK, PWA or saved users!
   const [currentView, setCurrentView] = useState(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get('step')) return 'app';
+    if (params.get('step') || params.get('reset')) return 'app';
     if (params.get('view') === 'admin') return 'admin';
     if (params.get('view') === 'app') return 'app';
     if (params.get('view') === 'landing') return 'landing';

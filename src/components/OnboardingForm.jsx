@@ -1263,8 +1263,8 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 7: Partner Preferences — Age, Height & Gender (Exact Image 2 Match)  */}
         {/* ========================================================================= */}
         {step === 7 && (
-          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-5 animate-slide-up">
-            <div>
+          <div className="space-y-4 animate-slide-up">
+            <div className="text-left mb-2">
               <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 07 • IDEAL MATCH CRITERIA
               </span>
@@ -1284,8 +1284,8 @@ export default function OnboardingForm({ user, onComplete }) {
               </span>
             </div>
 
-            {/* Preferred Age */}
-            <div className="space-y-3">
+            {/* Preferred Age Card */}
+            <div className="bg-white/90 backdrop-blur-md rounded-3xl p-5 border border-white/80 shadow-xs space-y-3 text-left">
               <label className="text-sm font-bold text-slate-900 block">
                 Preferred Age ({prefMinAge} - {prefMaxAge} yrs) *
               </label>
@@ -1310,8 +1310,8 @@ export default function OnboardingForm({ user, onComplete }) {
               </div>
             </div>
 
-            {/* Preferred Height */}
-            <div className="space-y-3">
+            {/* Preferred Height Card */}
+            <div className="bg-white/90 backdrop-blur-md rounded-3xl p-5 border border-white/80 shadow-xs space-y-3 text-left">
               <label className="text-sm font-bold text-slate-900 block">Preferred Height *</label>
               <CustomSelect
                 value={prefHeight}
@@ -1321,8 +1321,8 @@ export default function OnboardingForm({ user, onComplete }) {
               />
             </div>
 
-            {/* Preferred Gender */}
-            <div className="space-y-3">
+            {/* Preferred Gender Card */}
+            <div className="bg-white/90 backdrop-blur-md rounded-3xl p-5 border border-white/80 shadow-xs space-y-3 text-left">
               <label className="text-sm font-bold text-slate-900 block">Preferred Gender *</label>
               <div className="grid grid-cols-3 gap-3">
                 {['Male', 'Female', 'Others'].map((g) => {
@@ -1344,13 +1344,6 @@ export default function OnboardingForm({ user, onComplete }) {
                 })}
               </div>
             </div>
-
-            {/* Watermark Heart Outline */}
-            <div className="absolute -bottom-4 -right-4 pointer-events-none opacity-[0.12] text-[#FF2E79]">
-              <svg className="w-28 h-28 fill-none stroke-current stroke-[1.5]" viewBox="0 0 24 24">
-                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-              </svg>
-            </div>
           </div>
         )}
 
@@ -1358,8 +1351,8 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 8: Partner Preferences — University, Branch & Year (Exact Image 3 Match) */}
         {/* ========================================================================= */}
         {step === 8 && (
-          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-5 animate-slide-up">
-            <div>
+          <div className="space-y-4 animate-slide-up">
+            <div className="text-left mb-2">
               <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 07 • IDEAL MATCH CRITERIA
               </span>
@@ -1369,8 +1362,8 @@ export default function OnboardingForm({ user, onComplete }) {
               </p>
             </div>
 
-            {/* Preferred University */}
-            <div className="space-y-3">
+            {/* Preferred University Card */}
+            <div className="bg-white/90 backdrop-blur-md rounded-3xl p-5 border border-white/80 shadow-xs space-y-3 text-left">
               <label className="text-sm font-bold text-slate-900 block">Preferred University *</label>
               <div className="flex flex-wrap gap-2.5">
                 {['Any University', ...POPULAR_UNIVERSITIES].map((u) => {
@@ -1394,8 +1387,8 @@ export default function OnboardingForm({ user, onComplete }) {
               </div>
             </div>
 
-            {/* Preferred Branch */}
-            <div className="space-y-3">
+            {/* Preferred Branch Card */}
+            <div className="bg-white/90 backdrop-blur-md rounded-3xl p-5 border border-white/80 shadow-xs space-y-3 text-left">
               <label className="text-sm font-bold text-slate-900 block">Preferred Branch *</label>
               <CustomSelect
                 value={prefBranch}
@@ -1405,8 +1398,8 @@ export default function OnboardingForm({ user, onComplete }) {
               />
             </div>
 
-            {/* Preferred Year Of Study */}
-            <div className="space-y-3">
+            {/* Preferred Year Of Study Card */}
+            <div className="bg-white/90 backdrop-blur-md rounded-3xl p-5 border border-white/80 shadow-xs space-y-3 text-left">
               <label className="text-sm font-bold text-slate-900 block">Preferred year of study *</label>
               <div className="flex flex-wrap gap-2.5">
                 {['Any Year', '1st Year', '2nd Year', '3rd Year', '4th Year', 'Graduate'].map((yr) => {
@@ -1428,13 +1421,6 @@ export default function OnboardingForm({ user, onComplete }) {
                   );
                 })}
               </div>
-            </div>
-
-            {/* Watermark Heart Outline */}
-            <div className="absolute -bottom-4 -right-4 pointer-events-none opacity-[0.12] text-[#FF2E79]">
-              <svg className="w-28 h-28 fill-none stroke-current stroke-[1.5]" viewBox="0 0 24 24">
-                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-              </svg>
             </div>
           </div>
         )}
