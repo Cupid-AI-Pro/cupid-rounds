@@ -4,10 +4,12 @@ export default function ScrollWheelPicker({
   items = [],
   value,
   onChange,
-  itemHeight = 38,
-  visibleCount = 3,
+  itemHeight = 44,
+  visibleCount = 5,
   unit = '',
-  label = ''
+  label = '',
+  sublabel = '',
+  icon: Icon = null
 }) {
   const containerRef = useRef(null);
   const isDraggingRef = useRef(false);
@@ -59,25 +61,46 @@ export default function ScrollWheelPicker({
 
   return (
     <div className="relative w-full select-none flex flex-col items-center">
-      {label && (
-        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 block">
-          {label}
-        </span>
+      {/* Optional Column Header (Icon + Label + Sublabel) */}
+      {(Icon || label) && (
+        <div className="flex flex-col items-center text-center mb-3">
+          {Icon && (
+            <div className="w-11 h-11 rounded-full bg-pink-50 border border-rose-100 flex items-center justify-center text-[#FF2E79] shadow-xs mb-2">
+              <Icon className="w-5 h-5 stroke-[2]" />
+            </div>
+          )}
+          {label && (
+            <span className="text-sm font-extrabold text-slate-900 tracking-tight">
+              {label}
+            </span>
+          )}
+          {sublabel && (
+            <span className="text-[11px] font-medium text-slate-400 mt-0.5">
+              {sublabel}
+            </span>
+          )}
+        </div>
       )}
 
-      <div className="relative w-full overflow-hidden rounded-2xl bg-white/90 border border-slate-200/80 shadow-sm p-1">
+      {/* 3D Drum Shell Outer Frame */}
+      <div className="relative w-full overflow-hidden rounded-[26px] bg-gradient-to-b from-slate-100/95 via-white to-slate-100/95 border border-slate-200/90 shadow-[inset_0_2px_8px_rgba(0,0,0,0.04),0_4px_20px_rgba(0,0,0,0.03)] p-1">
+        
+        {/* Metallic side bevel gradients for 3D cylinder effect */}
+        <div className="absolute top-0 bottom-0 left-0 w-3 bg-gradient-to-r from-slate-300/40 via-slate-100/20 to-transparent pointer-events-none z-20 rounded-l-[26px]" />
+        <div className="absolute top-0 bottom-0 right-0 w-3 bg-gradient-to-l from-slate-300/40 via-slate-100/20 to-transparent pointer-events-none z-20 rounded-r-[26px]" />
+
         {/* Active Selection Highlight Bar */}
         <div
-          className="absolute left-1.5 right-1.5 rounded-xl bg-pink-50/90 border border-rose-200/90 pointer-events-none shadow-[0_2px_10px_rgba(255,45,85,0.08)] z-0"
+          className="absolute left-1.5 right-1.5 rounded-2xl bg-gradient-to-r from-rose-100/90 via-pink-100/95 to-rose-100/90 border-y border-pink-200/90 pointer-events-none shadow-[inset_0_1px_2px_rgba(255,255,255,0.8),0_2px_8px_rgba(255,45,85,0.12)] z-0"
           style={{
             top: `${halfVisible * itemHeight + 4}px`,
             height: `${itemHeight}px`
           }}
-        ></div>
+        />
 
-        {/* Soft Glass Cylinder Mask (No harsh solid white cutoffs) */}
-        <div className="absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-white/90 to-transparent pointer-events-none z-20"></div>
-        <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-white/90 to-transparent pointer-events-none z-20"></div>
+        {/* 3D Glass Cylinder Mask (Soft Top & Bottom Fade) */}
+        <div className="absolute top-0 left-0 right-0 h-12 bg-gradient-to-b from-white via-white/80 to-transparent pointer-events-none z-20" />
+        <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white via-white/80 to-transparent pointer-events-none z-20" />
 
         {/* 3D Drum Scroll Container */}
         <div
@@ -91,7 +114,7 @@ export default function ScrollWheelPicker({
           style={{
             height: `${containerHeight}px`,
             scrollSnapType: 'y mandatory',
-            perspective: '500px'
+            perspective: '600px'
           }}
         >
           {/* Top Padding */}
@@ -102,9 +125,9 @@ export default function ScrollWheelPicker({
             const isSelected = item === value;
             const distance = idx - selectedIndex;
             const absDistance = Math.abs(distance);
-            const opacity = Math.max(0.2, 1 - absDistance * 0.45);
-            const rotateX = distance * 26; // 3D cylinder rotation
-            const scale = Math.max(0.85, 1 - absDistance * 0.08);
+            const opacity = Math.max(0.2, 1 - absDistance * 0.35);
+            const rotateX = distance * 22; // 3D cylinder rotation
+            const scale = Math.max(0.82, 1 - absDistance * 0.06);
 
             return (
               <div
@@ -117,20 +140,22 @@ export default function ScrollWheelPicker({
                 }}
                 className={`flex items-center justify-center font-display transition-all duration-150 cursor-pointer ${
                   isSelected
-                    ? 'text-[#FF2E79] font-black text-lg'
-                    : 'text-slate-400 font-semibold text-sm'
+                    ? 'text-[#FF2E79] font-black text-2xl tracking-tight'
+                    : 'text-slate-400 font-semibold text-base'
                 }`}
                 style={{
                   height: `${itemHeight}px`,
                   scrollSnapAlign: 'center',
                   opacity,
-                  transform: `perspective(300px) rotateX(${rotateX}deg) scale(${scale})`,
+                  transform: `perspective(400px) rotateX(${rotateX}deg) scale(${scale})`,
                   transformOrigin: 'center center'
                 }}
               >
                 <span>{item}</span>
                 {unit && isSelected && (
-                  <span className="text-[10px] text-rose-400 font-extrabold ml-1 uppercase">{unit}</span>
+                  <span className="text-xs font-black text-[#FF2E79] ml-1.5 uppercase tracking-wider">
+                    {unit}
+                  </span>
                 )}
               </div>
             );

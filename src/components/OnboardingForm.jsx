@@ -19,10 +19,12 @@ import {
   Flame,
   Compass,
   Smile,
-  GraduationCap,
-  X,
-  Plus,
-  RefreshCw
+  GraduationCap, 
+  X, 
+  Plus, 
+  RefreshCw,
+  Calendar,
+  Ruler
 } from 'lucide-react';
 import ScrollWheelPicker from './onboarding/ScrollWheelPicker';
 import CupidLogo from './CupidLogo';
@@ -756,56 +758,44 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* ========================================================================= */}
         {step === 3 && (
           <div className="space-y-6 animate-slide-up">
-            <div className="text-left mb-3">
+            <div className="text-left mb-2">
               <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                Step 03 • Stats & Biology
+                STEP 03 • STATS & BIOLOGY
               </span>
               <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">Age, Height & Gender</h2>
               <p className="text-xs text-slate-500 font-medium mt-1 leading-relaxed">
-                Scroll the physical 3D drums smoothly to select your age and height
+                Scroll the wheels to select your age and height.
               </p>
             </div>
 
-            {/* 3D Wheels Panel */}
-            <div className="bg-gradient-to-b from-slate-50/90 via-pink-50/20 to-slate-50/90 border border-slate-200/80 rounded-3xl p-5 shadow-sm space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-pink-100/60">
-                <span className="text-xs font-black text-slate-700 uppercase tracking-wider">
-                  Physical Measurements
-                </span>
-                <div className="flex items-center gap-2">
-                  <span className="px-3 py-1 rounded-full bg-[#FF2E79] text-white text-xs font-black shadow-sm">
-                    {age} YRS
-                  </span>
-                  <span className="px-3 py-1 rounded-full bg-slate-900 text-white text-xs font-black shadow-sm">
-                    {height}
-                  </span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <ScrollWheelPicker
-                  label="Your Age"
-                  items={AGE_RANGE}
-                  value={Number(age)}
-                  onChange={(val) => setAge(val)}
-                  unit="yrs"
-                  itemHeight={44}
-                  visibleCount={3}
-                />
-                <ScrollWheelPicker
-                  label="Your Height"
-                  items={HEIGHT_RANGE}
-                  value={height}
-                  onChange={(val) => setHeight(val)}
-                  itemHeight={44}
-                  visibleCount={3}
-                />
-              </div>
+            {/* 3D Wheel Pickers Grid */}
+            <div className="grid grid-cols-2 gap-4 py-1">
+              <ScrollWheelPicker
+                icon={Calendar}
+                label="Your Age"
+                sublabel="How old are you?"
+                items={AGE_RANGE}
+                value={Number(age)}
+                onChange={(val) => setAge(val)}
+                unit="YRS"
+                itemHeight={44}
+                visibleCount={5}
+              />
+              <ScrollWheelPicker
+                icon={Ruler}
+                label="Your Height"
+                sublabel="How tall are you?"
+                items={HEIGHT_RANGE}
+                value={height}
+                onChange={(val) => setHeight(val)}
+                itemHeight={44}
+                visibleCount={5}
+              />
             </div>
 
-            {/* Gender */}
-            <div>
-              <label className="form-label text-left mb-2 text-xs font-bold text-slate-700">Gender *</label>
+            {/* Gender Selection */}
+            <div className="space-y-2 pt-1 text-left">
+              <label className="text-sm font-bold text-slate-900 block">Gender *</label>
               <div className="grid grid-cols-3 gap-3">
                 {[
                   { id: 'male', label: 'Male', icon: '♂' },
@@ -816,13 +806,13 @@ export default function OnboardingForm({ user, onComplete }) {
                     key={g.id}
                     type="button"
                     onClick={() => setGender(g.id)}
-                    className={`py-3.5 rounded-2xl text-xs font-bold transition-all border flex items-center justify-center gap-2 cursor-pointer ${
+                    className={`py-3.5 rounded-2xl text-xs sm:text-sm font-bold transition-all border flex items-center justify-center gap-2 cursor-pointer ${
                       gender === g.id
-                        ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md scale-105'
-                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                        ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
+                        : 'bg-white text-slate-800 border-slate-200 hover:border-pink-200 shadow-2xs'
                     }`}
                   >
-                    <span className="text-sm">{g.icon}</span>
+                    <span className="text-base">{g.icon}</span>
                     <span>{g.label}</span>
                   </button>
                 ))}
