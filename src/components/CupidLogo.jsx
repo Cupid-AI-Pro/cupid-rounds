@@ -19,36 +19,28 @@ export default function CupidLogo({
 
   const currentSize = sizeMap[size] || sizeMap.md;
 
-  // Luxury Editorial Monogram Mark (Inspired by Hinge / Modern High-End Editorial Brands)
-  // Geometric Minimalist Monogram: Intertwined 'C' + Hairline Heart Silhouette
-  const EditorialIcon = () => (
-    <svg
-      width={currentSize.icon}
-      height={currentSize.icon}
-      viewBox="0 0 32 32"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="shrink-0"
+  // Refined Brand Mark: Pink Circle with White Heart (exact reference match)
+  const BrandIcon = () => (
+    <div 
+      className="shrink-0 bg-[#FF2E79] rounded-full flex items-center justify-center shadow-xs"
+      style={{ width: currentSize.icon, height: currentSize.icon }}
     >
-      {/* Outer refined architectural C curve */}
-      <path
-        d="M23 8C20.5 5.5 16.5 4.5 12.5 6C7.5 7.8 4 12.6 4 18C4 23.8 8.2 28.5 14 28.5C18.5 28.5 22 26 24 22.5"
-        stroke="#FF2E79"
-        strokeWidth="2.8"
-        strokeLinecap="round"
-      />
-      {/* Delicate inner heart apex */}
-      <path
-        d="M17 11.5C17 11.5 19.5 9 22 10.5C24.5 12 24.5 15.5 21.5 18.5L17 23L12.5 18.5C9.5 15.5 9.5 12 12 10.5C14.5 9 17 11.5 17 11.5Z"
-        fill="#FF2E79"
-      />
-    </svg>
+      <svg
+        width={currentSize.icon * 0.52}
+        height={currentSize.icon * 0.52}
+        viewBox="0 0 24 24"
+        fill="white"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+      </svg>
+    </div>
   );
 
   return (
     <div className={`inline-flex items-center ${currentSize.spacing} select-none ${className}`}>
       {/* Minimal Icon Mark */}
-      <EditorialIcon />
+      <BrandIcon />
 
       {/* Editorial Wordmark "cupid." */}
       {showText && (
