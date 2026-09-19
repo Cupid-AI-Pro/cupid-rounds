@@ -1275,43 +1275,43 @@ export default function OnboardingForm({ user, onComplete }) {
             </div>
 
             {/* Cupid Note Card */}
-            <div className="p-3.5 bg-pink-50/70 border border-pink-100/80 rounded-2xl flex items-center gap-3 text-xs text-slate-700 shadow-2xs text-left">
-              <div className="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center text-[#FF2E79] shrink-0">
-                <Lightbulb className="w-4 h-4 fill-pink-200" />
+            <div className="p-4 bg-[#FFF0F5] border border-pink-100/90 rounded-2xl flex items-center gap-3 text-xs text-slate-700 shadow-2xs text-left">
+              <div className="w-8 h-8 rounded-full bg-pink-100/80 flex items-center justify-center text-[#FF2E79] shrink-0 shadow-2xs">
+                <Lightbulb className="w-4 h-4 fill-pink-300" />
               </div>
-              <span>
-                <strong>Cupid Note :</strong> More choices significantly increase the chances of finding your perfect match!
+              <span className="leading-relaxed">
+                <strong className="text-slate-900 font-extrabold">Cupid Note :</strong> More choices significantly increase the chances of finding your perfect match!
               </span>
             </div>
 
             {/* Preferred Age Card */}
-            <div className="bg-white/90 backdrop-blur-md rounded-3xl p-5 border border-white/80 shadow-xs space-y-3 text-left">
+            <div className="bg-white/90 backdrop-blur-md rounded-[28px] p-5 border border-white/80 shadow-xs space-y-3 text-left">
               <label className="text-sm font-bold text-slate-900 block">
                 Preferred Age ({prefMinAge} - {prefMaxAge} yrs) *
               </label>
-              <div className="flex items-center gap-3 pt-1">
+              <div className="flex items-center gap-3 pt-2 pb-1">
                 <input
                   type="range"
                   min="18"
-                  max="32"
+                  max="35"
                   value={prefMinAge}
                   onChange={(e) => setPrefMinAge(Math.min(Number(e.target.value), prefMaxAge - 1))}
-                  className="w-full accent-[#FF2E79]"
+                  className="w-full accent-[#FF2E79] h-2 bg-rose-100 rounded-lg appearance-none cursor-pointer"
                 />
-                <span className="text-xs font-bold text-slate-500 shrink-0 px-1">to</span>
+                <span className="text-xs font-extrabold text-slate-500 shrink-0 px-2 select-none">to</span>
                 <input
                   type="range"
                   min="18"
                   max="35"
                   value={prefMaxAge}
                   onChange={(e) => setPrefMaxAge(Math.max(Number(e.target.value), prefMinAge + 1))}
-                  className="w-full accent-[#FF2E79]"
+                  className="w-full accent-[#FF2E79] h-2 bg-rose-100 rounded-lg appearance-none cursor-pointer"
                 />
               </div>
             </div>
 
             {/* Preferred Height Card */}
-            <div className="bg-white/90 backdrop-blur-md rounded-3xl p-5 border border-white/80 shadow-xs space-y-3 text-left">
+            <div className="bg-white/90 backdrop-blur-md rounded-[28px] p-5 border border-white/80 shadow-xs space-y-3 text-left">
               <label className="text-sm font-bold text-slate-900 block">Preferred Height *</label>
               <CustomSelect
                 value={prefHeight}
@@ -1322,7 +1322,7 @@ export default function OnboardingForm({ user, onComplete }) {
             </div>
 
             {/* Preferred Gender Card */}
-            <div className="bg-white/90 backdrop-blur-md rounded-3xl p-5 border border-white/80 shadow-xs space-y-3 text-left">
+            <div className="bg-white/90 backdrop-blur-md rounded-[28px] p-5 border border-white/80 shadow-xs space-y-3 text-left">
               <label className="text-sm font-bold text-slate-900 block">Preferred Gender *</label>
               <div className="grid grid-cols-3 gap-3">
                 {['Male', 'Female', 'Others'].map((g) => {
@@ -1334,7 +1334,7 @@ export default function OnboardingForm({ user, onComplete }) {
                       onClick={() => setPrefGender(g)}
                       className={`py-3.5 rounded-2xl text-xs sm:text-sm font-bold transition-all border flex items-center justify-center cursor-pointer ${
                         isSelected
-                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
+                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/25 scale-[1.02]'
                           : 'bg-white text-slate-800 border-slate-200/90 hover:border-pink-200 shadow-2xs'
                       }`}
                     >
@@ -1351,7 +1351,7 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 8: Partner Preferences — University, Branch & Year (Exact Image 3 Match) */}
         {/* ========================================================================= */}
         {step === 8 && (
-          <div className="space-y-4 animate-slide-up">
+          <div className="space-y-4 animate-slide-up text-left">
             <div className="text-left mb-2">
               <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 07 • IDEAL MATCH CRITERIA
@@ -1362,10 +1362,10 @@ export default function OnboardingForm({ user, onComplete }) {
               </p>
             </div>
 
-            {/* Preferred University Card */}
-            <div className="bg-white/90 backdrop-blur-md rounded-3xl p-5 border border-white/80 shadow-xs space-y-3 text-left">
+            {/* Field 1: Preferred University */}
+            <div className="space-y-2">
               <label className="text-sm font-bold text-slate-900 block">Preferred University *</label>
-              <div className="flex flex-wrap gap-2.5">
+              <div className="bg-white/90 backdrop-blur-md rounded-[28px] p-5 border border-white/80 shadow-xs flex flex-wrap gap-2.5">
                 {['Any University', ...POPULAR_UNIVERSITIES].map((u) => {
                   const isSelected = prefUniversity.includes(u);
                   return (
@@ -1387,8 +1387,8 @@ export default function OnboardingForm({ user, onComplete }) {
               </div>
             </div>
 
-            {/* Preferred Branch Card */}
-            <div className="bg-white/90 backdrop-blur-md rounded-3xl p-5 border border-white/80 shadow-xs space-y-3 text-left">
+            {/* Field 2: Preferred Branch */}
+            <div className="space-y-2">
               <label className="text-sm font-bold text-slate-900 block">Preferred Branch *</label>
               <CustomSelect
                 value={prefBranch}
@@ -1398,10 +1398,10 @@ export default function OnboardingForm({ user, onComplete }) {
               />
             </div>
 
-            {/* Preferred Year Of Study Card */}
-            <div className="bg-white/90 backdrop-blur-md rounded-3xl p-5 border border-white/80 shadow-xs space-y-3 text-left">
+            {/* Field 3: Preferred year of study */}
+            <div className="space-y-2">
               <label className="text-sm font-bold text-slate-900 block">Preferred year of study *</label>
-              <div className="flex flex-wrap gap-2.5">
+              <div className="bg-white/90 backdrop-blur-md rounded-[28px] p-5 border border-white/80 shadow-xs flex flex-wrap gap-2.5">
                 {['Any Year', '1st Year', '2nd Year', '3rd Year', '4th Year', 'Graduate'].map((yr) => {
                   const isSelected = prefYearOfStudy.includes(yr);
                   return (
@@ -1430,6 +1430,14 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* ========================================================================= */}
         {step === 9 && (
           <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-6 animate-slide-up">
+            
+            {/* Background Soft Heart Outline Watermark */}
+            <div className="absolute top-4 right-4 pointer-events-none opacity-20 text-[#FF2E79]">
+              <svg className="w-24 h-24 fill-[#FF2E79]/10 stroke-[#FF2E79] stroke-[1.5]" viewBox="0 0 24 24">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+              </svg>
+            </div>
+
             <div>
               <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 09 • PARTNER LIFESTYLE
@@ -1442,9 +1450,9 @@ export default function OnboardingForm({ user, onComplete }) {
 
             {/* Preferred Religion */}
             <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79] shrink-0">
-                  <Flower2 className="w-4 h-4" />
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-rose-50 border border-rose-100/80 flex items-center justify-center text-[#FF2E79] shrink-0 shadow-2xs">
+                  <Flower2 className="w-4.5 h-4.5 stroke-[2.2]" />
                 </div>
                 <label className="text-sm font-bold text-slate-900">Preferred Religion *</label>
               </div>
@@ -1456,10 +1464,10 @@ export default function OnboardingForm({ user, onComplete }) {
                       key={r}
                       type="button"
                       onClick={() => toggleArrayItem(prefReligion, setPrefReligion, r)}
-                      className={`px-4.5 py-2.5 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
+                      className={`px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
                         isSelected
                           ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
-                          : 'bg-white text-slate-800 border-slate-200/90 hover:border-pink-200 shadow-2xs'
+                          : 'bg-white text-slate-800 border-slate-100 hover:border-pink-200 shadow-2xs'
                       }`}
                     >
                       {r}
@@ -1471,9 +1479,9 @@ export default function OnboardingForm({ user, onComplete }) {
 
             {/* Preferred Habits */}
             <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79] shrink-0">
-                  <Wine className="w-4 h-4" />
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-rose-50 border border-rose-100/80 flex items-center justify-center text-[#FF2E79] shrink-0 shadow-2xs">
+                  <Wine className="w-4.5 h-4.5 stroke-[2.2]" />
                 </div>
                 <label className="text-sm font-bold text-slate-900">Preferred Habits *</label>
               </div>
@@ -1485,10 +1493,10 @@ export default function OnboardingForm({ user, onComplete }) {
                       key={h}
                       type="button"
                       onClick={() => toggleArrayItem(prefHabits, setPrefHabits, h)}
-                      className={`px-4.5 py-2.5 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
+                      className={`px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
                         isSelected
                           ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
-                          : 'bg-white text-slate-800 border-slate-200/90 hover:border-pink-200 shadow-2xs'
+                          : 'bg-white text-slate-800 border-slate-100 hover:border-pink-200 shadow-2xs'
                       }`}
                     >
                       {h}
@@ -1500,9 +1508,9 @@ export default function OnboardingForm({ user, onComplete }) {
 
             {/* Preferred Number Of Exes */}
             <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79] shrink-0">
-                  <Heart className="w-4 h-4 fill-pink-100" />
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-rose-50 border border-rose-100/80 flex items-center justify-center text-[#FF2E79] shrink-0 shadow-2xs">
+                  <Heart className="w-4.5 h-4.5 fill-rose-100 text-[#FF2E79]" />
                 </div>
                 <label className="text-sm font-bold text-slate-900">Preferred Number Of Exes *</label>
               </div>
@@ -1512,13 +1520,6 @@ export default function OnboardingForm({ user, onComplete }) {
                 options={["Doesn't matter", "0 (No exes)", "1-2 exes", "3+ exes"]}
                 placeholder="Select preferred number of exes..."
               />
-            </div>
-
-            {/* Watermark Heart Outline */}
-            <div className="absolute -bottom-4 -right-4 pointer-events-none opacity-[0.12] text-[#FF2E79]">
-              <svg className="w-28 h-28 fill-none stroke-current stroke-[1.5]" viewBox="0 0 24 24">
-                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-              </svg>
             </div>
           </div>
         )}
