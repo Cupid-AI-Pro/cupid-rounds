@@ -11,7 +11,7 @@ export default function CustomSelect({
   className = '',
   dropdownClassName = '',
   disabled = false,
-  activeMatchValue = null, // e.g. activeState string
+  activeMatchValue = null,
   activeBadgeText = 'Live Round'
 }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -58,23 +58,23 @@ export default function CustomSelect({
         type="button"
         disabled={disabled}
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full h-11 px-3.5 bg-white rounded-2xl border transition-all flex items-center justify-between text-left cursor-pointer group ${
+        className={`w-full h-14 sm:h-15 px-4 bg-white/95 rounded-2xl border transition-all flex items-center justify-between text-left cursor-pointer group shadow-2xs ${
           isOpen
-            ? 'border-[#FF2E79] ring-3 ring-[#FF2E79]/15 shadow-md shadow-pink-500/5 bg-white'
-            : 'border-slate-200/90 hover:border-pink-300 hover:bg-[#FFF9FA]/60 shadow-xs'
+            ? 'border-[#FF2E79] ring-4 ring-[#FF2E79]/15 shadow-md bg-white'
+            : 'border-slate-200 hover:border-pink-300 hover:bg-[#FFF9FA]/80'
         } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
-        <div className="flex items-center gap-2.5 min-w-0 flex-1 pr-2">
+        <div className="flex items-center gap-3 min-w-0 flex-1 pr-2">
           {Icon && (
-            <div className="shrink-0 flex items-center justify-center">
-              <Icon className={`w-4 h-4 ${iconColor}`} />
+            <div className="shrink-0 flex items-center justify-center w-8 h-8 rounded-xl bg-rose-50 text-[#FF2E79] border border-rose-100">
+              <Icon className="w-4 h-4 stroke-[2.2]" />
             </div>
           )}
           
           <div className="flex items-center gap-2 min-w-0 truncate">
             {selectedOption ? (
               <>
-                <span className="text-xs font-bold text-slate-800 truncate">
+                <span className="text-sm sm:text-base font-bold text-slate-900 truncate">
                   {selectedOption.label}
                 </span>
                 {selectedOption.isLive && (
@@ -85,7 +85,7 @@ export default function CustomSelect({
                 )}
               </>
             ) : (
-              <span className="text-xs font-semibold text-slate-400 truncate">
+              <span className="text-sm sm:text-base font-semibold text-slate-400 truncate">
                 {placeholder}
               </span>
             )}
@@ -93,17 +93,17 @@ export default function CustomSelect({
         </div>
 
         {/* Custom Chevron Indicator */}
-        <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-transform duration-200 shrink-0 ${
-          isOpen ? 'bg-pink-50 text-[#FF2E79] rotate-180' : 'text-slate-400 group-hover:text-pink-500'
+        <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-transform duration-200 shrink-0 ${
+          isOpen ? 'bg-[#FF2E79] text-white rotate-180 shadow-xs' : 'bg-rose-50 text-[#FF2E79] group-hover:bg-rose-100'
         }`}>
-          <ChevronDown className="w-3.5 h-3.5 stroke-[2.5]" />
+          <ChevronDown className="w-4 h-4 stroke-[2.5]" />
         </div>
       </button>
 
-      {/* Dropdown Menu Popup (Custom Cupid Theme) */}
+      {/* Dropdown Menu Popup */}
       {isOpen && (
         <div
-          className={`absolute left-0 right-0 top-full mt-1.5 bg-white/95 backdrop-blur-xl border border-pink-100 rounded-2xl shadow-[0_18px_40px_-10px_rgba(255,45,85,0.18),0_4px_16px_rgba(0,0,0,0.06)] z-50 overflow-hidden animate-slide-up max-h-56 overflow-y-auto no-scrollbar py-1.5 ${dropdownClassName}`}
+          className={`absolute left-0 right-0 top-full mt-2 bg-white/95 backdrop-blur-xl border-2 border-pink-200 rounded-2xl shadow-[0_20px_48px_-10px_rgba(255,45,85,0.22),0_6px_20px_rgba(0,0,0,0.08)] z-50 overflow-hidden animate-slide-up max-h-64 overflow-y-auto no-scrollbar py-2 ${dropdownClassName}`}
         >
           {normalizedOptions.map((opt) => {
             const isSelected = opt.value === value;
@@ -112,30 +112,30 @@ export default function CustomSelect({
                 key={opt.value}
                 type="button"
                 onClick={() => handleSelect(opt.value)}
-                className={`w-full px-3.5 py-2.5 flex items-center justify-between text-left text-xs transition-all cursor-pointer group ${
+                className={`w-full px-4 py-3.5 flex items-center justify-between text-left text-sm sm:text-base transition-all cursor-pointer group border-b border-slate-100/60 last:border-b-0 ${
                   isSelected
-                    ? 'bg-[#FF2E79] text-white font-bold shadow-xs'
-                    : 'text-slate-700 font-semibold hover:bg-pink-50/80 hover:text-[#FF2E79]'
+                    ? 'bg-[#FF2E79] text-white font-extrabold shadow-xs'
+                    : 'text-slate-800 font-bold hover:bg-rose-50/80 hover:text-[#FF2E79]'
                 }`}
               >
                 <div className="flex items-center gap-2 min-w-0 flex-1 pr-2">
                   <span className="truncate">{opt.label}</span>
                   {opt.isLive && (
                     <span
-                      className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-black shrink-0 ${
+                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black shrink-0 ${
                         isSelected
                           ? 'bg-white/20 text-white border border-white/30'
                           : 'bg-emerald-50 text-emerald-600 border border-emerald-200'
                       }`}
                     >
-                      <span className={`w-1 h-1 rounded-full ${isSelected ? 'bg-white' : 'bg-emerald-500'}`} />
+                      <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-emerald-500'}`} />
                       <span>{activeBadgeText}</span>
                     </span>
                   )}
                 </div>
 
                 {isSelected && (
-                  <Check className="w-4 h-4 text-white stroke-[3] shrink-0" />
+                  <Check className="w-5 h-5 text-white stroke-[3] shrink-0" />
                 )}
               </button>
             );
