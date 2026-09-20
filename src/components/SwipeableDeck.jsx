@@ -1,8 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   MapPin, 
-  ArrowUpRight, 
   Sparkles, 
+  Heart,
+  X,
+  Send,
+  Check,
+  GraduationCap,
+  Navigation
 } from 'lucide-react';
 
 export default function SwipeableDeck({ 
@@ -97,7 +102,7 @@ export default function SwipeableDeck({
 
   if (!currentCandidate) {
     return (
-      <div className="w-full h-full flex flex-col justify-center items-center text-center p-6 bg-white/80 backdrop-blur-md border border-white rounded-[28px] select-none shadow-sm">
+      <div className="w-full h-full flex flex-col justify-center items-center text-center p-6 bg-white/80 backdrop-blur-md border border-white rounded-[32px] select-none shadow-sm">
         <div className="w-14 h-14 rounded-full bg-rose-50 text-[#FF2E79] flex items-center justify-center mb-3">
           <Sparkles className="w-7 h-7" />
         </div>
@@ -113,41 +118,39 @@ export default function SwipeableDeck({
   const isDraggingCard = isDragging && (dragOffset.x !== 0 || dragOffset.y !== 0);
 
   return (
-    // Fills parent wrapper via absolute inset-0 — parent must be position:relative with overflow:hidden
     <div
       ref={containerRef}
       className="absolute inset-0 select-none"
     >
-      
       {/* ---------------------------------------------------------------- */}
-      {/* BACKGROUND CARD — tilted, peeks behind main card                 */}
+      {/* BACKGROUND CARD — peeks stacked behind main card                 */}
       {/* ---------------------------------------------------------------- */}
       {nextCandidate && (
         <div
-          className="absolute rounded-[28px] overflow-hidden pointer-events-none"
+          className="absolute rounded-[32px] overflow-hidden pointer-events-none"
           style={{
-            top: 6,
-            bottom: 6,
-            left: 8,
-            right: 8,
-            background: 'linear-gradient(135deg, #F2E3F7 0%, #E3D2F2 100%)',
-            border: '1px solid rgba(220, 200, 245, 0.6)',
-            transform: 'rotate(4.5deg) translateX(6px) translateY(4px)',
+            top: 4,
+            bottom: 4,
+            left: 6,
+            right: 6,
+            background: 'linear-gradient(135deg, #FFEBEF 0%, #FFD6E0 100%)',
+            border: '1.5px solid rgba(255, 255, 255, 0.8)',
+            transform: 'rotate(3.5deg) translateX(8px) translateY(4px)',
             transformOrigin: 'bottom center',
             zIndex: 1,
-            boxShadow: '0 12px 28px rgba(0,0,0,0.07)',
+            boxShadow: '0 12px 30px rgba(255, 46, 121, 0.12)',
           }}
         >
           <img
             src={nextCandidate.avatar}
             alt=""
-            className="w-full h-full object-cover opacity-50"
+            className="w-full h-full object-cover opacity-60"
           />
         </div>
       )}
 
       {/* ---------------------------------------------------------------- */}
-      {/* MAIN SWIPEABLE CARD — full size, sits on top                      */}
+      {/* MAIN SWIPEABLE CARD — full size, matching reference image        */}
       {/* ---------------------------------------------------------------- */}
       <div
         onMouseDown={handleMouseDown}
@@ -155,7 +158,7 @@ export default function SwipeableDeck({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         onClick={() => onOpenDetail(currentCandidate)}
-        className="absolute rounded-[28px] overflow-hidden cursor-grab active:cursor-grabbing bg-slate-900"
+        className="absolute rounded-[32px] overflow-hidden cursor-grab active:cursor-grabbing bg-slate-900 shadow-[0_20px_50px_rgba(255,46,121,0.22)]"
         style={{
           top: 0,
           bottom: 0,
@@ -168,7 +171,6 @@ export default function SwipeableDeck({
           transition: isDraggingCard
             ? 'none'
             : 'transform 0.32s cubic-bezier(0.175, 0.885, 0.32, 1.15)',
-          boxShadow: '0 20px 40px -10px rgba(0,0,0,0.22), 0 8px 16px -5px rgba(0,0,0,0.08)',
         }}
       >
         {/* Full-bleed portrait photo */}
@@ -179,69 +181,125 @@ export default function SwipeableDeck({
           style={{ objectPosition: 'center top' }}
         />
 
-        {/* Location pill — top right */}
-        <div className="absolute top-3.5 right-3.5 pointer-events-none z-20">
-          <span className="bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full text-[11px] font-semibold text-white flex items-center gap-1.5 border border-white/20 shadow-sm">
+        {/* Top Left Badge: Location Tag */}
+        <div className="absolute top-4 left-4 pointer-events-none z-20">
+          <span className="bg-black/35 backdrop-blur-md px-3.5 py-1.5 rounded-full text-xs font-semibold text-white flex items-center gap-1.5 border border-white/20 shadow-md">
             <MapPin className="w-3.5 h-3.5 text-white/90" />
             <span>
-              {currentCandidate.university?.includes(',') ? currentCandidate.university : `${currentCandidate.university?.split(' ')[0] || 'Campus'}, ${currentCandidate.state?.split(' ')[0] || 'NCR'}`}
+              {currentCandidate.hometown || currentCandidate.university?.split(' ')[0] || 'Bennett'}, Delhi
             </span>
+          </span>
+        </div>
+
+        {/* Top Right Badge: 3 Dots Menu Button */}
+        <div className="absolute top-4 right-4 z-20">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenDetail(currentCandidate);
+            }}
+            className="bg-black/35 backdrop-blur-md px-3 py-1 rounded-full text-white text-xs font-bold border border-white/20 shadow-md hover:bg-black/50 transition-all cursor-pointer"
+          >
+            •••
+          </button>
+        </div>
+
+        {/* Middle Right Cursive Overlay: "Maybe you? ♡" */}
+        <div className="absolute top-1/2 right-5 -translate-y-1/2 pointer-events-none z-20 text-right select-none">
+          <span className="font-cursive text-white/90 text-2xl sm:text-3xl rotate-[-6deg] block drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)] tracking-wide">
+            Maybe<br />you? ♡
           </span>
         </div>
 
         {/* LIKE badge on drag right */}
         {swipeDirection === 'like' && (
-          <div className="absolute top-8 left-5 border-4 border-emerald-400 bg-emerald-500/30 backdrop-blur-md text-emerald-300 font-black text-xl px-4 py-1.5 rounded-2xl -rotate-12 tracking-wider shadow-lg pointer-events-none z-30">
+          <div className="absolute top-10 left-6 border-4 border-emerald-400 bg-emerald-500/40 backdrop-blur-md text-emerald-200 font-black text-2xl px-5 py-2 rounded-2xl -rotate-12 tracking-widest shadow-2xl pointer-events-none z-30">
             LIKE ❤️
           </div>
         )}
         {/* PASS badge on drag left */}
         {swipeDirection === 'pass' && (
-          <div className="absolute top-8 right-5 border-4 border-rose-500 bg-rose-500/30 backdrop-blur-md text-rose-300 font-black text-xl px-4 py-1.5 rounded-2xl rotate-12 tracking-wider shadow-lg pointer-events-none z-30">
+          <div className="absolute top-10 right-6 border-4 border-rose-500 bg-rose-500/40 backdrop-blur-md text-rose-200 font-black text-2xl px-5 py-2 rounded-2xl rotate-12 tracking-widest shadow-2xl pointer-events-none z-30">
             PASS ✕
           </div>
         )}
 
-        {/* Bottom dark gradient & frosted glass card */}
-        <div className="absolute inset-x-0 bottom-0 pt-20 pb-3.5 px-3 bg-gradient-to-t from-black/85 via-black/40 to-transparent pointer-events-none z-20">
-          <div
-            className="rounded-[22px] px-4 py-3 flex items-center justify-between text-white"
-            style={{
-              background: 'rgba(255, 255, 255, 0.14)',
-              backdropFilter: 'blur(24px)',
-              WebkitBackdropFilter: 'blur(24px)',
-              border: '1px solid rgba(255, 255, 255, 0.3)',
-              boxShadow: '0 8px 30px rgba(0, 0, 0, 0.28)',
-            }}
-          >
-            <div className="space-y-0.5">
-              {/* Active status row */}
-              <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#10B981]" />
-                <span className="text-[11px] font-bold text-white tracking-wider">Active</span>
-                <div className="w-3.5 h-3.5 bg-[#FF2E79] rounded-full flex items-center justify-center text-[8px] font-black text-white">✓</div>
-              </div>
-              {/* Name */}
-              <h2
-                className="text-[23px] font-black tracking-tight text-white leading-tight"
-                style={{ textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}
-              >
+        {/* Bottom Dark Gradient & Profile Details Overlay */}
+        <div className="absolute inset-x-0 bottom-0 pt-28 pb-5 px-5 bg-gradient-to-t from-black/90 via-black/45 to-transparent pointer-events-none z-20">
+          <div className="space-y-1">
+            {/* Candidate Name & Verified Checkmark */}
+            <div className="flex items-center gap-2">
+              <h2 className="text-2xl sm:text-3xl font-black text-white font-display tracking-tight leading-tight drop-shadow-md">
                 {currentCandidate.name}
               </h2>
+              <div className="w-5 h-5 rounded-full bg-[#FF2E79] flex items-center justify-center text-white shrink-0 shadow-sm border border-white/40">
+                <Check className="w-3 h-3 stroke-[3]" />
+              </div>
             </div>
 
-            {/* Hot-pink circular arrow FAB */}
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onOpenDetail(currentCandidate);
-              }}
-              className="w-11 h-11 rounded-full bg-[#FF2E79] hover:bg-[#E02469] text-white flex items-center justify-center pointer-events-auto cursor-pointer transition-all transform hover:scale-105 active:scale-95 shrink-0 shadow-lg shadow-pink-500/40"
-              title="View profile"
-            >
-              <ArrowUpRight className="w-5 h-5 stroke-[2.5]" />
-            </button>
+            {/* Age & University */}
+            <p className="text-xs sm:text-sm font-semibold text-white/90 drop-shadow-xs pb-1">
+              {currentCandidate.age || 22} • {currentCandidate.university || 'Bennett University'}
+            </p>
+
+            {/* Trait Pills Row */}
+            <div className="flex flex-wrap items-center gap-2 pt-1 pb-3">
+              <span className="bg-white/20 backdrop-blur-md border border-white/25 px-3.5 py-1 rounded-full text-xs font-medium text-white flex items-center gap-1.5 shadow-2xs">
+                <GraduationCap className="w-3.5 h-3.5 text-white/90" />
+                <span>{currentCandidate.branch?.split(' ')[0] || 'Design'}</span>
+              </span>
+              <span className="bg-white/20 backdrop-blur-md border border-white/25 px-3.5 py-1 rounded-full text-xs font-medium text-white flex items-center gap-1.5 shadow-2xs">
+                <Navigation className="w-3.5 h-3.5 text-white/90" />
+                <span>{currentCandidate.hometown || 'Delhi'}</span>
+              </span>
+              <span className="bg-white/20 backdrop-blur-md border border-white/25 px-3.5 py-1 rounded-full text-xs font-medium text-white flex items-center gap-1.5 shadow-2xs">
+                <Sparkles className="w-3.5 h-3.5 text-white/90" />
+                <span>{currentCandidate.zodiac || 'Leo'}</span>
+              </span>
+            </div>
+
+            {/* Floating Action Buttons Overlay (3 Circle Buttons) */}
+            <div className="flex items-center justify-center gap-5 pointer-events-auto pt-1">
+              {/* Dislike / Pass Button */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  triggerSwipe('pass');
+                }}
+                className="w-13 h-13 sm:w-14 sm:h-14 rounded-full bg-slate-900/60 backdrop-blur-md border border-white/20 text-white flex items-center justify-center shadow-xl hover:scale-110 active:scale-95 transition-all cursor-pointer"
+                title="Pass"
+              >
+                <X className="w-6 h-6 stroke-[2.8]" />
+              </button>
+
+              {/* Big Glowing Heart Like Button */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  triggerSwipe('like');
+                }}
+                className="w-16 h-16 sm:w-18 sm:h-18 rounded-full bg-gradient-to-tr from-[#FF2E79] via-pink-500 to-[#FF2E79] text-white flex items-center justify-center border-2 border-white/50 shadow-[0_10px_30px_rgba(255,46,121,0.6)] hover:scale-110 active:scale-95 transition-all cursor-pointer"
+                title="Like"
+              >
+                <Heart className="w-8 h-8 fill-white text-white" />
+              </button>
+
+              {/* Direct Message / Instant Match Button */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onOpenDetail(currentCandidate);
+                }}
+                className="w-13 h-13 sm:w-14 sm:h-14 rounded-full bg-slate-900/60 backdrop-blur-md border border-white/20 text-white flex items-center justify-center shadow-xl hover:scale-110 active:scale-95 transition-all cursor-pointer"
+                title="View Profile / Message"
+              >
+                <Send className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.2]" />
+              </button>
+            </div>
           </div>
         </div>
 

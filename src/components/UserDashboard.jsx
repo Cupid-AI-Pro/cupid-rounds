@@ -4,15 +4,20 @@ import {
   Heart, 
   X, 
   MessageSquare, 
+  MessageCircle,
   MapPin, 
   ChevronLeft, 
   ArrowUpRight, 
   Search, 
+  Bell,
   Compass, 
   User, 
+  Home,
+  Users,
   Sparkles, 
   LogOut, 
   CheckCircle, 
+  Check,
   Award,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -165,7 +170,7 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
   const matchedUsers = getMatchedUsers();
 
   return (
-    <div className="flex-1 flex flex-col h-full relative justify-between select-none overflow-hidden pb-[74px]">
+    <div className="flex-1 flex flex-col h-full relative justify-between select-none overflow-hidden pb-20 bg-gradient-to-b from-[#FFF0F4] via-[#FFEBEF] to-[#FFF5F8]">
       
       {/* Interactive First-Time User Guided Tour (Bubble Tooltips) */}
       {showTour && (
@@ -200,90 +205,131 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
       {/* TAB 1: EXPLORE / HOME FEED (Swipeable Card Stack)                 */}
       {/* ----------------------------------------------------------------- */}
       {currentTab === 'explore' && (
-        <div className="flex-1 flex flex-col px-4 pt-1 pb-1 h-full overflow-hidden">
+        <div className="flex-1 flex flex-col px-4 pt-2 pb-2 h-full overflow-hidden">
           
-          {/* Top Header Row (Matching Reference) */}
+          {/* Top Header Row (Exact Match to Reference Image) */}
           <div className="flex items-center justify-between select-none mb-3">
-            <div className="flex items-center gap-2.5">
-              <div className="w-11 h-11 rounded-full overflow-hidden border-2 border-white shadow-sm ring-1 ring-slate-200/60">
-                <img src={user.avatar} alt="User Avatar" className="w-full h-full object-cover" />
+            <div className="flex items-center gap-3">
+              <div 
+                onClick={() => setCurrentTab('profile')}
+                className="w-12 h-12 rounded-full p-[2.5px] bg-gradient-to-tr from-[#FF2E79] via-pink-400 to-rose-300 shadow-md ring-2 ring-pink-100/60 cursor-pointer hover:scale-105 transition-transform shrink-0"
+              >
+                <img src={user.avatar} alt={user.name} className="w-full h-full object-cover rounded-full bg-white" />
               </div>
+
               <div className="flex flex-col">
-                <span className="text-[15px] font-extrabold text-slate-900 leading-tight">Hello, {user.name.split(' ')[0]}</span>
-                <span className="text-[11px] text-slate-500 font-semibold flex items-center gap-1 mt-0.5">
-                  <MapPin className="w-3 h-3 text-slate-400" />
-                  <span>{user.university ? user.university.split(' ')[0] : 'New work'}</span>
-                </span>
+                <h1 className="text-lg font-black text-slate-900 leading-tight flex items-center">
+                  <span className="font-cursive text-[#FF2E79] text-2xl font-normal tracking-wide mr-1.5">Hello,</span>
+                  <span>{user.name.split(' ')[0]}</span>
+                </h1>
+                <div className="flex items-center gap-1 text-[11px] text-slate-500 font-extrabold mt-0.5">
+                  <MapPin className="w-3 h-3 text-[#FF2E79]" />
+                  <span>{user.university ? user.university.split(' ')[0] : 'NIET'}</span>
+                </div>
               </div>
             </div>
 
-            {/* Circular Search Button */}
-            <button 
-              onClick={() => setCurrentTab('radar')}
-              className="w-10 h-10 rounded-full bg-white flex items-center justify-center cursor-pointer shadow-sm hover:bg-slate-50 transition-colors border border-slate-100"
-              title="Search / Campus Radar"
-            >
-              <Search className="w-4.5 h-4.5 text-slate-800 stroke-[2.2]" />
-            </button>
+            {/* Right Action Icons & Cursive Tagline */}
+            <div className="flex flex-col items-end">
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => setCurrentTab('radar')}
+                  className="w-10 h-10 rounded-full bg-white/95 backdrop-blur-md flex items-center justify-center cursor-pointer shadow-[0_4px_14px_rgba(255,182,193,0.35)] border border-white hover:bg-slate-50 transition-all active:scale-95"
+                  title="Search / Campus Radar"
+                >
+                  <Search className="w-4.5 h-4.5 text-slate-800 stroke-[2.2]" />
+                </button>
+                <button 
+                  onClick={() => setCurrentTab('chat')}
+                  className="w-10 h-10 rounded-full bg-white/95 backdrop-blur-md flex items-center justify-center cursor-pointer shadow-[0_4px_14px_rgba(255,182,193,0.35)] border border-white hover:bg-slate-50 transition-all active:scale-95 relative"
+                  title="Notifications"
+                >
+                  <Bell className="w-4.5 h-4.5 text-slate-800 stroke-[2.2]" />
+                  <span className="w-2.5 h-2.5 bg-[#FF2E79] rounded-full absolute top-1.5 right-1.5 border border-white" />
+                </button>
+              </div>
+              <span className="font-cursive text-pink-400 text-xs rotate-[-2deg] tracking-wide select-none pointer-events-none mt-1">
+                Good People Brighter Stories ♡
+              </span>
+            </div>
           </div>
 
-          {/* Stories Row with Pink Gradient Rings (Matching Reference) */}
+          {/* Stories Horizontal Scroll Row (Matching Reference Image) */}
           <div className="mb-3 select-none">
-            <div className="flex gap-2.5 items-center overflow-x-auto pb-1 no-scrollbar">
-              {/* + Story / Radar Button */}
-              <div 
-                onClick={() => setCurrentTab('radar')}
-                className="w-12 h-12 bg-white rounded-full flex items-center justify-center cursor-pointer shrink-0 shadow-sm border border-slate-200/80 hover:scale-105 transition-transform"
-                title="Campus Radar Map"
-              >
-                <span className="text-2xl font-light text-slate-700 leading-none">+</span>
-              </div>
-              {candidates.map((c) => (
+            <div className="flex gap-3 items-center overflow-x-auto pb-1.5 no-scrollbar">
+              {/* Add Story Button */}
+              <div className="flex flex-col items-center gap-1 shrink-0">
                 <div 
-                  key={c.id}
-                  onClick={() => setExpandedCandidate(c)}
-                  className="w-12 h-12 rounded-full p-[2px] bg-gradient-to-tr from-[#FF2E79] to-[#FFA1B5] cursor-pointer shrink-0 hover:scale-105 transition-transform shadow-xs"
-                  title={`View ${c.name}'s Profile`}
+                  onClick={() => setCurrentTab('radar')}
+                  className="w-14 h-14 bg-white/90 rounded-full flex items-center justify-center cursor-pointer border-2 border-pink-100/90 shadow-2xs text-[#FF2E79] font-light text-2xl hover:scale-105 transition-transform"
                 >
-                  <div className="w-full h-full rounded-full overflow-hidden p-[1.5px] bg-white">
-                    <img src={c.avatar} alt={c.name} className="w-full h-full object-cover rounded-full" />
+                  +
+                </div>
+                <span className="text-[11px] font-bold text-slate-700">Add Story</span>
+              </div>
+
+              {/* Your Story */}
+              <div className="flex flex-col items-center gap-1 shrink-0">
+                <div 
+                  onClick={() => setCurrentTab('profile')}
+                  className="w-14 h-14 rounded-full p-[2.5px] bg-gradient-to-tr from-[#FF2E79] via-pink-400 to-rose-300 shadow-2xs cursor-pointer hover:scale-105 transition-transform"
+                >
+                  <img src={user.avatar} alt="Your Story" className="w-full h-full object-cover rounded-full bg-white" />
+                </div>
+                <span className="text-[11px] font-bold text-slate-700">Your Story</span>
+              </div>
+
+              {/* Candidate Stories */}
+              {candidates.map((c) => (
+                <div key={c.id} className="flex flex-col items-center gap-1 shrink-0">
+                  <div 
+                    onClick={() => setExpandedCandidate(c)}
+                    className="w-14 h-14 rounded-full p-[2.5px] bg-gradient-to-tr from-[#FF2E79] via-pink-400 to-rose-300 shadow-2xs cursor-pointer hover:scale-105 transition-transform"
+                  >
+                    <img src={c.avatar} alt={c.name} className="w-full h-full object-cover rounded-full bg-white" />
                   </div>
+                  <span className="text-[11px] font-bold text-slate-700">{c.name.split(' ')[0]}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Nearby / For You Toggle Pills (Matching Reference) */}
-          <div className="flex items-center justify-between gap-2.5 mb-2.5 select-none">
-            <div className="flex gap-2">
+          {/* Segmented Filter Pills Bar (Matching Reference Image) */}
+          <div className="flex items-center justify-between gap-2 mb-3 select-none">
+            <div className="bg-white/90 backdrop-blur-md rounded-full p-1 border border-white/90 shadow-2xs flex items-center gap-1 flex-1">
               <button
                 onClick={() => setActiveFilter('nearby')}
-                className={`flex items-center gap-1.5 px-5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-full text-xs transition-all cursor-pointer ${
                   activeFilter === 'nearby'
-                    ? 'bg-[#FF2E79] text-white shadow-md shadow-pink-300/40'
-                    : 'bg-white/85 backdrop-blur-md text-slate-600 border border-slate-200/60 hover:bg-white shadow-xs'
+                    ? 'bg-gradient-to-r from-[#FF2E79] to-pink-600 text-white font-black shadow-md shadow-pink-300/40'
+                    : 'text-slate-600 font-bold hover:bg-slate-50'
                 }`}
               >
                 <MapPin className="w-3.5 h-3.5" />
                 <span>Nearby</span>
               </button>
+
               <button
                 onClick={() => setActiveFilter('forYou')}
-                className={`flex items-center gap-1.5 px-5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-full text-xs transition-all cursor-pointer ${
                   activeFilter === 'forYou'
-                    ? 'bg-[#FF2E79] text-white shadow-md shadow-pink-300/40'
-                    : 'bg-white/85 backdrop-blur-md text-slate-600 border border-slate-200/60 hover:bg-white shadow-xs'
+                    ? 'bg-gradient-to-r from-[#FF2E79] to-pink-600 text-white font-black shadow-md shadow-pink-300/40'
+                    : 'text-slate-600 font-bold hover:bg-slate-50'
                 }`}
               >
                 <Heart className="w-3.5 h-3.5 fill-current" />
                 <span>For You</span>
               </button>
-            </div>
 
-            {/* Round Phase Badge */}
-            <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-white/90 border border-pink-100 text-[#FF2E79] shadow-xs">
-              R{roundState.roundNumber || 1} • {roundState.currentPhase === ROUND_PHASES.ELITE_WINDOW ? 'Elite 16h' : roundState.currentPhase === ROUND_PHASES.PREMIUM_WINDOW ? 'Premium 8h' : roundState.currentPhase === ROUND_PHASES.BASIC_SETTLEMENT ? 'Settle' : 'Live'}
-            </span>
+              <button
+                onClick={() => setCurrentTab('radar')}
+                className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-full text-xs text-[#FF2E79] font-black bg-pink-50/80 hover:bg-pink-100/80 transition-all cursor-pointer shrink-0"
+              >
+                <Users className="w-3.5 h-3.5 text-[#FF2E79]" />
+                <span>R1 • Live</span>
+                <span className="w-2 h-2 rounded-full bg-[#FF2E79] animate-ping" />
+              </button>
+            </div>
           </div>
 
           {/* Dynamic Tier Context Banner */}
@@ -456,65 +502,67 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
       )}
 
       {/* ----------------------------------------------------------------- */}
-      {/* BOTTOM FLOATING NAVIGATION BAR (Light Pill with Black Active Tab)  */}
+      {/* BOTTOM FLOATING NAVIGATION BAR (Exact Match to Reference Image)  */}
       {/* ----------------------------------------------------------------- */}
-      <div className="phone-navbar select-none">
+      <div className="fixed bottom-3 left-4 right-4 z-40 bg-white/95 backdrop-blur-xl border border-white/80 rounded-full p-1.5 shadow-[0_10px_35px_rgba(255,46,121,0.20)] flex items-center justify-around max-w-md mx-auto select-none">
         
         {/* Tab 1: Home / Explore */}
         <button 
           onClick={() => setCurrentTab('explore')}
-          className={`w-12 h-11 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+          className={`px-4 py-2 rounded-full flex items-center gap-1.5 text-xs font-bold transition-all cursor-pointer ${
             currentTab === 'explore' 
-              ? 'bg-black text-white shadow-sm' 
-              : 'text-slate-700 hover:text-black'
+              ? 'bg-[#FFEBEF] text-[#FF2E79] font-black shadow-2xs' 
+              : 'text-slate-500 hover:text-slate-800'
           }`}
-          title="Explore Cards Stack"
+          title="Home"
         >
-          <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
-          </svg>
+          <Home className="w-4.5 h-4.5 stroke-[2.2]" />
+          {currentTab === 'explore' && <span>Home</span>}
         </button>
 
-        {/* Tab 2: Campus Radar Map (Compass) */}
+        {/* Tab 2: Campus Radar Map (Discover) */}
         <button 
           onClick={() => setCurrentTab('radar')}
-          className={`w-12 h-11 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+          className={`px-4 py-2 rounded-full flex items-center gap-1.5 text-xs font-bold transition-all cursor-pointer ${
             currentTab === 'radar' 
-              ? 'bg-black text-white shadow-sm' 
-              : 'text-slate-700 hover:text-black'
+              ? 'bg-[#FFEBEF] text-[#FF2E79] font-black shadow-2xs' 
+              : 'text-slate-500 hover:text-slate-800'
           }`}
-          title="Campus Map"
+          title="Discover"
         >
-          <Compass className="w-5 h-5" />
+          <Compass className="w-4.5 h-4.5 stroke-[2.2]" />
+          {currentTab === 'radar' && <span>Discover</span>}
         </button>
         
-        {/* Tab 3: Direct Messages & Matches */}
+        {/* Tab 3: Direct Messages & Matches (Chats) */}
         <button 
           onClick={() => setCurrentTab('chat')}
-          className={`w-12 h-11 rounded-full flex items-center justify-center transition-all relative cursor-pointer ${
+          className={`px-4 py-2 rounded-full flex items-center gap-1.5 text-xs font-bold transition-all relative cursor-pointer ${
             currentTab === 'chat' 
-              ? 'bg-black text-white shadow-sm' 
-              : 'text-slate-700 hover:text-black'
+              ? 'bg-[#FFEBEF] text-[#FF2E79] font-black shadow-2xs' 
+              : 'text-slate-500 hover:text-slate-800'
           }`}
-          title="Messages & Matches"
+          title="Chats"
         >
-          <MessageSquare className="w-5 h-5" />
+          <MessageCircle className="w-4.5 h-4.5 stroke-[2.2]" />
           {matchedUsers.length > 0 && (
-            <span className="absolute top-2 right-2 w-2 h-2 bg-[#FF2E79] border-2 border-white rounded-full"></span>
+            <span className="w-2 h-2 bg-[#FF2E79] rounded-full absolute top-1.5 right-2 border border-white" />
           )}
+          {currentTab === 'chat' && <span>Chats</span>}
         </button>
         
         {/* Tab 4: Profile & Settings */}
         <button 
           onClick={() => setCurrentTab('profile')}
-          className={`w-12 h-11 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+          className={`px-4 py-2 rounded-full flex items-center gap-1.5 text-xs font-bold transition-all cursor-pointer ${
             currentTab === 'profile' 
-              ? 'bg-black text-white shadow-sm' 
-              : 'text-slate-700 hover:text-black'
+              ? 'bg-[#FFEBEF] text-[#FF2E79] font-black shadow-2xs' 
+              : 'text-slate-500 hover:text-slate-800'
           }`}
-          title="My Profile"
+          title="Profile"
         >
-          <User className="w-5 h-5" />
+          <User className="w-4.5 h-4.5 stroke-[2.2]" />
+          {currentTab === 'profile' && <span>Profile</span>}
         </button>
       </div>
 
