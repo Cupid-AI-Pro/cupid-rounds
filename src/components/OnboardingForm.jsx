@@ -98,9 +98,9 @@ export default function OnboardingForm({ user, onComplete }) {
   const [step, setStep] = useState(() => {
     const params = new URLSearchParams(window.location.search);
     const parsedStep = parseInt(params.get('step') || '1', 10);
-    return parsedStep >= 1 && parsedStep <= 14 ? parsedStep : 1;
+    return parsedStep >= 1 && parsedStep <= 22 ? parsedStep : 1;
   });
-  const totalSteps = 14;
+  const totalSteps = 22;
   const fileInputRef = useRef(null);
 
   // --- 1. Personal Info ---
@@ -110,7 +110,7 @@ export default function OnboardingForm({ user, onComplete }) {
   const [instaId, setInstaId] = useState(user.instaId || '');
   const [hometown, setHometown] = useState(user.hometown || 'Delhi NCR');
 
-  // Real User Photos Uploads (starts completely empty by default)
+  // Real User Photos Uploads
   const [userPhotos, setUserPhotos] = useState(user.photos || []);
   const [selectedAvatar3D, setSelectedAvatar3D] = useState(user.avatar3D || AVATAR_3D_CHARACTERS[0].url);
   const [isFlippedPreview, setIsFlippedPreview] = useState(false);
@@ -229,12 +229,12 @@ export default function OnboardingForm({ user, onComplete }) {
     setUserPhotos((prev) => prev.filter((_, idx) => idx !== indexToRemove));
   };
 
-  // Warning modal popup state for Step 2 photo validation
+  // Warning modal popup state for Step 3 photo validation
   const [showPhotoWarningModal, setShowPhotoWarningModal] = useState(false);
 
   const handleNext = () => {
-    // Step 2 Validation: Minimum 2 Real Photos Required & Mandatory Instagram Handle
-    if (step === 2) {
+    // Step 3 Validation: Minimum 2 Real Photos Required & Mandatory Instagram Handle
+    if (step === 3) {
       if (userPhotos.length < 2) {
         setShowPhotoWarningModal(true);
         return;
@@ -264,16 +264,12 @@ export default function OnboardingForm({ user, onComplete }) {
     setTimeout(() => setCopiedUpi(false), 2000);
   };
 
-  // Real UPI Payment — user pays to aditya.378@superyes via PhonePe/GPay
-  // then submits 12-digit UTR. Admin gets email notification and verifies.
   const handleInstantAutoPay = () => {
-    // Open UPI deeplink so user can pay directly
     const amount = selectedPlan === 'basic' ? '100.00' : selectedPlan === 'premium' ? '250.00' : '449.00';
     const upiLink = `upi://pay?pa=aditya.378%40superyes&pn=CupidRound&am=${amount}&cu=INR&tn=Cupid_Round_${selectedPlan}_Plan`;
     window.open(upiLink, '_blank');
   };
 
-  // Screenshot upload handler
   const handleScreenshotUpload = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -285,7 +281,6 @@ export default function OnboardingForm({ user, onComplete }) {
     reader.readAsDataURL(file);
   };
 
-  // UTR + Screenshot submission — saves to localStorage for admin verification
   const handleVerifyUtr = async () => {
     const cleanUtr = manualUtr.trim();
     if (!cleanUtr || cleanUtr.length < 6) return;
@@ -293,7 +288,6 @@ export default function OnboardingForm({ user, onComplete }) {
 
     const planAmount = selectedPlan === 'basic' ? 100 : selectedPlan === 'premium' ? 250 : 449;
 
-    // Save payment submission (with screenshot) to localStorage for admin panel
     savePaymentSubmission({
       userId: user.id,
       userName: name || user?.name || 'Unknown',
@@ -319,7 +313,6 @@ export default function OnboardingForm({ user, onComplete }) {
     });
   };
 
-  // Final Submission Handler
   const handleFinalSubmit = (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -381,7 +374,7 @@ export default function OnboardingForm({ user, onComplete }) {
       const savedUser = updateUser(finalUserData) || finalUserData;
       setCompletedUser(savedUser);
       setIsSubmitting(false);
-      setStep(15); // Step 15: Thank You Screen
+      setStep(23); // Step 23: Thank You Screen
 
       confetti({
         particleCount: 120,
@@ -393,9 +386,9 @@ export default function OnboardingForm({ user, onComplete }) {
   };
 
   // =========================================================================
-  // STEP 15: THANK YOU SCREEN
+  // STEP 23: THANK YOU SCREEN
   // =========================================================================
-  if (step === 15) {
+  if (step === 23) {
     const activeUserToLaunch = completedUser || {
       ...user,
       name,
@@ -511,20 +504,20 @@ export default function OnboardingForm({ user, onComplete }) {
         </div>
       </div>
 
-      {/* Main Multi-Step Form Body — Master Card Wrapper */}
+      {/* Main Multi-Step Form Body */}
       <div className="flex-1 flex flex-col justify-between py-3 overflow-y-auto no-scrollbar space-y-6">
         
         {/* ========================================================================= */}
-        {/* STEP 1: Personal Info (Name, Phone, Email, Hometown)                      */}
+        {/* STEP 1: Personal Contact Info (Name, Phone, Email)                        */}
         {/* ========================================================================= */}
         {step === 1 && (
           <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-5 animate-slide-up">
             <div>
-              <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
+              <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 01 • BASIC DETAILS
               </span>
-              <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">Personal Info</h2>
-              <p className="text-xs text-slate-500 font-medium mt-1 leading-relaxed">
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Personal Info</h2>
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
                 Contact information for your private match results
               </p>
             </div>
@@ -535,14 +528,14 @@ export default function OnboardingForm({ user, onComplete }) {
                   <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79] shrink-0">
                     <User className="w-4 h-4" />
                   </div>
-                  <label className="text-xs font-bold text-slate-900">Full Name *</label>
+                  <label className="text-sm font-bold text-slate-900">Full Name *</label>
                 </div>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Aditya Chauhan"
-                  className="form-input text-xs sm:text-sm h-12 rounded-2xl bg-slate-50/80 border-slate-200/80 focus:bg-white focus:border-pink-300"
+                  className="w-full h-14 px-4 bg-slate-50/80 border border-slate-200/80 rounded-2xl text-base font-semibold text-slate-900 placeholder-slate-400 focus:bg-white focus:border-pink-400 focus:ring-2 focus:ring-pink-100 outline-none transition-all"
                 />
               </div>
 
@@ -551,14 +544,14 @@ export default function OnboardingForm({ user, onComplete }) {
                   <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79] shrink-0">
                     <Phone className="w-4 h-4" />
                   </div>
-                  <label className="text-xs font-bold text-slate-900">Phone Number *</label>
+                  <label className="text-sm font-bold text-slate-900">Phone Number *</label>
                 </div>
                 <input
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="+91 98765 43210"
-                  className="form-input text-xs sm:text-sm h-12 rounded-2xl bg-slate-50/80 border-slate-200/80 focus:bg-white focus:border-pink-300"
+                  className="w-full h-14 px-4 bg-slate-50/80 border border-slate-200/80 rounded-2xl text-base font-semibold text-slate-900 placeholder-slate-400 focus:bg-white focus:border-pink-400 focus:ring-2 focus:ring-pink-100 outline-none transition-all"
                 />
               </div>
 
@@ -567,30 +560,14 @@ export default function OnboardingForm({ user, onComplete }) {
                   <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79] shrink-0">
                     <Mail className="w-4 h-4" />
                   </div>
-                  <label className="text-xs font-bold text-slate-900">Email Id *</label>
+                  <label className="text-sm font-bold text-slate-900">Email Id *</label>
                 </div>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="yourname@gmail.com"
-                  className="form-input text-xs sm:text-sm h-12 rounded-2xl bg-slate-50/80 border-slate-200/80 focus:bg-white focus:border-pink-300"
-                />
-              </div>
-
-              <div>
-                <div className="flex items-center gap-2 mb-1.5">
-                  <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79] shrink-0">
-                    <MapPin className="w-4 h-4" />
-                  </div>
-                  <label className="text-xs font-bold text-slate-900">Hometown *</label>
-                </div>
-                <input
-                  type="text"
-                  value={hometown}
-                  onChange={(e) => setHometown(e.target.value)}
-                  placeholder="e.g. Delhi / Noida / Gurgaon"
-                  className="form-input text-xs sm:text-sm h-12 rounded-2xl bg-slate-50/80 border-slate-200/80 focus:bg-white focus:border-pink-300"
+                  className="w-full h-14 px-4 bg-slate-50/80 border border-slate-200/80 rounded-2xl text-base font-semibold text-slate-900 placeholder-slate-400 focus:bg-white focus:border-pink-400 focus:ring-2 focus:ring-pink-100 outline-none transition-all"
                 />
               </div>
             </div>
@@ -605,21 +582,82 @@ export default function OnboardingForm({ user, onComplete }) {
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 2: Real Photos Upload (Min 2, Max 6) + Mandatory Instagram & Avatars  */}
+        {/* STEP 2: Hometown & Location                                               */}
         {/* ========================================================================= */}
         {step === 2 && (
           <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-5 animate-slide-up">
             <div>
-              <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                STEP 02 • PROFILE MEDIA & SOCIAL
+              <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
+                STEP 02 • YOUR LOCATION
               </span>
-              <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">Your Photos & Insta</h2>
-              <p className="text-xs text-slate-500 font-medium mt-1 leading-relaxed">
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Hometown & Region</h2>
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
+                Where are you originally from?
+              </p>
+            </div>
+
+            <div className="space-y-4 pt-1">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79] shrink-0">
+                    <MapPin className="w-4 h-4" />
+                  </div>
+                  <label className="text-sm font-bold text-slate-900">Hometown / City *</label>
+                </div>
+                <input
+                  type="text"
+                  value={hometown}
+                  onChange={(e) => setHometown(e.target.value)}
+                  placeholder="e.g. Delhi / Noida / Gurgaon"
+                  className="w-full h-14 px-4 bg-slate-50/80 border border-slate-200/80 rounded-2xl text-base font-semibold text-slate-900 placeholder-slate-400 focus:bg-white focus:border-pink-400 focus:ring-2 focus:ring-pink-100 outline-none transition-all"
+                />
+              </div>
+
+              {/* Fast Option Pills */}
+              <div className="space-y-2">
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Quick Select:</span>
+                <div className="flex flex-wrap gap-2">
+                  {['Delhi NCR', 'Noida', 'Gurgaon', 'Faridabad', 'Ghaziabad'].map((city) => (
+                    <button
+                      key={city}
+                      type="button"
+                      onClick={() => setHometown(city)}
+                      className={`px-4 py-2.5 rounded-full text-xs font-bold border transition-all cursor-pointer ${
+                        hometown === city
+                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20'
+                          : 'bg-white text-slate-800 border-slate-200 hover:border-pink-200 shadow-2xs'
+                      }`}
+                    >
+                      {city}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="absolute -bottom-4 -right-4 pointer-events-none opacity-[0.12] text-[#FF2E79]">
+              <svg className="w-28 h-28 fill-none stroke-current stroke-[1.5]" viewBox="0 0 24 24">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+              </svg>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* STEP 3: Real Photos Upload (Min 2, Max 6) + Mandatory Instagram Handle     */}
+        {/* ========================================================================= */}
+        {step === 3 && (
+          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-5 animate-slide-up">
+            <div>
+              <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
+                STEP 03 • PROFILE MEDIA & SOCIAL
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Your Photos & Insta</h2>
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
                 Upload 2 to 6 of your best clear photos & set your Instagram handle
               </p>
             </div>
 
-            {/* Hidden File Input */}
             <input
               type="file"
               ref={fileInputRef}
@@ -663,13 +701,11 @@ export default function OnboardingForm({ user, onComplete }) {
                           alt={`Upload ${slotIdx + 1}`}
                           className="w-full h-full object-cover"
                         />
-                        {/* Main Photo Badge on 1st Photo */}
                         {slotIdx === 0 && (
                           <span className="absolute bottom-2 left-2 bg-[#FF2E79] text-white text-[9px] font-black px-2.5 py-0.5 rounded-lg shadow-sm uppercase tracking-wider">
                             MAIN
                           </span>
                         )}
-                        {/* Remove Button */}
                         <button
                           type="button"
                           onClick={() => handleRemovePhoto(slotIdx)}
@@ -726,125 +762,131 @@ export default function OnboardingForm({ user, onComplete }) {
                 </div>
               </div>
 
-              <div className="bg-slate-50/80 border border-slate-200/80 rounded-2xl h-12 px-4 flex items-center gap-2 focus-within:bg-white focus-within:border-pink-300 focus-within:ring-2 focus-within:ring-rose-100 transition-all">
-                <span className="text-slate-400 font-bold text-sm select-none">@</span>
+              <div className="bg-slate-50/80 border border-slate-200/80 rounded-2xl h-14 px-4 flex items-center gap-2 focus-within:bg-white focus-within:border-pink-300 focus-within:ring-2 focus-within:ring-rose-100 transition-all">
+                <span className="text-slate-400 font-bold text-base select-none">@</span>
                 <input
                   type="text"
                   value={instaId.replace(/^@/, '')}
                   onChange={(e) => setInstaId(e.target.value.replace(/^@/, ''))}
                   placeholder="yourusername"
-                  className="w-full bg-transparent outline-none text-sm font-semibold text-slate-800 placeholder-slate-400"
+                  className="w-full bg-transparent outline-none text-base font-semibold text-slate-800 placeholder-slate-400"
                 />
-              </div>
-            </div>
-
-            {/* Choose 3D Character Flair (Instagram Avatar Effect) Card */}
-            <div className="bg-white rounded-3xl p-4 border border-slate-100 shadow-xs space-y-3 text-left">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-pink-50 border border-pink-100 flex items-center justify-center text-[#FF2E79] shadow-2xs shrink-0">
-                    <Box className="w-5 h-5 stroke-[2.2]" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs sm:text-sm font-bold text-slate-900 tracking-tight">
-                      Choose 3D Character Flair (Instagram Avatar Effect)
-                    </h4>
-                    <p className="text-[11px] text-slate-400 font-normal mt-0.5">
-                      Tap to preview how your profile card playfully flips with your 3D avatar!
-                    </p>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setIsFlippedPreview(!isFlippedPreview)}
-                  className="flex items-center gap-1 text-xs font-extrabold text-[#FF2E79] hover:text-rose-600 transition-colors cursor-pointer shrink-0 pt-1"
-                >
-                  <RefreshCw className={`w-3.5 h-3.5 ${isFlippedPreview ? 'animate-spin' : ''}`} />
-                  <span>Flip Coin</span>
-                </button>
-              </div>
-
-              {/* 3D Flip Card Demo Preview */}
-              <div className="flex items-center justify-center py-1">
-                <div 
-                  onClick={() => setIsFlippedPreview(!isFlippedPreview)}
-                  className="relative w-20 h-20 cursor-pointer [perspective:1000px]"
-                >
-                  <div 
-                    className={`w-full h-full rounded-full transition-transform duration-700 [transform-style:preserve-3d] shadow-lg border-4 border-[#FF2E79] ${
-                      isFlippedPreview ? '[transform:rotateY(180deg)]' : ''
-                    }`}
-                  >
-                    {/* Front: Main Photo or Avatar */}
-                    <div className="absolute inset-0 w-full h-full rounded-full overflow-hidden [backface-visibility:hidden] bg-slate-200">
-                      {userPhotos[0] ? (
-                        <img src={userPhotos[0]} alt="Real Photo" className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex flex-col items-center justify-center text-slate-400">
-                          <User className="w-7 h-7" />
-                          <span className="text-[8px] font-bold">Photo</span>
-                        </div>
-                      )}
-                    </div>
-                    {/* Back: 3D Avatar */}
-                    <div className="absolute inset-0 w-full h-full rounded-full overflow-hidden [backface-visibility:hidden] [transform:rotateY(180deg)] bg-rose-100">
-                      <img src={selectedAvatar3D} alt="3D Avatar" className="w-full h-full object-cover" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* 4 3D Avatar Circle Choices (2 Boys & 2 Girls) */}
-              <div className="grid grid-cols-4 gap-3 pt-1 justify-items-center">
-                {AVATAR_3D_CHARACTERS.map((char) => {
-                  const isSelected = selectedAvatar3D === char.url;
-                  return (
-                    <button
-                      key={char.id}
-                      type="button"
-                      onClick={() => {
-                        setSelectedAvatar3D(char.url);
-                        setIsFlippedPreview(true);
-                        setTimeout(() => setIsFlippedPreview(false), 1400);
-                      }}
-                      className="flex flex-col items-center gap-1 cursor-pointer group"
-                    >
-                      <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden border-2 transition-all relative shadow-sm ${
-                        isSelected
-                          ? 'border-[#FF2E79] ring-4 ring-pink-100 scale-105 shadow-md'
-                          : 'border-slate-200 group-hover:border-pink-300 group-hover:scale-102'
-                      }`}>
-                        <img src={char.url} alt={char.name} className="w-full h-full object-cover" />
-                      </div>
-                      <span className={`text-[10px] font-bold ${isSelected ? 'text-[#FF2E79]' : 'text-slate-600'}`}>
-                        {char.name}
-                      </span>
-                    </button>
-                  );
-                })}
               </div>
             </div>
           </div>
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 3: Age & Height 3D Drum Wheels + Gender                              */}
+        {/* STEP 4: Choose 3D Character Flair (Instagram Avatar Effect)               */}
         {/* ========================================================================= */}
-        {step === 3 && (
+        {step === 4 && (
           <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-5 animate-slide-up">
             <div>
-              <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                STEP 03 • STATS & BIOLOGY
+              <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
+                STEP 04 • AVATAR FLAIR
               </span>
-              <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">Age, Height & Gender</h2>
-              <p className="text-xs text-slate-500 font-medium mt-1 leading-relaxed">
-                Scroll the wheels to select your age and height.
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">3D Avatar & Coin Flip</h2>
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
+                Tap to preview how your profile card flips with your 3D avatar!
               </p>
             </div>
 
-            {/* 3D Wheel Pickers Grid */}
-            <div className="grid grid-cols-2 gap-4 py-1">
+            <div className="flex items-center justify-between gap-2 pt-1">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-pink-50 border border-pink-100 flex items-center justify-center text-[#FF2E79] shadow-2xs shrink-0">
+                  <Box className="w-5 h-5 stroke-[2.2]" />
+                </div>
+                <h4 className="text-sm font-bold text-slate-900 tracking-tight">
+                  Choose 3D Character Flair
+                </h4>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsFlippedPreview(!isFlippedPreview)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-50 text-xs font-extrabold text-[#FF2E79] hover:bg-rose-100 transition-colors cursor-pointer shrink-0"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isFlippedPreview ? 'animate-spin' : ''}`} />
+                <span>Flip Coin</span>
+              </button>
+            </div>
+
+            {/* 3D Flip Card Demo Preview */}
+            <div className="flex items-center justify-center py-4">
+              <div 
+                onClick={() => setIsFlippedPreview(!isFlippedPreview)}
+                className="relative w-24 h-24 cursor-pointer [perspective:1000px]"
+              >
+                <div 
+                  className={`w-full h-full rounded-full transition-transform duration-700 [transform-style:preserve-3d] shadow-xl border-4 border-[#FF2E79] ${
+                    isFlippedPreview ? '[transform:rotateY(180deg)]' : ''
+                  }`}
+                >
+                  <div className="absolute inset-0 w-full h-full rounded-full overflow-hidden [backface-visibility:hidden] bg-slate-200">
+                    {userPhotos[0] ? (
+                      <img src={userPhotos[0]} alt="Real Photo" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center text-slate-400">
+                        <User className="w-8 h-8" />
+                        <span className="text-[9px] font-bold">Photo</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="absolute inset-0 w-full h-full rounded-full overflow-hidden [backface-visibility:hidden] [transform:rotateY(180deg)] bg-rose-100">
+                    <img src={selectedAvatar3D} alt="3D Avatar" className="w-full h-full object-cover" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 4 3D Avatar Choices */}
+            <div className="grid grid-cols-4 gap-3 pt-2 justify-items-center">
+              {AVATAR_3D_CHARACTERS.map((char) => {
+                const isSelected = selectedAvatar3D === char.url;
+                return (
+                  <button
+                    key={char.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedAvatar3D(char.url);
+                      setIsFlippedPreview(true);
+                      setTimeout(() => setIsFlippedPreview(false), 1400);
+                    }}
+                    className="flex flex-col items-center gap-1.5 cursor-pointer group"
+                  >
+                    <div className={`w-16 h-16 sm:w-18 sm:h-18 rounded-full overflow-hidden border-2 transition-all relative shadow-sm ${
+                      isSelected
+                        ? 'border-[#FF2E79] ring-4 ring-pink-100 scale-105 shadow-md'
+                        : 'border-slate-200 group-hover:border-pink-300'
+                    }`}>
+                      <img src={char.url} alt={char.name} className="w-full h-full object-cover" />
+                    </div>
+                    <span className={`text-xs font-bold ${isSelected ? 'text-[#FF2E79]' : 'text-slate-600'}`}>
+                      {char.name}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* STEP 5: Age & Height 3D Drum Wheels                                       */}
+        {/* ========================================================================= */}
+        {step === 5 && (
+          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-5 animate-slide-up">
+            <div>
+              <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
+                STEP 05 • STATS & BIOLOGY
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Age & Height</h2>
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
+                Scroll the wheels to select your age and height
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 py-2">
               <ScrollWheelPicker
                 icon={Calendar}
                 label="Your Age"
@@ -853,7 +895,7 @@ export default function OnboardingForm({ user, onComplete }) {
                 value={Number(age)}
                 onChange={(val) => setAge(val)}
                 unit="YRS"
-                itemHeight={44}
+                itemHeight={48}
                 visibleCount={5}
               />
               <ScrollWheelPicker
@@ -863,63 +905,74 @@ export default function OnboardingForm({ user, onComplete }) {
                 items={HEIGHT_RANGE}
                 value={height}
                 onChange={(val) => setHeight(val)}
-                itemHeight={44}
+                itemHeight={48}
                 visibleCount={5}
               />
-            </div>
-
-            {/* Gender Selection */}
-            <div className="space-y-2 pt-1 text-left">
-              <label className="text-sm font-bold text-slate-900 block">Gender *</label>
-              <div className="grid grid-cols-3 gap-3">
-                {[
-                  { id: 'male', label: 'Male', icon: '♂' },
-                  { id: 'female', label: 'Female', icon: '♀' },
-                  { id: 'others', label: 'Others', icon: '⚧' }
-                ].map((g) => (
-                  <button
-                    key={g.id}
-                    type="button"
-                    onClick={() => setGender(g.id)}
-                    className={`py-3.5 rounded-2xl text-xs sm:text-sm font-bold transition-all border flex items-center justify-center gap-2 cursor-pointer ${
-                      gender === g.id
-                        ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
-                        : 'bg-white text-slate-800 border-slate-200 hover:border-pink-200 shadow-2xs'
-                    }`}
-                  >
-                    <span className="text-base">{g.icon}</span>
-                    <span>{g.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Watermark Heart Outline */}
-            <div className="absolute -bottom-4 -right-4 pointer-events-none opacity-[0.12] text-[#FF2E79]">
-              <svg className="w-28 h-28 fill-none stroke-current stroke-[1.5]" viewBox="0 0 24 24">
-                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-              </svg>
             </div>
           </div>
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 4: University, Branch & Year of Study                                */}
+        {/* STEP 6: Gender Identity                                                   */}
         {/* ========================================================================= */}
-        {step === 4 && (
+        {step === 6 && (
+          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-6 animate-slide-up">
+            <div>
+              <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
+                STEP 06 • BIOLOGICAL IDENTITY
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Your Gender</h2>
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
+                Select your gender identity
+              </p>
+            </div>
+
+            <div className="space-y-3.5 pt-2">
+              {[
+                { id: 'male', label: 'Male', icon: '♂', desc: 'Identify as male' },
+                { id: 'female', label: 'Female', icon: '♀', desc: 'Identify as female' },
+                { id: 'others', label: 'Others', icon: '⚧', desc: 'Non-binary / others' }
+              ].map((g) => (
+                <button
+                  key={g.id}
+                  type="button"
+                  onClick={() => setGender(g.id)}
+                  className={`w-full p-5 rounded-2xl text-base font-bold transition-all border flex items-center justify-between cursor-pointer ${
+                    gender === g.id
+                      ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-lg shadow-pink-500/25 scale-[1.01]'
+                      : 'bg-white text-slate-800 border-slate-200 hover:border-pink-200 shadow-2xs'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">{g.icon}</span>
+                    <div className="text-left">
+                      <span className="block text-base font-black">{g.label}</span>
+                      <span className={`text-xs ${gender === g.id ? 'text-pink-100' : 'text-slate-400'}`}>{g.desc}</span>
+                    </div>
+                  </div>
+                  {gender === g.id && <Check className="w-5 h-5 stroke-[3]" />}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* STEP 7: University & College                                              */}
+        {/* ========================================================================= */}
+        {step === 7 && (
           <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-5 animate-slide-up">
             <div>
-              <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                STEP 04 • CAMPUS & ACADEMICS
+              <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
+                STEP 07 • ACADEMICS
               </span>
-              <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">University & Major</h2>
-              <p className="text-xs text-slate-500 font-medium mt-1 leading-relaxed">
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">University & College</h2>
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
                 Connect with verified students across colleges in Delhi NCR
               </p>
             </div>
 
-            {/* University Selection */}
-            <div className="space-y-3">
+            <div className="space-y-4 pt-2">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
                   <GraduationCap className="w-4 h-4" />
@@ -932,7 +985,6 @@ export default function OnboardingForm({ user, onComplete }) {
                 options={[...POPULAR_UNIVERSITIES, 'Other']}
                 placeholder="Select your university..."
                 icon={GraduationCap}
-                className="mb-2"
               />
               {university === 'Other' && (
                 <input
@@ -940,100 +992,108 @@ export default function OnboardingForm({ user, onComplete }) {
                   placeholder="Type your university name..."
                   value={customUniversity}
                   onChange={(e) => setCustomUniversity(e.target.value)}
-                  className="w-full h-12 bg-slate-50/80 border border-slate-200/80 rounded-2xl px-4 text-sm font-semibold text-slate-800 placeholder-slate-400 focus:bg-white focus:border-pink-300 outline-none transition-all mt-2"
+                  className="w-full h-14 bg-slate-50/80 border border-slate-200/80 rounded-2xl px-4 text-base font-semibold text-slate-800 placeholder-slate-400 focus:bg-white focus:border-pink-300 outline-none transition-all mt-2"
                 />
               )}
-            </div>
-
-            {/* Branch Selection */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
-                  <BookOpen className="w-4 h-4" />
-                </div>
-                <label className="text-sm font-bold text-slate-900">Branch *</label>
-              </div>
-              <CustomSelect
-                value={branch}
-                onChange={(val) => setBranch(val)}
-                options={[...BRANCH_OPTIONS, 'Other']}
-                placeholder="Select your branch / major..."
-                className="mb-2"
-              />
-              {branch === 'Other' && (
-                <input
-                  type="text"
-                  placeholder="Type your branch / major..."
-                  value={customBranch}
-                  onChange={(e) => setCustomBranch(e.target.value)}
-                  className="w-full h-12 bg-slate-50/80 border border-slate-200/80 rounded-2xl px-4 text-sm font-semibold text-slate-800 placeholder-slate-400 focus:bg-white focus:border-pink-300 outline-none transition-all mt-2"
-                />
-              )}
-            </div>
-
-            {/* Year of Study */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 mb-1">
-                <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
-                  <Award className="w-4 h-4" />
-                </div>
-                <label className="text-sm font-bold text-slate-900">Year Of Study *</label>
-              </div>
-              <div className="flex flex-wrap gap-2.5">
-                {['1st Year', '2nd Year', '3rd Year', '4th Year', 'Graduate'].map((yr) => {
-                  const isSelected = yearOfStudy === yr;
-                  return (
-                    <button
-                      key={yr}
-                      type="button"
-                      onClick={() => setYearOfStudy(yr)}
-                      className={`px-4.5 py-2.5 rounded-full text-xs font-bold border transition-all cursor-pointer ${
-                        isSelected
-                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
-                          : 'bg-white text-slate-800 border-slate-200/90 hover:border-pink-200 shadow-2xs'
-                      }`}
-                    >
-                      {isSelected && '✓ '}
-                      {yr}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Watermark Heart Outline */}
-            <div className="absolute -bottom-4 -right-4 pointer-events-none opacity-[0.12] text-[#FF2E79]">
-              <svg className="w-28 h-28 fill-none stroke-current stroke-[1.5]" viewBox="0 0 24 24">
-                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-              </svg>
             </div>
           </div>
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 5: Religion, Relationship Type & Habits                              */}
+        {/* STEP 8: Branch & Year of Study                                            */}
         {/* ========================================================================= */}
-        {step === 5 && (
-          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-5 animate-slide-up">
+        {step === 8 && (
+          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-6 animate-slide-up">
             <div>
-              <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                STEP 05 • BELIEFS & LIFESTYLE
+              <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
+                STEP 08 • MAJOR & LEVEL
               </span>
-              <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">Religion & Goals</h2>
-              <p className="text-xs text-slate-500 font-medium mt-1 leading-relaxed">
-                Cupid Note: More choices increase match possibilities
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Branch & Year of Study</h2>
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
+                What is your field of study and current academic year?
               </p>
             </div>
 
-            {/* Religion */}
-            <div className="space-y-3">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
+                    <BookOpen className="w-4 h-4" />
+                  </div>
+                  <label className="text-sm font-bold text-slate-900">Branch *</label>
+                </div>
+                <CustomSelect
+                  value={branch}
+                  onChange={(val) => setBranch(val)}
+                  options={[...BRANCH_OPTIONS, 'Other']}
+                  placeholder="Select your branch / major..."
+                />
+                {branch === 'Other' && (
+                  <input
+                    type="text"
+                    placeholder="Type your branch / major..."
+                    value={customBranch}
+                    onChange={(e) => setCustomBranch(e.target.value)}
+                    className="w-full h-14 bg-slate-50/80 border border-slate-200/80 rounded-2xl px-4 text-base font-semibold text-slate-800 placeholder-slate-400 focus:bg-white focus:border-pink-300 outline-none transition-all mt-2"
+                  />
+                )}
+              </div>
+
+              <div className="space-y-3 pt-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
+                    <Award className="w-4 h-4" />
+                  </div>
+                  <label className="text-sm font-bold text-slate-900">Year Of Study *</label>
+                </div>
+                <div className="flex flex-wrap gap-2.5">
+                  {['1st Year', '2nd Year', '3rd Year', '4th Year', 'Graduate'].map((yr) => {
+                    const isSelected = yearOfStudy === yr;
+                    return (
+                      <button
+                        key={yr}
+                        type="button"
+                        onClick={() => setYearOfStudy(yr)}
+                        className={`px-5 py-3 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
+                            : 'bg-white text-slate-800 border-slate-200 hover:border-pink-200 shadow-2xs'
+                        }`}
+                      >
+                        {isSelected && '✓ '}
+                        {yr}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* STEP 9: Religion & Beliefs                                                */}
+        {/* ========================================================================= */}
+        {step === 9 && (
+          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-6 animate-slide-up">
+            <div>
+              <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
+                STEP 09 • BELIEFS
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Religion</h2>
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
+                Select your religious background or beliefs
+              </p>
+            </div>
+
+            <div className="space-y-4 pt-2">
               <div className="flex items-center gap-2 mb-1">
                 <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
                   <Flower2 className="w-4 h-4" />
                 </div>
-                <label className="text-sm font-bold text-slate-900">Religion *</label>
+                <label className="text-sm font-bold text-slate-900">Your Religion *</label>
               </div>
-              <div className="flex flex-wrap gap-2.5">
+              <div className="flex flex-wrap gap-3">
                 {['Hindu', 'Muslim', 'Sikh', 'Christian', 'Others'].map((rel) => {
                   const isSelected = religion === rel;
                   return (
@@ -1041,10 +1101,10 @@ export default function OnboardingForm({ user, onComplete }) {
                       key={rel}
                       type="button"
                       onClick={() => setReligion(rel)}
-                      className={`px-4.5 py-2.5 rounded-full text-xs font-bold border transition-all cursor-pointer ${
+                      className={`px-6 py-3.5 rounded-full text-sm font-bold border transition-all cursor-pointer ${
                         isSelected
                           ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
-                          : 'bg-white text-slate-800 border-slate-200/90 hover:border-pink-200 shadow-2xs'
+                          : 'bg-white text-slate-800 border-slate-200 hover:border-pink-200 shadow-2xs'
                       }`}
                     >
                       {isSelected && '✓ '}
@@ -1054,227 +1114,246 @@ export default function OnboardingForm({ user, onComplete }) {
                 })}
               </div>
             </div>
-
-            {/* Relationship Type */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 mb-1">
-                <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
-                  <Heart className="w-4 h-4 fill-pink-100" />
-                </div>
-                <label className="text-sm font-bold text-slate-900">Relationship Type *</label>
-              </div>
-              <div className="grid grid-cols-2 gap-2.5">
-                {[
-                  'Serious Relationship', 
-                  'Short-Term Relationships', 
-                  'Casuals / Hookups', 
-                  'Friendship'
-                ].map((type) => {
-                  const isSelected = relationshipType.includes(type);
-                  return (
-                    <button
-                      key={type}
-                      type="button"
-                      onClick={() => toggleArrayItem(relationshipType, setRelationshipType, type)}
-                      className={`p-3.5 rounded-2xl text-left text-xs font-bold border transition-all cursor-pointer ${
-                        isSelected
-                          ? 'bg-rose-50 border-[#FF2E79] text-[#FF2E79] shadow-xs'
-                          : 'bg-white border-slate-200/90 text-slate-800 hover:border-pink-200 shadow-2xs'
-                      }`}
-                    >
-                      {isSelected && '✓ '}
-                      {type}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Drinking / Smoking Habits */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 mb-1">
-                <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
-                  <Wine className="w-4 h-4" />
-                </div>
-                <label className="text-sm font-bold text-slate-900">Drinking / Smoking Habits *</label>
-              </div>
-              <div className="flex flex-wrap gap-2.5">
-                {['Smoke', 'Drink', 'Drugs', 'Weed', 'None'].map((h) => {
-                  const isSelected = habits.includes(h);
-                  return (
-                    <button
-                      key={h}
-                      type="button"
-                      onClick={() => toggleArrayItem(habits, setHabits, h)}
-                      className={`px-4.5 py-2.5 rounded-full text-xs font-bold border transition-all cursor-pointer ${
-                        isSelected
-                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
-                          : 'bg-white text-slate-800 border-slate-200/90 hover:border-pink-200 shadow-2xs'
-                      }`}
-                    >
-                      {isSelected && '✓ '}
-                      {h}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Watermark Heart Outline */}
-            <div className="absolute -bottom-4 -right-4 pointer-events-none opacity-[0.12] text-[#FF2E79]">
-              <svg className="w-28 h-28 fill-none stroke-current stroke-[1.5]" viewBox="0 0 24 24">
-                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-              </svg>
-            </div>
           </div>
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 6: Personality Type, Qualities, Vibe & Exes                          */}
+        {/* STEP 10: Relationship Goals & Habits                                      */}
         {/* ========================================================================= */}
-        {step === 6 && (
-          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-5 animate-slide-up">
+        {step === 10 && (
+          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-6 animate-slide-up">
             <div>
-              <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                STEP 06 • YOUR VIBE & ENERGY
+              <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
+                STEP 10 • LIFESTYLE GOALS
               </span>
-              <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">Personality & Exes</h2>
-              <p className="text-xs text-slate-500 font-medium mt-1 leading-relaxed">
-                Share your qualities, dating vibe & past relationship experience
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Relationship & Habits</h2>
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
+                What kind of connection are you looking for and your habits?
               </p>
             </div>
 
-            {/* Personality Type */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 mb-1">
-                <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
-                  <Smile className="w-4 h-4" />
+            <div className="space-y-5">
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
+                    <Heart className="w-4 h-4 fill-pink-100" />
+                  </div>
+                  <label className="text-sm font-bold text-slate-900">Relationship Type *</label>
                 </div>
-                <label className="text-sm font-bold text-slate-900">Personality Type *</label>
-              </div>
-              <div className="grid grid-cols-3 gap-2.5">
-                {['Introvert', 'Ambivert', 'Extrovert'].map((p) => {
-                  const isSelected = personalityType === p;
-                  return (
-                    <button
-                      key={p}
-                      type="button"
-                      onClick={() => setPersonalityType(p)}
-                      className={`py-3 rounded-2xl text-xs font-bold border transition-all cursor-pointer ${
-                        isSelected
-                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
-                          : 'bg-white text-slate-800 border-slate-200/90 hover:border-pink-200 shadow-2xs'
-                      }`}
-                    >
-                      {isSelected && '✓ '}
-                      {p}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Qualities */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 mb-1">
-                <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
-                  <Sparkles className="w-4 h-4" />
+                <div className="grid grid-cols-2 gap-2.5">
+                  {[
+                    'Serious Relationship', 
+                    'Short-Term Relationships', 
+                    'Casuals / Hookups', 
+                    'Friendship'
+                  ].map((type) => {
+                    const isSelected = relationshipType.includes(type);
+                    return (
+                      <button
+                        key={type}
+                        type="button"
+                        onClick={() => toggleArrayItem(relationshipType, setRelationshipType, type)}
+                        className={`p-3.5 rounded-2xl text-left text-xs font-bold border transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-rose-50 border-[#FF2E79] text-[#FF2E79] shadow-xs font-black'
+                            : 'bg-white border-slate-200 text-slate-800 hover:border-pink-200 shadow-2xs'
+                        }`}
+                      >
+                        {isSelected && '✓ '}
+                        {type}
+                      </button>
+                    );
+                  })}
                 </div>
-                <label className="text-sm font-bold text-slate-900">Qualities ({qualities.length} selected) *</label>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {QUALITIES_LIST.map((q) => {
-                  const isSelected = qualities.includes(q);
-                  return (
-                    <button
-                      key={q}
-                      type="button"
-                      onClick={() => toggleArrayItem(qualities, setQualities, q)}
-                      className={`px-3.5 py-2.5 rounded-full text-xs font-bold border transition-all cursor-pointer ${
-                        isSelected
-                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
-                          : 'bg-white text-slate-800 border-slate-200/90 hover:border-pink-200 shadow-2xs'
-                      }`}
-                    >
-                      {isSelected && '✓ '}
-                      {q}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
 
-            {/* Dating Vibe */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 mb-1">
-                <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
-                  <Coffee className="w-4 h-4" />
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
+                    <Wine className="w-4 h-4" />
+                  </div>
+                  <label className="text-sm font-bold text-slate-900">Drinking / Smoking Habits *</label>
                 </div>
-                <label className="text-sm font-bold text-slate-900">Dating Vibe *</label>
-              </div>
-              <div className="grid grid-cols-2 gap-2.5">
-                {DATING_VIBES.map((v) => {
-                  const isSelected = datingVibe.includes(v);
-                  return (
-                    <button
-                      key={v}
-                      type="button"
-                      onClick={() => toggleArrayItem(datingVibe, setDatingVibe, v)}
-                      className={`p-3 rounded-2xl text-xs font-bold border transition-all text-left cursor-pointer ${
-                        isSelected
-                          ? 'bg-rose-50 border-[#FF2E79] text-[#FF2E79] shadow-xs'
-                          : 'bg-white border-slate-200/90 text-slate-800 hover:border-pink-200 shadow-2xs'
-                      }`}
-                    >
-                      {isSelected && '✓ '}
-                      {v}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Number of Exes */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 mb-1">
-                <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
-                  <Heart className="w-4 h-4 fill-pink-100" />
+                <div className="flex flex-wrap gap-2.5">
+                  {['Smoke', 'Drink', 'Drugs', 'Weed', 'None'].map((h) => {
+                    const isSelected = habits.includes(h);
+                    return (
+                      <button
+                        key={h}
+                        type="button"
+                        onClick={() => toggleArrayItem(habits, setHabits, h)}
+                        className={`px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
+                            : 'bg-white text-slate-800 border-slate-200 hover:border-pink-200 shadow-2xs'
+                        }`}
+                      >
+                        {isSelected && '✓ '}
+                        {h}
+                      </button>
+                    );
+                  })}
                 </div>
-                <label className="text-sm font-bold text-slate-900">Number of Exes *</label>
               </div>
-              <CustomSelect
-                value={numberOfExes.toString()}
-                onChange={(val) => setNumberOfExes(val)}
-                options={['0', '1', '2', '3', '4', '5+']}
-                placeholder="Select number of exes..."
-              />
-            </div>
-
-            {/* Watermark Heart Outline */}
-            <div className="absolute -bottom-4 -right-4 pointer-events-none opacity-[0.12] text-[#FF2E79]">
-              <svg className="w-28 h-28 fill-none stroke-current stroke-[1.5]" viewBox="0 0 24 24">
-                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-              </svg>
             </div>
           </div>
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 7: Partner Preferences — Age, Height & Gender (Exact Image 2 Match)  */}
+        {/* STEP 11: Personality & Traits                                             */}
         {/* ========================================================================= */}
-        {step === 7 && (
+        {step === 11 && (
+          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-6 animate-slide-up">
+            <div>
+              <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
+                STEP 11 • YOUR PERSONA
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Personality & Traits</h2>
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
+                How would you describe your personality and top qualities?
+              </p>
+            </div>
+
+            <div className="space-y-5">
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
+                    <Smile className="w-4 h-4" />
+                  </div>
+                  <label className="text-sm font-bold text-slate-900">Personality Type *</label>
+                </div>
+                <div className="grid grid-cols-3 gap-2.5">
+                  {['Introvert', 'Ambivert', 'Extrovert'].map((p) => {
+                    const isSelected = personalityType === p;
+                    return (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => setPersonalityType(p)}
+                        className={`py-3.5 rounded-2xl text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
+                            : 'bg-white text-slate-800 border-slate-200 hover:border-pink-200 shadow-2xs'
+                        }`}
+                      >
+                        {isSelected && '✓ '}
+                        {p}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
+                    <Sparkles className="w-4 h-4" />
+                  </div>
+                  <label className="text-sm font-bold text-slate-900">Qualities ({qualities.length} selected) *</label>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {QUALITIES_LIST.map((q) => {
+                    const isSelected = qualities.includes(q);
+                    return (
+                      <button
+                        key={q}
+                        type="button"
+                        onClick={() => toggleArrayItem(qualities, setQualities, q)}
+                        className={`px-4 py-2.5 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
+                            : 'bg-white text-slate-800 border-slate-200 hover:border-pink-200 shadow-2xs'
+                        }`}
+                      >
+                        {isSelected && '✓ '}
+                        {q}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* STEP 12: Dating Vibe & Past History                                       */}
+        {/* ========================================================================= */}
+        {step === 12 && (
+          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-6 animate-slide-up">
+            <div>
+              <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
+                STEP 12 • VIBE & EXES
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Dating Vibe & Exes</h2>
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
+                Your ideal date vibe and past relationship experience
+              </p>
+            </div>
+
+            <div className="space-y-5">
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
+                    <Coffee className="w-4 h-4" />
+                  </div>
+                  <label className="text-sm font-bold text-slate-900">Dating Vibe *</label>
+                </div>
+                <div className="grid grid-cols-2 gap-2.5">
+                  {DATING_VIBES.map((v) => {
+                    const isSelected = datingVibe.includes(v);
+                    return (
+                      <button
+                        key={v}
+                        type="button"
+                        onClick={() => toggleArrayItem(datingVibe, setDatingVibe, v)}
+                        className={`p-3.5 rounded-2xl text-xs font-bold border transition-all text-left cursor-pointer ${
+                          isSelected
+                            ? 'bg-rose-50 border-[#FF2E79] text-[#FF2E79] shadow-xs font-black'
+                            : 'bg-white border-slate-200 text-slate-800 hover:border-pink-200 shadow-2xs'
+                        }`}
+                      >
+                        {isSelected && '✓ '}
+                        {v}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
+                    <Heart className="w-4 h-4 fill-pink-100" />
+                  </div>
+                  <label className="text-sm font-bold text-slate-900">Number of Exes *</label>
+                </div>
+                <CustomSelect
+                  value={numberOfExes.toString()}
+                  onChange={(val) => setNumberOfExes(val)}
+                  options={['0', '1', '2', '3', '4', '5+']}
+                  placeholder="Select number of exes..."
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* STEP 13: Partner Preferences — Age & Height                               */}
+        {/* ========================================================================= */}
+        {step === 13 && (
           <div className="space-y-4 animate-slide-up">
             <div className="text-left mb-2">
-              <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                STEP 07 • IDEAL MATCH CRITERIA
+              <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
+                STEP 13 • IDEAL MATCH CRITERIA
               </span>
-              <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">Partner Stats</h2>
-              <p className="text-xs text-slate-500 font-medium mt-1 leading-relaxed">
-                Describe your ideal partner's age range, minimum height, and gender
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Partner Stats</h2>
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
+                Describe your ideal partner's age range and minimum height
               </p>
             </div>
 
-            {/* Cupid Note Card */}
             <div className="p-4 bg-[#FFF0F5] border border-pink-100/90 rounded-2xl flex items-center gap-3 text-xs text-slate-700 shadow-2xs text-left">
               <div className="w-8 h-8 rounded-full bg-pink-100/80 flex items-center justify-center text-[#FF2E79] shrink-0 shadow-2xs">
                 <Lightbulb className="w-4 h-4 fill-pink-300" />
@@ -1284,7 +1363,6 @@ export default function OnboardingForm({ user, onComplete }) {
               </span>
             </div>
 
-            {/* Preferred Age Card */}
             <div className="bg-white/90 backdrop-blur-md rounded-[28px] p-5 border border-white/80 shadow-xs space-y-3 text-left">
               <label className="text-sm font-bold text-slate-900 block">
                 Preferred Age ({prefMinAge} - {prefMaxAge} yrs) *
@@ -1310,7 +1388,6 @@ export default function OnboardingForm({ user, onComplete }) {
               </div>
             </div>
 
-            {/* Preferred Height Card */}
             <div className="bg-white/90 backdrop-blur-md rounded-[28px] p-5 border border-white/80 shadow-xs space-y-3 text-left">
               <label className="text-sm font-bold text-slate-900 block">Preferred Height *</label>
               <CustomSelect
@@ -1320,9 +1397,25 @@ export default function OnboardingForm({ user, onComplete }) {
                 placeholder="Select preferred height..."
               />
             </div>
+          </div>
+        )}
 
-            {/* Preferred Gender Card */}
-            <div className="bg-white/90 backdrop-blur-md rounded-[28px] p-5 border border-white/80 shadow-xs space-y-3 text-left">
+        {/* ========================================================================= */}
+        {/* STEP 14: Partner Preferences — Gender                                     */}
+        {/* ========================================================================= */}
+        {step === 14 && (
+          <div className="space-y-4 animate-slide-up">
+            <div className="text-left mb-2">
+              <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
+                STEP 14 • MATCH GENDER
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Preferred Gender</h2>
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
+                What gender do you prefer in your match?
+              </p>
+            </div>
+
+            <div className="bg-white/90 backdrop-blur-md rounded-[28px] p-5 border border-white/80 shadow-xs space-y-4 text-left">
               <label className="text-sm font-bold text-slate-900 block">Preferred Gender *</label>
               <div className="grid grid-cols-3 gap-3">
                 {['Male', 'Female', 'Others'].map((g) => {
@@ -1332,10 +1425,10 @@ export default function OnboardingForm({ user, onComplete }) {
                       key={g}
                       type="button"
                       onClick={() => setPrefGender(g)}
-                      className={`py-3.5 rounded-2xl text-xs sm:text-sm font-bold transition-all border flex items-center justify-center cursor-pointer ${
+                      className={`py-4 rounded-2xl text-sm font-bold transition-all border flex items-center justify-center cursor-pointer ${
                         isSelected
                           ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/25 scale-[1.02]'
-                          : 'bg-white text-slate-800 border-slate-200/90 hover:border-pink-200 shadow-2xs'
+                          : 'bg-white text-slate-800 border-slate-200 hover:border-pink-200 shadow-2xs'
                       }`}
                     >
                       {g}
@@ -1348,21 +1441,20 @@ export default function OnboardingForm({ user, onComplete }) {
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 8: Partner Preferences — University, Branch & Year (Exact Image 3 Match) */}
+        {/* STEP 15: Partner Preferences — Preferred University                       */}
         {/* ========================================================================= */}
-        {step === 8 && (
+        {step === 15 && (
           <div className="space-y-4 animate-slide-up text-left">
             <div className="text-left mb-2">
-              <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                STEP 07 • IDEAL MATCH CRITERIA
+              <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
+                STEP 15 • PREFERRED CAMPUS
               </span>
-              <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">Preferred University</h2>
-              <p className="text-xs text-slate-500 font-medium mt-1 leading-relaxed">
-                Select preferred campus and academic level
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Preferred University</h2>
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
+                Select preferred campus and colleges for your match
               </p>
             </div>
 
-            {/* Field 1: Preferred University */}
             <div className="space-y-2">
               <label className="text-sm font-bold text-slate-900 block">Preferred University *</label>
               <div className="bg-white/90 backdrop-blur-md rounded-[28px] p-5 border border-white/80 shadow-xs flex flex-wrap gap-2.5">
@@ -1373,10 +1465,10 @@ export default function OnboardingForm({ user, onComplete }) {
                       key={u}
                       type="button"
                       onClick={() => toggleArrayItem(prefUniversity, setPrefUniversity, u)}
-                      className={`px-4.5 py-2.5 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
+                      className={`px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
                         isSelected
                           ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
-                          : 'bg-white text-slate-800 border-slate-200/90 hover:border-pink-200 shadow-2xs'
+                          : 'bg-white text-slate-800 border-slate-100 hover:border-pink-200 shadow-2xs'
                       }`}
                     >
                       {isSelected && '✓ '}
@@ -1386,52 +1478,67 @@ export default function OnboardingForm({ user, onComplete }) {
                 })}
               </div>
             </div>
+          </div>
+        )}
 
-            {/* Field 2: Preferred Branch */}
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-900 block">Preferred Branch *</label>
-              <CustomSelect
-                value={prefBranch}
-                onChange={(val) => setPrefBranch(val)}
-                options={['Any Branch', ...BRANCH_OPTIONS]}
-                placeholder="Select preferred branch..."
-              />
+        {/* ========================================================================= */}
+        {/* STEP 16: Partner Preferences — Preferred Major & Year                     */}
+        {/* ========================================================================= */}
+        {step === 16 && (
+          <div className="space-y-4 animate-slide-up text-left">
+            <div className="text-left mb-2">
+              <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
+                STEP 16 • PREFERRED ACADEMICS
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Preferred Branch & Year</h2>
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
+                Preferred field of study and academic year for your match
+              </p>
             </div>
 
-            {/* Field 3: Preferred year of study */}
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-900 block">Preferred year of study *</label>
-              <div className="bg-white/90 backdrop-blur-md rounded-[28px] p-5 border border-white/80 shadow-xs flex flex-wrap gap-2.5">
-                {['Any Year', '1st Year', '2nd Year', '3rd Year', '4th Year', 'Graduate'].map((yr) => {
-                  const isSelected = prefYearOfStudy.includes(yr);
-                  return (
-                    <button
-                      key={yr}
-                      type="button"
-                      onClick={() => toggleArrayItem(prefYearOfStudy, setPrefYearOfStudy, yr)}
-                      className={`px-4.5 py-2.5 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
-                        isSelected
-                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
-                          : 'bg-white text-slate-800 border-slate-200/90 hover:border-pink-200 shadow-2xs'
-                      }`}
-                    >
-                      {isSelected && '✓ '}
-                      {yr}
-                    </button>
-                  );
-                })}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-900 block">Preferred Branch *</label>
+                <CustomSelect
+                  value={prefBranch}
+                  onChange={(val) => setPrefBranch(val)}
+                  options={['Any Branch', ...BRANCH_OPTIONS]}
+                  placeholder="Select preferred branch..."
+                />
+              </div>
+
+              <div className="space-y-2 pt-2">
+                <label className="text-sm font-bold text-slate-900 block">Preferred year of study *</label>
+                <div className="bg-white/90 backdrop-blur-md rounded-[28px] p-5 border border-white/80 shadow-xs flex flex-wrap gap-2.5">
+                  {['Any Year', '1st Year', '2nd Year', '3rd Year', '4th Year', 'Graduate'].map((yr) => {
+                    const isSelected = prefYearOfStudy.includes(yr);
+                    return (
+                      <button
+                        key={yr}
+                        type="button"
+                        onClick={() => toggleArrayItem(prefYearOfStudy, setPrefYearOfStudy, yr)}
+                        className={`px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
+                            : 'bg-white text-slate-800 border-slate-100 hover:border-pink-200 shadow-2xs'
+                        }`}
+                      >
+                        {isSelected && '✓ '}
+                        {yr}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 9: Partner Preferences — Religion, Habits & Exes (Exact Image 1 Match) */}
+        {/* STEP 17: Partner Preferences — Religion, Habits & Exes                   */}
         {/* ========================================================================= */}
-        {step === 9 && (
+        {step === 17 && (
           <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-6 animate-slide-up">
-            
-            {/* Background Soft Heart Outline Watermark */}
             <div className="absolute top-4 right-4 pointer-events-none opacity-20 text-[#FF2E79]">
               <svg className="w-24 h-24 fill-[#FF2E79]/10 stroke-[#FF2E79] stroke-[1.5]" viewBox="0 0 24 24">
                 <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
@@ -1439,16 +1546,15 @@ export default function OnboardingForm({ user, onComplete }) {
             </div>
 
             <div>
-              <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                STEP 09 • PARTNER LIFESTYLE
+              <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
+                STEP 17 • PARTNER LIFESTYLE
               </span>
-              <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">Habits & Exes</h2>
-              <p className="text-xs text-slate-500 font-medium mt-1 leading-relaxed">
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Habits & Exes</h2>
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
                 Select religion, habits and past history preferences
               </p>
             </div>
 
-            {/* Preferred Religion */}
             <div className="space-y-3">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-xl bg-rose-50 border border-rose-100/80 flex items-center justify-center text-[#FF2E79] shrink-0 shadow-2xs">
@@ -1477,7 +1583,6 @@ export default function OnboardingForm({ user, onComplete }) {
               </div>
             </div>
 
-            {/* Preferred Habits */}
             <div className="space-y-3">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-xl bg-rose-50 border border-rose-100/80 flex items-center justify-center text-[#FF2E79] shrink-0 shadow-2xs">
@@ -1506,7 +1611,6 @@ export default function OnboardingForm({ user, onComplete }) {
               </div>
             </div>
 
-            {/* Preferred Number Of Exes */}
             <div className="space-y-3">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-xl bg-rose-50 border border-rose-100/80 flex items-center justify-center text-[#FF2E79] shrink-0 shadow-2xs">
@@ -1525,24 +1629,21 @@ export default function OnboardingForm({ user, onComplete }) {
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 10: Partner Preferences — Personality, Qualities & Vibe              */}
+        {/* STEP 18: Partner Preferences — Personality, Qualities & Vibe              */}
         {/* ========================================================================= */}
-        {step === 10 && (
+        {step === 18 && (
           <div className="space-y-4 animate-slide-up">
             <div className="text-left mb-2">
-              <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                STEP 10 • ENERGY & PERSONA
+              <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
+                STEP 18 • ENERGY & PERSONA
               </span>
-              <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">Personality & Vibe</h2>
-              <p className="text-xs text-slate-500 font-medium mt-1 leading-relaxed">
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Personality & Vibe</h2>
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
                 What traits and dating vibe do you desire in your match?
               </p>
             </div>
 
-            {/* Translucent Glass Card Wrapper */}
             <div className="bg-white/90 backdrop-blur-md rounded-[32px] p-5 border border-slate-100/90 shadow-xs space-y-6 text-left relative overflow-hidden">
-              
-              {/* Preferred Personality */}
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79] shrink-0">
@@ -1561,7 +1662,7 @@ export default function OnboardingForm({ user, onComplete }) {
                         className={`py-2.5 rounded-full text-xs font-bold border transition-all cursor-pointer ${
                           isSelected
                             ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
-                            : 'bg-white text-slate-800 border-slate-200/90 hover:border-pink-200 shadow-2xs'
+                            : 'bg-white text-slate-800 border-slate-200 hover:border-pink-200 shadow-2xs'
                         }`}
                       >
                         {isSelected && '✓ '}
@@ -1572,7 +1673,6 @@ export default function OnboardingForm({ user, onComplete }) {
                 </div>
               </div>
 
-              {/* Preferred Qualities */}
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79] shrink-0">
@@ -1588,10 +1688,10 @@ export default function OnboardingForm({ user, onComplete }) {
                         key={q}
                         type="button"
                         onClick={() => toggleArrayItem(prefQualities, setPrefQualities, q)}
-                        className={`px-4 py-2.5 rounded-full text-xs font-bold border transition-all cursor-pointer ${
+                        className={`px-4 py-2.5 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
                           isSelected
                             ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
-                            : 'bg-white text-slate-800 border-slate-200/90 hover:border-pink-200 shadow-2xs'
+                            : 'bg-white text-slate-800 border-slate-200 hover:border-pink-200 shadow-2xs'
                         }`}
                       >
                         {isSelected && '✓ '}
@@ -1602,7 +1702,6 @@ export default function OnboardingForm({ user, onComplete }) {
                 </div>
               </div>
 
-              {/* Preferred Dating Vibe */}
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79] shrink-0">
@@ -1621,7 +1720,7 @@ export default function OnboardingForm({ user, onComplete }) {
                         className={`p-3.5 rounded-2xl text-xs font-bold border transition-all text-left cursor-pointer ${
                           isSelected
                             ? 'bg-rose-50 border-[#FF2E79] text-[#FF2E79] shadow-xs font-black'
-                            : 'bg-white border-slate-200/90 text-slate-800 hover:border-pink-200 shadow-2xs'
+                            : 'bg-white border-slate-200 text-slate-800 hover:border-pink-200 shadow-2xs'
                         }`}
                       >
                         {isSelected && '✓ '}
@@ -1631,27 +1730,25 @@ export default function OnboardingForm({ user, onComplete }) {
                   })}
                 </div>
               </div>
-
             </div>
           </div>
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 11: Non-Negotiables (Strict Deal-Breakers)                            */}
+        {/* STEP 19: Non-Negotiables                                                   */}
         {/* ========================================================================= */}
-        {step === 11 && (
+        {step === 19 && (
           <div className="space-y-4 animate-slide-up">
             <div className="text-left mb-2">
-              <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                STEP 11 • STRICT FILTERS
+              <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
+                STEP 19 • STRICT FILTERS
               </span>
-              <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">Non-Negotiables</h2>
-              <p className="text-xs text-slate-500 font-medium mt-1 leading-relaxed">
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Non-Negotiables</h2>
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
                 Parameters on which you are not willing to compromise
               </p>
             </div>
 
-            {/* Cupid Note Card */}
             <div className="p-3.5 bg-pink-50/70 border border-pink-100/80 rounded-2xl flex items-center gap-3 text-xs text-slate-700 shadow-2xs text-left">
               <div className="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center text-[#FF2E79] shrink-0">
                 <Lightbulb className="w-4 h-4 fill-pink-200" />
@@ -1661,7 +1758,6 @@ export default function OnboardingForm({ user, onComplete }) {
               </span>
             </div>
 
-            {/* Non-Negotiable Checklist Card */}
             <div className="bg-white/90 backdrop-blur-md rounded-[32px] p-5 border border-slate-100/90 shadow-xs space-y-4 text-left">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79] shrink-0">
@@ -1678,10 +1774,10 @@ export default function OnboardingForm({ user, onComplete }) {
                       key={item}
                       type="button"
                       onClick={() => toggleArrayItem(nonNegotiables, setNonNegotiables, item)}
-                      className={`px-4.5 py-2.5 rounded-full text-xs font-bold border transition-all cursor-pointer ${
+                      className={`px-4.5 py-2.5 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
                         isSelected
                           ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
-                          : 'bg-white text-slate-800 border-slate-200/90 hover:border-pink-200 shadow-2xs'
+                          : 'bg-white text-slate-800 border-slate-200 hover:border-pink-200 shadow-2xs'
                       }`}
                     >
                       {isSelected && '✓ '}
@@ -1692,7 +1788,6 @@ export default function OnboardingForm({ user, onComplete }) {
               </div>
             </div>
 
-            {/* Next 3 rounds note */}
             <label className="flex items-start gap-3 text-xs text-slate-600 text-left bg-white/90 backdrop-blur-md p-4.5 rounded-3xl border border-slate-100 shadow-2xs cursor-pointer">
               <input
                 type="checkbox"
@@ -1708,22 +1803,21 @@ export default function OnboardingForm({ user, onComplete }) {
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 12: Terms and Condition (All 4 Exact Legal Clauses)                   */}
+        {/* STEP 20: Terms and Conditions                                             */}
         {/* ========================================================================= */}
-        {step === 12 && (
+        {step === 20 && (
           <div className="space-y-4 animate-slide-up">
             <div className="text-left mb-2">
-              <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                STEP 12 • LEGAL AGREEMENT
+              <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
+                STEP 20 • LEGAL AGREEMENT
               </span>
-              <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">Terms & Conditions</h2>
-              <p className="text-xs text-slate-500 font-medium mt-1 leading-relaxed">
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Terms & Conditions</h2>
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
                 Please review and check all 4 agreement clauses
               </p>
             </div>
 
             <div className="bg-white/90 backdrop-blur-md border border-slate-100/90 rounded-[32px] p-5 space-y-4 text-left max-h-[360px] overflow-y-auto no-scrollbar shadow-xs">
-              
               <label className="flex items-start gap-3 text-xs text-slate-600 cursor-pointer pb-3.5 border-b border-slate-200/60">
                 <input
                   type="checkbox"
@@ -1732,7 +1826,7 @@ export default function OnboardingForm({ user, onComplete }) {
                   className="mt-0.5 accent-[#FF2E79] w-4 h-4 rounded shrink-0"
                 />
                 <span className="leading-relaxed font-medium">
-                  The monetary remittance of ₹100 is strictly non-refundable. This fee solely remunerates the administrative exertions undertaken to procure a potentially compatible match. While every endeavor shall be employed to facilitate a suitable pairing, no assurance or warranty of match fruition is extended.
+                  The monetary remittance of ₹100 is strictly non-refundable. This fee solely remunerates the administrative exertions undertaken to procure a potentially compatible match.
                 </span>
               </label>
 
@@ -1744,7 +1838,7 @@ export default function OnboardingForm({ user, onComplete }) {
                   className="mt-0.5 accent-[#FF2E79] w-4 h-4 rounded shrink-0"
                 />
                 <span className="leading-relaxed font-medium">
-                  By submitting your personal data and stipulated preferences, you irrevocably consent to the utilization of such information by Cupid for the explicit purpose of effectuating an optimal match.
+                  By submitting your personal data and stipulated preferences, you irrevocably consent to the utilization of such information by Cupid for matching purposes.
                 </span>
               </label>
 
@@ -1756,7 +1850,7 @@ export default function OnboardingForm({ user, onComplete }) {
                   className="mt-0.5 accent-[#FF2E79] w-4 h-4 rounded shrink-0"
                 />
                 <span className="leading-relaxed font-medium">
-                  Cupid's role is strictly mediatory; it merely effectuates an introduction between individuals deemed ostensibly compatible. The resultant parties are not, under any circumstances, pre-established romantic affiliates, and the onus of advancing the relational dynamics rests solely upon the individuals involved.
+                  Cupid's role is strictly mediatory; it merely effectuates an introduction between individuals deemed ostensibly compatible.
                 </span>
               </label>
 
@@ -1768,32 +1862,29 @@ export default function OnboardingForm({ user, onComplete }) {
                   className="mt-0.5 accent-[#FF2E79] w-4 h-4 rounded shrink-0"
                 />
                 <span className="leading-relaxed font-medium">
-                  Any conduct deemed inappropriate, disrespectful, or constituting ghosting of a matched individual absolves Cupid of any liability. Recurrent grievances or infractions in successive rounds may culminate in immediate exclusion from the platform without recourse to refund or compensation.
+                  Any conduct deemed inappropriate, disrespectful, or constituting ghosting absolves Cupid of liability and may result in exclusion.
                 </span>
               </label>
-
             </div>
           </div>
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 13: Plan Selection (₹100, ₹250, ₹449)                                */}
+        {/* STEP 21: Plan Selection                                                   */}
         {/* ========================================================================= */}
-        {step === 13 && (
+        {step === 21 && (
           <div className="space-y-4 animate-slide-up">
             <div className="text-left mb-2">
-              <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                STEP 13 • PLAN TIER
+              <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
+                STEP 21 • PLAN TIER
               </span>
-              <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">Matchmaking Tier</h2>
-              <p className="text-xs text-slate-500 font-medium mt-1 leading-relaxed">
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Matchmaking Tier</h2>
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
                 Choose your guarantee level for this active round
               </p>
             </div>
 
             <div className="space-y-3.5 max-h-[390px] overflow-y-auto no-scrollbar">
-              
-              {/* 100 Rupee plan */}
               <div
                 onClick={() => setSelectedPlan('basic')}
                 className={`p-5 rounded-[28px] border-2 transition-all cursor-pointer text-left ${
@@ -1810,11 +1901,9 @@ export default function OnboardingForm({ user, onComplete }) {
                   <li>• Participate in 1 matchmaking round</li>
                   <li>• Chance of 1 match based on compatibility</li>
                   <li>• 100% anonymous matching process</li>
-                  <li>• Match details shared via email / Instagram</li>
                 </ul>
               </div>
 
-              {/* 250 Rupee plan */}
               <div
                 onClick={() => setSelectedPlan('premium')}
                 className={`p-5 rounded-[28px] border-2 transition-all cursor-pointer text-left ${
@@ -1830,12 +1919,10 @@ export default function OnboardingForm({ user, onComplete }) {
                 <ul className="text-xs text-slate-600 mt-2.5 space-y-1.5 leading-relaxed font-medium">
                   <li>• Higher priority placement in round</li>
                   <li>• Profile preview before match confirmation</li>
-                  <li>• Advanced compatibility algorithm filtering</li>
                   <li>• <strong>Full refund if no match is found</strong></li>
                 </ul>
               </div>
 
-              {/* 449 Rupee Plan */}
               <div
                 onClick={() => setSelectedPlan('elite')}
                 className={`p-5 rounded-[28px] border-2 transition-all cursor-pointer text-left relative overflow-hidden ${
@@ -1856,27 +1943,24 @@ export default function OnboardingForm({ user, onComplete }) {
                 <ul className="text-xs text-slate-700 mt-2.5 space-y-1.5 font-medium leading-relaxed">
                   <li>• Highest VIP priority matching placement</li>
                   <li>• Mutual approval only (no one-sided matches)</li>
-                  <li>• Near-zero ghosting probability</li>
                   <li>• <strong>No mutual match = instant full refund</strong></li>
-                  <li>• Didn't like profile? 100% money back guarantee</li>
                 </ul>
               </div>
-
             </div>
           </div>
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 14: Payment QR, Auto-Verify & Screenshot Upload                      */}
+        {/* STEP 22: Payment QR, Auto-Verify & Screenshot Upload                      */}
         {/* ========================================================================= */}
-        {step === 14 && (
+        {step === 22 && (
           <div className="space-y-4 animate-slide-up">
             <div className="text-left mb-2">
-              <span className="text-[11px] font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                STEP 14 • FINAL ACTIVATION
+              <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
+                STEP 22 • FINAL ACTIVATION
               </span>
-              <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-display tracking-tight">Confirm & Pay</h2>
-              <p className="text-xs text-slate-500 font-medium mt-1 leading-relaxed">
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Confirm & Pay</h2>
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
                 Entry fee is one-time and verified instantly
               </p>
             </div>
@@ -1894,7 +1978,6 @@ export default function OnboardingForm({ user, onComplete }) {
                 </div>
               </div>
 
-              {/* Instant Automated Verification Status or Action */}
               {autoVerifiedUtr ? (
                 <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-left flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
@@ -1912,12 +1995,11 @@ export default function OnboardingForm({ user, onComplete }) {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {/* Pay via PhonePe / GPay Button */}
                   <button
                     type="button"
                     onClick={handleInstantAutoPay}
                     disabled={isVerifyingAutoPay}
-                    className="w-full h-14 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-black text-xs rounded-2xl flex items-center justify-center gap-2 shadow-lg transition-all active:scale-[0.98] disabled:opacity-75 cursor-pointer"
+                    className="w-full h-14 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-black text-xs sm:text-sm rounded-2xl flex items-center justify-center gap-2 shadow-lg transition-all active:scale-[0.98] disabled:opacity-75 cursor-pointer"
                   >
                     <span className="text-lg">📲</span>
                     <span>Pay via PhonePe / GPay / BHIM</span>
@@ -1931,7 +2013,6 @@ export default function OnboardingForm({ user, onComplete }) {
                     </span>
                   </div>
 
-                  {/* Dynamic QR Box with Pre-Locked Amount */}
                   <div className="w-36 h-36 mx-auto bg-white p-2 rounded-2xl border-2 border-rose-100 shadow-md flex items-center justify-center relative">
                     <img
                       src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(
@@ -1944,7 +2025,6 @@ export default function OnboardingForm({ user, onComplete }) {
                     />
                   </div>
 
-                  {/* UPI ID Copy button */}
                   <button
                     type="button"
                     onClick={() => {
@@ -1965,7 +2045,6 @@ export default function OnboardingForm({ user, onComplete }) {
               )}
             </div>
 
-            {/* Screenshot Upload + UTR Submission */}
             {!autoVerifiedUtr && (
               <div className="space-y-4 text-left">
                 <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-left">
@@ -1978,7 +2057,6 @@ export default function OnboardingForm({ user, onComplete }) {
                   </p>
                 </div>
 
-                {/* Screenshot Upload */}
                 <div>
                   <label className="form-label text-xs font-bold text-slate-700 mb-2 block">
                     Upload Payment Screenshot *
@@ -2022,7 +2100,6 @@ export default function OnboardingForm({ user, onComplete }) {
                   )}
                 </div>
 
-                {/* UTR Input */}
                 <div>
                   <label className="form-label text-xs font-bold text-slate-700 mb-1 block">
                     UTR / Transaction Reference ID *
@@ -2056,7 +2133,6 @@ export default function OnboardingForm({ user, onComplete }) {
               </div>
             )}
 
-            {/* Refund UPI ID input */}
             <div className="text-left">
               <label className="form-label text-xs font-bold text-slate-700">Your UPI ID for Instant 100% Refund (if applicable) *</label>
               <input
@@ -2078,11 +2154,11 @@ export default function OnboardingForm({ user, onComplete }) {
           <button
             type="button"
             onClick={handleNext}
-            className="w-full h-14 bg-gradient-to-r from-[#FF2E79] via-pink-600 to-[#FF2E79] hover:opacity-95 text-white font-black text-sm sm:text-base rounded-full flex items-center justify-center gap-1.5 shadow-[0_12px_28px_rgba(255,46,121,0.4)] transition-all active:scale-[0.98] cursor-pointer"
+            className="w-full h-15 bg-gradient-to-r from-[#FF2E79] via-pink-600 to-[#FF2E79] hover:opacity-95 text-white font-black text-base sm:text-lg rounded-full flex items-center justify-center gap-2 shadow-[0_12px_28px_rgba(255,46,121,0.4)] transition-all active:scale-[0.98] cursor-pointer"
           >
             <span>Next Step</span>
-            <span className="text-lg font-normal">→</span>
-            <ChevronRight className="w-4 h-4 opacity-80" />
+            <span className="text-xl font-normal">→</span>
+            <ChevronRight className="w-5 h-5 opacity-80" />
           </button>
         ) : (
           <div>
@@ -2091,7 +2167,7 @@ export default function OnboardingForm({ user, onComplete }) {
                 <button
                   type="button"
                   disabled={true}
-                  className="w-full h-14 bg-slate-200 text-slate-400 font-bold text-xs rounded-full flex items-center justify-center gap-2 cursor-not-allowed shadow-none"
+                  className="w-full h-15 bg-slate-200 text-slate-400 font-bold text-xs sm:text-sm rounded-full flex items-center justify-center gap-2 cursor-not-allowed shadow-none"
                 >
                   <AlertCircle className="w-4 h-4 text-slate-400" />
                   <span>Upload Screenshot + Enter UTR to Submit</span>
@@ -2105,7 +2181,7 @@ export default function OnboardingForm({ user, onComplete }) {
                 type="button"
                 onClick={handleFinalSubmit}
                 disabled={isSubmitting}
-                className="w-full h-14 bg-gradient-to-r from-[#FF2E79] via-pink-600 to-[#FF2E79] hover:opacity-95 text-white font-black text-sm rounded-full flex items-center justify-center gap-2 shadow-[0_12px_28px_rgba(255,46,121,0.4)] transition-all active:scale-[0.98] disabled:opacity-75 cursor-pointer"
+                className="w-full h-15 bg-gradient-to-r from-[#FF2E79] via-pink-600 to-[#FF2E79] hover:opacity-95 text-white font-black text-base sm:text-lg rounded-full flex items-center justify-center gap-2 shadow-[0_12px_28px_rgba(255,46,121,0.4)] transition-all active:scale-[0.98] disabled:opacity-75 cursor-pointer"
               >
                 {isSubmitting ? (
                   <div className="flex items-center gap-2">
