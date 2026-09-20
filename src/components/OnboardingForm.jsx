@@ -137,10 +137,23 @@ export default function OnboardingForm({ user, onComplete }) {
   const [step, setStep] = useState(() => {
     const params = new URLSearchParams(window.location.search);
     const parsedStep = parseInt(params.get('step') || '1', 10);
-    return parsedStep >= 1 && parsedStep <= 27 ? parsedStep : 1;
+    return parsedStep >= 1 && parsedStep <= 26 ? parsedStep : 1;
   });
-  const totalSteps = 26;
+  const totalSteps = 25;
   const fileInputRef = useRef(null);
+
+  // Smooth floating milestone splash overlay state (shown when moving from Step 15 to Step 16)
+  const [showMilestoneOverlay, setShowMilestoneOverlay] = useState(false);
+
+  useEffect(() => {
+    let timer;
+    if (showMilestoneOverlay) {
+      timer = setTimeout(() => {
+        setShowMilestoneOverlay(false);
+      }, 3500);
+    }
+    return () => clearTimeout(timer);
+  }, [showMilestoneOverlay]);
 
   // --- 1. Personal Info ---
   const [name, setName] = useState(user.name || '');
@@ -285,6 +298,13 @@ export default function OnboardingForm({ user, onComplete }) {
       setPhotoError('');
     }
 
+    // When advancing from Step 15 to Step 16, launch the smooth floating milestone overlay!
+    if (step === 15) {
+      setStep(16);
+      setShowMilestoneOverlay(true);
+      return;
+    }
+
     if (step < totalSteps) {
       setStep(prev => prev + 1);
     }
@@ -413,7 +433,7 @@ export default function OnboardingForm({ user, onComplete }) {
       const savedUser = updateUser(finalUserData) || finalUserData;
       setCompletedUser(savedUser);
       setIsSubmitting(false);
-      setStep(27); // Step 27: Thank You Screen
+      setStep(26); // Step 26: Thank You Screen
 
       confetti({
         particleCount: 120,
@@ -425,9 +445,9 @@ export default function OnboardingForm({ user, onComplete }) {
   };
 
   // =========================================================================
-  // STEP 27: THANK YOU SCREEN
+  // STEP 26: THANK YOU SCREEN
   // =========================================================================
-  if (step === 27) {
+  if (step === 26) {
     const activeUserToLaunch = completedUser || {
       ...user,
       name,
@@ -1455,53 +1475,13 @@ export default function OnboardingForm({ user, onComplete }) {
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 16: Milestone Transition Page — Personal Details Completed           */}
+        {/* STEP 16: Partner Preferences — Age & Height                               */}
         {/* ========================================================================= */}
         {step === 16 && (
-          <div key={16} className="bg-white/95 backdrop-blur-md rounded-[32px] p-6 sm:p-8 border border-white/90 shadow-[0_15px_40px_rgba(255,46,121,0.22)] text-center relative overflow-hidden space-y-6 animate-step-transition my-auto">
-            <div className="relative z-10 space-y-4">
-              <div className="w-20 h-20 bg-rose-50 text-[#FF2E79] rounded-full flex items-center justify-center mx-auto shadow-md ring-8 ring-rose-100/60 animate-bounce">
-                <CheckCircle2 className="w-10 h-10 stroke-[2.5]" />
-              </div>
-
-              <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-rose-50 border border-rose-200 text-[#FF2E79] text-xs font-black uppercase tracking-wider shadow-2xs">
-                <Sparkles className="w-3.5 h-3.5 fill-[#FF2E79]" />
-                <span>STEP 1 OF 2 COMPLETED</span>
-              </div>
-
-              <div className="pt-2 px-2">
-                <WordByWordText
-                  text="Your Personal Details Are Completed! Now Let's Set Your Match Preferences."
-                  speed={70}
-                />
-              </div>
-
-              <p className="text-xs sm:text-sm text-slate-500 font-medium max-w-sm mx-auto leading-relaxed pt-1">
-                Your personal details have been saved successfully. Next, set your preferred partner criteria so our Cupid AI radar can find your highest compatibility matches!
-              </p>
-
-              <div className="pt-4">
-                <button
-                  type="button"
-                  onClick={handleNext}
-                  className="w-full h-14 bg-gradient-to-r from-[#FF2E79] via-pink-600 to-[#FF2E79] hover:opacity-95 text-white font-black text-base rounded-full flex items-center justify-center gap-2.5 shadow-[0_8px_25px_rgba(255,46,121,0.35)] transition-all active:scale-[0.98] cursor-pointer tracking-wide"
-                >
-                  <span>Continue To Match Preferences</span>
-                  <ArrowRight className="w-5 h-5 stroke-[2.5]" />
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ========================================================================= */}
-        {/* STEP 17: Partner Preferences — Age & Height                               */}
-        {/* ========================================================================= */}
-        {step === 17 && (
-          <div key={17} className="space-y-4 animate-step-transition">
+          <div key={16} className="space-y-4 animate-step-transition">
             <div className="text-left mb-2">
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                STEP 17 • IDEAL MATCH CRITERIA
+                STEP 16 • IDEAL MATCH CRITERIA
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Partner Stats</h2>
               <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
@@ -1556,13 +1536,13 @@ export default function OnboardingForm({ user, onComplete }) {
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 18: Partner Preferences — Gender                                     */}
+        {/* STEP 17: Partner Preferences — Gender                                     */}
         {/* ========================================================================= */}
-        {step === 18 && (
-          <div key={18} className="space-y-4 animate-step-transition">
+        {step === 17 && (
+          <div key={17} className="space-y-4 animate-step-transition">
             <div className="text-left mb-2">
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                STEP 18 • MATCH GENDER
+                STEP 17 • MATCH GENDER
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Preferred Gender</h2>
               <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
@@ -1597,13 +1577,13 @@ export default function OnboardingForm({ user, onComplete }) {
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 19: Partner Preferences — Preferred University                       */}
+        {/* STEP 18: Partner Preferences — Preferred University                       */}
         {/* ========================================================================= */}
-        {step === 19 && (
-          <div key={19} className="space-y-4 animate-step-transition text-left">
+        {step === 18 && (
+          <div key={18} className="space-y-4 animate-step-transition text-left">
             <div className="text-left mb-2">
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                STEP 19 • PREFERRED CAMPUS
+                STEP 18 • PREFERRED CAMPUS
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Preferred University</h2>
               <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
@@ -1650,13 +1630,13 @@ export default function OnboardingForm({ user, onComplete }) {
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 20: Partner Preferences — Preferred Major & Year                     */}
+        {/* STEP 19: Partner Preferences — Preferred Major & Year                     */}
         {/* ========================================================================= */}
-        {step === 20 && (
-          <div key={20} className="space-y-4 animate-step-transition text-left">
+        {step === 19 && (
+          <div key={19} className="space-y-4 animate-step-transition text-left">
             <div className="text-left mb-2">
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                STEP 20 • PREFERRED ACADEMICS
+                STEP 19 • PREFERRED ACADEMICS
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Preferred Branch & Year</h2>
               <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
@@ -1715,13 +1695,13 @@ export default function OnboardingForm({ user, onComplete }) {
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 21: Partner Preferences — Religion, Habits & Exes                   */}
+        {/* STEP 20: Partner Preferences — Religion, Habits & Exes                   */}
         {/* ========================================================================= */}
-        {step === 21 && (
-          <div key={21} className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-step-transition">
+        {step === 20 && (
+          <div key={20} className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-step-transition">
             <div>
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                STEP 21 • PARTNER LIFESTYLE
+                STEP 20 • PARTNER LIFESTYLE
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Habits & Exes</h2>
               <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
@@ -1805,13 +1785,13 @@ export default function OnboardingForm({ user, onComplete }) {
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 22: Partner Preferences — Personality & Vibe                         */}
+        {/* STEP 21: Partner Preferences — Personality & Vibe                         */}
         {/* ========================================================================= */}
-        {step === 22 && (
-          <div key={22} className="space-y-4 animate-step-transition">
+        {step === 21 && (
+          <div key={21} className="space-y-4 animate-step-transition">
             <div className="text-left mb-2">
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                STEP 22 • ENERGY & PERSONA
+                STEP 21 • ENERGY & PERSONA
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Personality & Vibe</h2>
               <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
@@ -1911,13 +1891,13 @@ export default function OnboardingForm({ user, onComplete }) {
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 23: Non-Negotiables                                                   */}
+        {/* STEP 22: Non-Negotiables                                                   */}
         {/* ========================================================================= */}
-        {step === 23 && (
-          <div key={23} className="space-y-4 animate-step-transition">
+        {step === 22 && (
+          <div key={22} className="space-y-4 animate-step-transition">
             <div className="text-left mb-2">
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                STEP 23 • STRICT FILTERS
+                STEP 22 • STRICT FILTERS
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Non-Negotiables</h2>
               <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
@@ -1979,13 +1959,13 @@ export default function OnboardingForm({ user, onComplete }) {
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 24: Terms and Conditions                                             */}
+        {/* STEP 23: Terms and Conditions                                             */}
         {/* ========================================================================= */}
-        {step === 24 && (
-          <div key={24} className="space-y-4 animate-step-transition">
+        {step === 23 && (
+          <div key={23} className="space-y-4 animate-step-transition">
             <div className="text-left mb-2">
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                STEP 24 • LEGAL AGREEMENT
+                STEP 23 • LEGAL AGREEMENT
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Terms & Conditions</h2>
               <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
@@ -2054,13 +2034,13 @@ export default function OnboardingForm({ user, onComplete }) {
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 25: Plan Selection                                                   */}
+        {/* STEP 24: Plan Selection                                                   */}
         {/* ========================================================================= */}
-        {step === 25 && (
-          <div key={25} className="space-y-4 animate-step-transition">
+        {step === 24 && (
+          <div key={24} className="space-y-4 animate-step-transition">
             <div className="text-left mb-2">
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                STEP 25 • PLAN TIER
+                STEP 24 • PLAN TIER
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Matchmaking Tier</h2>
               <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
@@ -2135,13 +2115,13 @@ export default function OnboardingForm({ user, onComplete }) {
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 26: Payment QR, Auto-Verify & Screenshot Upload                      */}
+        {/* STEP 25: Payment QR, Auto-Verify & Screenshot Upload                      */}
         {/* ========================================================================= */}
-        {step === 26 && (
-          <div key={26} className="space-y-4 animate-step-transition">
+        {step === 25 && (
+          <div key={25} className="space-y-4 animate-step-transition">
             <div className="text-left mb-2">
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                STEP 26 • FINAL ACTIVATION
+                STEP 25 • FINAL ACTIVATION
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Confirm & Pay</h2>
               <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
@@ -2413,6 +2393,64 @@ export default function OnboardingForm({ user, onComplete }) {
             >
               Upload Photos
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Floating Milestone Splash Overlay — SaaS level smooth hover transition */}
+      {showMilestoneOverlay && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-gradient-to-b from-[#FFF0F4]/98 via-[#FFEBEF]/98 to-[#FFF5F8]/98 backdrop-blur-xl animate-fade-in transition-all duration-500 select-none"
+          onClick={() => setShowMilestoneOverlay(false)}
+        >
+          {/* Top-Right Greyish Transparent Capsule Skip Button */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowMilestoneOverlay(false);
+            }}
+            className="absolute top-6 right-6 z-50 bg-slate-900/10 hover:bg-slate-900/20 active:scale-95 text-slate-700 font-extrabold text-xs px-4 py-2 rounded-full backdrop-blur-md border border-slate-900/5 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
+          >
+            <span>Skip</span>
+            <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
+          </button>
+
+          {/* Center Card Container */}
+          <div 
+            className="max-w-md w-full text-center space-y-6 px-4 py-8 animate-scale-up"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* 3 Pink Sunburst Rays Accent */}
+            <div className="flex justify-center items-end gap-1.5 mb-2">
+              <span className="w-1.5 h-4 bg-[#FF2E79] rounded-full transform -rotate-25 opacity-80 animate-pulse"></span>
+              <span className="w-1.5 h-5 bg-[#FF2E79] rounded-full transform rotate-0 opacity-100 mb-1 animate-pulse"></span>
+              <span className="w-1.5 h-4 bg-[#FF2E79] rounded-full transform rotate-25 opacity-80 animate-pulse"></span>
+            </div>
+
+            {/* Headline Title */}
+            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 font-display tracking-tight leading-snug">
+              You’re done with<br />
+              your <span className="text-[#FF2E79]">Basic Details!</span>
+            </h2>
+
+            {/* Pink Heart Divider */}
+            <div className="flex items-center justify-center gap-3 py-1">
+              <div className="h-[1.5px] w-14 bg-gradient-to-r from-transparent to-[#FF2E79]/50"></div>
+              <Heart className="w-4 h-4 fill-[#FF2E79] text-[#FF2E79] animate-bounce" />
+              <div className="h-[1.5px] w-14 bg-gradient-to-l from-transparent to-[#FF2E79]/50"></div>
+            </div>
+
+            {/* Subtext */}
+            <p className="text-base sm:text-lg font-bold text-slate-600 leading-snug">
+              Now let’s set your<br />
+              <span className="text-[#FF2E79] font-black">Match Preferences.</span>
+            </p>
+
+            {/* Tap hint */}
+            <p className="text-[11px] font-semibold text-slate-400 pt-6 animate-pulse">
+              Tap anywhere to continue →
+            </p>
           </div>
         </div>
       )}
