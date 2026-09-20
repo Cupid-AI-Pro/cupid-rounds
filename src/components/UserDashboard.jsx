@@ -172,6 +172,26 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
   return (
     <div className="flex-1 flex flex-col h-full relative justify-between select-none overflow-hidden pb-20 bg-gradient-to-b from-[#FFF0F4] via-[#FFEBEF] to-[#FFF5F8]">
       
+      {/* Background Organic Fluid Wave Patterns & Floating 3D Soft Pink Heart (Matching Reference Image) */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 select-none">
+        {/* Soft pink glowing aura blurs */}
+        <div className="absolute -top-12 -left-12 w-72 h-72 bg-rose-200/45 rounded-full blur-3xl" />
+        <div className="absolute top-[18%] -right-16 w-80 h-80 bg-pink-300/35 rounded-full blur-3xl" />
+        <div className="absolute bottom-[-40px] left-[10%] w-96 h-96 bg-rose-200/35 rounded-full blur-3xl" />
+
+        {/* Curved Fluid Organic Ribbon Waves */}
+        <svg className="absolute inset-0 w-full h-full opacity-40" viewBox="0 0 390 844" fill="none">
+          <path d="M-60 140 C80 90, 240 200, 450 110" stroke="#FF2E79" strokeWidth="1.8" strokeOpacity="0.25" />
+          <path d="M-20 340 C110 290, 290 440, 430 350" stroke="#FF6584" strokeWidth="2.2" strokeOpacity="0.22" />
+          <path d="M-40 690 C140 630, 230 790, 440 710" stroke="#FF2E79" strokeWidth="2.5" strokeOpacity="0.2" />
+        </svg>
+
+        {/* Top Right Floating Soft Pink 3D Heart */}
+        <div className="absolute top-14 right-20 animate-float opacity-75 z-0">
+          <Heart className="w-12 h-12 fill-rose-300/70 text-rose-300/90 drop-shadow-md transform rotate-12" />
+        </div>
+      </div>
+
       {/* Interactive First-Time User Guided Tour (Bubble Tooltips) */}
       {showTour && (
         <InteractiveTourGuide
@@ -205,7 +225,7 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
       {/* TAB 1: EXPLORE / HOME FEED (Swipeable Card Stack)                 */}
       {/* ----------------------------------------------------------------- */}
       {currentTab === 'explore' && (
-        <div className="flex-1 flex flex-col px-4 pt-2 pb-2 h-full overflow-hidden">
+        <div className="flex-1 flex flex-col px-4 pt-2 pb-2 h-full overflow-hidden z-10">
           
           {/* Top Header Row (Exact Match to Reference Image) */}
           <div className="flex items-center justify-between select-none mb-3">
@@ -374,8 +394,8 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
               </button>
             </div>
           ) : (
-            /* Swipeable Card Stack Container */
-            <div className="flex-1 relative overflow-hidden" style={{ minHeight: 0 }}>
+            /* Swipeable Card Stack Container — overflow-visible pr-3 so stacked cards peeking out on right side are completely visible */
+            <div className="flex-1 relative overflow-visible pr-4" style={{ minHeight: 0 }}>
               <SwipeableDeck
                 candidates={candidates}
                 user={user}
@@ -504,65 +524,65 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
       {/* ----------------------------------------------------------------- */}
       {/* BOTTOM FLOATING NAVIGATION BAR (Exact Match to Reference Image)  */}
       {/* ----------------------------------------------------------------- */}
-      <div className="fixed bottom-3 left-4 right-4 z-40 bg-white/95 backdrop-blur-xl border border-white/80 rounded-full p-1.5 shadow-[0_10px_35px_rgba(255,46,121,0.20)] flex items-center justify-around max-w-md mx-auto select-none">
+      <div className="fixed bottom-3 left-4 right-4 z-40 bg-white/95 backdrop-blur-2xl border border-white/80 rounded-[32px] p-2 shadow-[0_15px_40px_rgba(255,46,121,0.18)] flex items-center justify-around max-w-md mx-auto select-none">
         
-        {/* Tab 1: Home / Explore */}
+        {/* Tab 1: Home */}
         <button 
           onClick={() => setCurrentTab('explore')}
-          className={`px-4 py-2 rounded-full flex items-center gap-1.5 text-xs font-bold transition-all cursor-pointer ${
+          className={`transition-all cursor-pointer ${
             currentTab === 'explore' 
-              ? 'bg-[#FFEBEF] text-[#FF2E79] font-black shadow-2xs' 
-              : 'text-slate-500 hover:text-slate-800'
+              ? 'bg-[#FFEBEF] text-[#FF2E79] rounded-[22px] px-5 py-2 flex flex-col items-center justify-center gap-0.5 shadow-2xs font-black' 
+              : 'flex flex-col items-center justify-center gap-0.5 px-4 py-1.5 text-slate-700 font-extrabold hover:text-black'
           }`}
           title="Home"
         >
-          <Home className="w-4.5 h-4.5 stroke-[2.2]" />
-          {currentTab === 'explore' && <span>Home</span>}
+          <Home className={`w-5 h-5 ${currentTab === 'explore' ? 'fill-[#FF2E79] text-[#FF2E79]' : 'stroke-[2.2]'}`} />
+          <span className="text-[11px]">Home</span>
         </button>
 
-        {/* Tab 2: Campus Radar Map (Discover) */}
+        {/* Tab 2: Discover */}
         <button 
           onClick={() => setCurrentTab('radar')}
-          className={`px-4 py-2 rounded-full flex items-center gap-1.5 text-xs font-bold transition-all cursor-pointer ${
+          className={`transition-all cursor-pointer ${
             currentTab === 'radar' 
-              ? 'bg-[#FFEBEF] text-[#FF2E79] font-black shadow-2xs' 
-              : 'text-slate-500 hover:text-slate-800'
+              ? 'bg-[#FFEBEF] text-[#FF2E79] rounded-[22px] px-5 py-2 flex flex-col items-center justify-center gap-0.5 shadow-2xs font-black' 
+              : 'flex flex-col items-center justify-center gap-0.5 px-4 py-1.5 text-slate-700 font-extrabold hover:text-black'
           }`}
           title="Discover"
         >
-          <Compass className="w-4.5 h-4.5 stroke-[2.2]" />
-          {currentTab === 'radar' && <span>Discover</span>}
+          <Compass className={`w-5 h-5 ${currentTab === 'radar' ? 'text-[#FF2E79]' : 'stroke-[2.2]'}`} />
+          <span className="text-[11px]">Discover</span>
         </button>
         
-        {/* Tab 3: Direct Messages & Matches (Chats) */}
+        {/* Tab 3: Chats */}
         <button 
           onClick={() => setCurrentTab('chat')}
-          className={`px-4 py-2 rounded-full flex items-center gap-1.5 text-xs font-bold transition-all relative cursor-pointer ${
+          className={`transition-all cursor-pointer relative ${
             currentTab === 'chat' 
-              ? 'bg-[#FFEBEF] text-[#FF2E79] font-black shadow-2xs' 
-              : 'text-slate-500 hover:text-slate-800'
+              ? 'bg-[#FFEBEF] text-[#FF2E79] rounded-[22px] px-5 py-2 flex flex-col items-center justify-center gap-0.5 shadow-2xs font-black' 
+              : 'flex flex-col items-center justify-center gap-0.5 px-4 py-1.5 text-slate-700 font-extrabold hover:text-black'
           }`}
           title="Chats"
         >
-          <MessageCircle className="w-4.5 h-4.5 stroke-[2.2]" />
-          {matchedUsers.length > 0 && (
-            <span className="w-2 h-2 bg-[#FF2E79] rounded-full absolute top-1.5 right-2 border border-white" />
-          )}
-          {currentTab === 'chat' && <span>Chats</span>}
+          <div className="relative">
+            <MessageCircle className={`w-5 h-5 ${currentTab === 'chat' ? 'text-[#FF2E79]' : 'stroke-[2.2]'}`} />
+            <span className="w-2 h-2 bg-[#FF2E79] rounded-full absolute -top-0.5 -right-1 border border-white" />
+          </div>
+          <span className="text-[11px]">Chats</span>
         </button>
         
-        {/* Tab 4: Profile & Settings */}
+        {/* Tab 4: Profile */}
         <button 
           onClick={() => setCurrentTab('profile')}
-          className={`px-4 py-2 rounded-full flex items-center gap-1.5 text-xs font-bold transition-all cursor-pointer ${
+          className={`transition-all cursor-pointer ${
             currentTab === 'profile' 
-              ? 'bg-[#FFEBEF] text-[#FF2E79] font-black shadow-2xs' 
-              : 'text-slate-500 hover:text-slate-800'
+              ? 'bg-[#FFEBEF] text-[#FF2E79] rounded-[22px] px-5 py-2 flex flex-col items-center justify-center gap-0.5 shadow-2xs font-black' 
+              : 'flex flex-col items-center justify-center gap-0.5 px-4 py-1.5 text-slate-700 font-extrabold hover:text-black'
           }`}
           title="Profile"
         >
-          <User className="w-4.5 h-4.5 stroke-[2.2]" />
-          {currentTab === 'profile' && <span>Profile</span>}
+          <User className={`w-5 h-5 ${currentTab === 'profile' ? 'text-[#FF2E79]' : 'stroke-[2.2]'}`} />
+          <span className="text-[11px]">Profile</span>
         </button>
       </div>
 

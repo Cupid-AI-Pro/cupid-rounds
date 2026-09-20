@@ -102,7 +102,7 @@ export default function SwipeableDeck({
 
   if (!currentCandidate) {
     return (
-      <div className="w-full h-full flex flex-col justify-center items-center text-center p-6 bg-white/80 backdrop-blur-md border border-white rounded-[32px] select-none shadow-sm">
+      <div className="w-full h-full flex flex-col justify-center items-center text-center p-6 bg-white/80 backdrop-blur-md border border-white rounded-[36px] select-none shadow-sm">
         <div className="w-14 h-14 rounded-full bg-rose-50 text-[#FF2E79] flex items-center justify-center mb-3">
           <Sparkles className="w-7 h-7" />
         </div>
@@ -120,37 +120,62 @@ export default function SwipeableDeck({
   return (
     <div
       ref={containerRef}
-      className="absolute inset-0 select-none"
+      className="absolute inset-0 select-none overflow-visible"
     >
       {/* ---------------------------------------------------------------- */}
-      {/* BACKGROUND CARD — peeks stacked behind main card                 */}
+      {/* 3RD CARD STACK LAYER — peeks deepest on right side               */}
       {/* ---------------------------------------------------------------- */}
-      {nextCandidate && (
+      {candidates[currentIndex + 2] && (
         <div
-          className="absolute rounded-[32px] overflow-hidden pointer-events-none"
+          className="absolute rounded-[36px] overflow-hidden pointer-events-none shadow-md border border-white/30"
           style={{
-            top: 4,
-            bottom: 4,
-            left: 6,
-            right: 6,
-            background: 'linear-gradient(135deg, #FFEBEF 0%, #FFD6E0 100%)',
-            border: '1.5px solid rgba(255, 255, 255, 0.8)',
-            transform: 'rotate(3.5deg) translateX(8px) translateY(4px)',
-            transformOrigin: 'bottom center',
+            top: 8,
+            bottom: 8,
+            left: 10,
+            right: -20,
+            background: 'linear-gradient(135deg, #4A1525 0%, #2A0815 100%)',
+            transform: 'rotate(6.5deg) translateY(4px)',
+            transformOrigin: 'bottom right',
             zIndex: 1,
-            boxShadow: '0 12px 30px rgba(255, 46, 121, 0.12)',
+            opacity: 0.8,
           }}
         >
           <img
-            src={nextCandidate.avatar}
+            src={candidates[currentIndex + 2].avatar}
             alt=""
-            className="w-full h-full object-cover opacity-60"
+            className="w-full h-full object-cover opacity-50 brightness-75"
           />
         </div>
       )}
 
       {/* ---------------------------------------------------------------- */}
-      {/* MAIN SWIPEABLE CARD — full size, matching reference image        */}
+      {/* 2ND CARD STACK LAYER — peeks right behind front main card        */}
+      {/* ---------------------------------------------------------------- */}
+      {nextCandidate && (
+        <div
+          className="absolute rounded-[36px] overflow-hidden pointer-events-none shadow-xl border border-white/40"
+          style={{
+            top: 4,
+            bottom: 4,
+            left: 5,
+            right: -12,
+            background: 'linear-gradient(135deg, #1E1B2E 0%, #0F172A 100%)',
+            transform: 'rotate(4deg) translateY(2px)',
+            transformOrigin: 'bottom right',
+            zIndex: 2,
+            opacity: 0.95,
+          }}
+        >
+          <img
+            src={nextCandidate.avatar}
+            alt=""
+            className="w-full h-full object-cover opacity-75 brightness-90"
+          />
+        </div>
+      )}
+
+      {/* ---------------------------------------------------------------- */}
+      {/* FRONT MAIN SWIPEABLE CARD — full size, matching reference image  */}
       {/* ---------------------------------------------------------------- */}
       <div
         onMouseDown={handleMouseDown}
@@ -158,12 +183,12 @@ export default function SwipeableDeck({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         onClick={() => onOpenDetail(currentCandidate)}
-        className="absolute rounded-[32px] overflow-hidden cursor-grab active:cursor-grabbing bg-slate-900 shadow-[0_20px_50px_rgba(255,46,121,0.22)]"
+        className="absolute rounded-[36px] overflow-hidden cursor-grab active:cursor-grabbing bg-slate-900 shadow-[0_22px_60px_rgba(255,46,121,0.28)] border border-white/40"
         style={{
           top: 0,
           bottom: 0,
           left: 0,
-          right: 0,
+          right: 14,
           zIndex: 10,
           transform: isDraggingCard
             ? `translate3d(${dragOffset.x}px, ${dragOffset.y}px, 0) rotate(${rotateDeg}deg)`
