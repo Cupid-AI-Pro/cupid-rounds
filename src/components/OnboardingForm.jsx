@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { updateUser, savePaymentSubmission } from '../utils/storage';
 import { 
   Check, 
@@ -53,24 +53,18 @@ const AVATAR_3D_CHARACTERS = [
   { id: 'rhea', name: 'Rhea', gender: 'Female', url: '/avatars/rhea.jpg' }
 ];
 
-// University options tailored to current region + dynamic add
+// University options (Top 10 popular + Other)
 const POPULAR_UNIVERSITIES = [
   "Sharda University", "IIT Delhi", "LLOYD University", "NIET University", 
   "Bennett University", "ABES University", "JIIT University", "Galgotias University", 
-  "IILM University", "GL Bajaj University", "IGDTUW", "Delhi University (DU)", 
-  "DTU", "NSUT", "Amity University", "IP University (GGSIPU)", "Jamia Millia Islamia",
-  "Jawaharlal Nehru University (JNU)", "SRM University", "BITS Pilani", "Manipal University", 
-  "Thapar Institute", "Chandigarh University", "Christ University", "Shiv Nadar University",
-  "Gautam Buddha University", "KCC Institute", "ITS Engineering College", "GCET Greater Noida"
+  "IILM University", "GL Bajaj University"
 ];
 
+// Branch options (Top 10 popular + Other)
 const BRANCH_OPTIONS = [
   "Computer Science (CSE)", "AI & Data Science", "Information Technology (IT)",
   "Electronics (ECE)", "Electrical Engineering (EEE)", "Mechanical Engineering", 
-  "Civil Engineering", "Biotechnology / Chemical", "BBA / Management", "MBA", 
-  "Economics / Commerce", "MBBS / BDS / Medical", "B.Pharm / Pharmacy",
-  "Architecture / Design", "Law (BA LLB / BBA LLB)", "Psychology / Arts / Humanities",
-  "Mass Communication / Journalism", "Fashion / Interior Design"
+  "Civil Engineering", "BBA / Management", "MBA", "Economics / Commerce"
 ];
 
 const QUALITIES_LIST = [
@@ -100,13 +94,52 @@ const HEIGHT_RANGE = [
   "6'0\"", "6'1\"", "6'2\"", "6'3\"", "6'4\"", "6'5\"", "6'6\""
 ];
 
+// Word-by-word smooth animated text reveal component for SaaS milestone pages
+function WordByWordText({ text, speed = 75 }) {
+  const words = text.split(' ');
+  const [visibleCount, setVisibleCount] = useState(0);
+
+  useEffect(() => {
+    setVisibleCount(0);
+    const interval = setInterval(() => {
+      setVisibleCount((prev) => {
+        if (prev < words.length) return prev + 1;
+        clearInterval(interval);
+        return prev;
+      });
+    }, speed);
+    return () => clearInterval(interval);
+  }, [text, speed]);
+
+  return (
+    <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight leading-snug">
+      {words.map((word, idx) => {
+        const lower = word.toLowerCase();
+        const isHighlight = lower.includes('completed') || lower.includes('match') || lower.includes('preferences') || lower.includes('details');
+        return (
+          <span
+            key={idx}
+            className={`inline-block mr-1.5 transition-all duration-300 transform ${
+              idx < visibleCount
+                ? 'opacity-100 translate-y-0'
+                : 'opacity-0 translate-y-3'
+            } ${isHighlight ? 'text-[#FF2E79] font-black' : 'text-slate-900'}`}
+          >
+            {word}
+          </span>
+        );
+      })}
+    </h2>
+  );
+}
+
 export default function OnboardingForm({ user, onComplete }) {
   const [step, setStep] = useState(() => {
     const params = new URLSearchParams(window.location.search);
     const parsedStep = parseInt(params.get('step') || '1', 10);
-    return parsedStep >= 1 && parsedStep <= 25 ? parsedStep : 1;
+    return parsedStep >= 1 && parsedStep <= 27 ? parsedStep : 1;
   });
-  const totalSteps = 25;
+  const totalSteps = 26;
   const fileInputRef = useRef(null);
 
   // --- 1. Personal Info ---
@@ -147,7 +180,9 @@ export default function OnboardingForm({ user, onComplete }) {
   const [prefHeight, setPrefHeight] = useState("5'4\"");
   const [prefGender, setPrefGender] = useState(user.gender === 'male' ? 'Female' : 'Male');
   const [prefUniversity, setPrefUniversity] = useState(['Any University']);
+  const [customPrefUniversity, setCustomPrefUniversity] = useState('');
   const [prefBranch, setPrefBranch] = useState('Any Branch');
+  const [customPrefBranch, setCustomPrefBranch] = useState('');
   const [prefYearOfStudy, setPrefYearOfStudy] = useState(['Any Year']);
   const [prefReligion, setPrefReligion] = useState(['Any']);
   const [prefHabits, setPrefHabits] = useState(['None', 'Social drinker']);
@@ -338,8 +373,8 @@ export default function OnboardingForm({ user, onComplete }) {
       age: Number(age),
       height,
       gender,
-      university: customUniversity.trim() || university,
-      branch: customBranch.trim() || branch,
+      university: university === 'Other' ? (customUniversity.trim() || 'Other') : university,
+      branch: branch === 'Other' ? (customBranch.trim() || 'Other') : branch,
       yearOfStudy,
       religion,
       relationshipType,
@@ -353,8 +388,8 @@ export default function OnboardingForm({ user, onComplete }) {
         prefMaxAge,
         prefHeight,
         prefGender,
-        prefUniversity,
-        prefBranch,
+        prefUniversity: prefUniversity.map(u => u === 'Other' ? (customPrefUniversity.trim() || 'Other') : u),
+        prefBranch: prefBranch === 'Other' ? (customPrefBranch.trim() || 'Other') : prefBranch,
         prefYearOfStudy,
         prefReligion,
         prefHabits,
@@ -378,7 +413,7 @@ export default function OnboardingForm({ user, onComplete }) {
       const savedUser = updateUser(finalUserData) || finalUserData;
       setCompletedUser(savedUser);
       setIsSubmitting(false);
-      setStep(26); // Step 26: Thank You Screen
+      setStep(27); // Step 27: Thank You Screen
 
       confetti({
         particleCount: 120,
@@ -390,9 +425,9 @@ export default function OnboardingForm({ user, onComplete }) {
   };
 
   // =========================================================================
-  // STEP 26: THANK YOU SCREEN
+  // STEP 27: THANK YOU SCREEN
   // =========================================================================
-  if (step === 26) {
+  if (step === 27) {
     const activeUserToLaunch = completedUser || {
       ...user,
       name,
@@ -933,40 +968,67 @@ export default function OnboardingForm({ user, onComplete }) {
           <div key={7} className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-step-transition">
             <div>
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                STEP 07 • BIOLOGICAL IDENTITY
+                STEP 07 • GENDER IDENTITY
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Your Gender</h2>
               <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
-                Select your gender identity
+                Select your gender identity to personalize your match radar
               </p>
             </div>
 
             <div className="space-y-3.5 pt-1">
               {[
-                { id: 'male', label: 'Male', icon: '♂', desc: 'Identify as male' },
-                { id: 'female', label: 'Female', icon: '♀', desc: 'Identify as female' },
-                { id: 'others', label: 'Others', icon: '⚧', desc: 'Non-binary / others' }
-              ].map((g) => (
-                <button
-                  key={g.id}
-                  type="button"
-                  onClick={() => setGender(g.id)}
-                  className={`w-full p-4.5 sm:p-5 rounded-2xl text-base font-bold transition-all border-2 flex items-center justify-between cursor-pointer ${
-                    gender === g.id
-                      ? 'bg-rose-50/90 border-[#FF2E79] text-[#FF2E79] shadow-xs font-black scale-[1.01]'
-                      : 'bg-white text-slate-800 border-slate-200/90 hover:border-slate-300 shadow-2xs'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">{g.icon}</span>
-                    <div className="text-left">
-                      <span className="block text-base font-black">{g.label}</span>
-                      <span className={`text-xs ${gender === g.id ? 'text-[#FF2E79]' : 'text-slate-400'}`}>{g.desc}</span>
+                { 
+                  id: 'male', 
+                  label: 'Male', 
+                  desc: 'Identify as male',
+                  icon: <User className="w-5 h-5 stroke-[2.5]" />,
+                  iconBg: 'bg-blue-50 text-blue-600 border-blue-100'
+                },
+                { 
+                  id: 'female', 
+                  label: 'Female', 
+                  desc: 'Identify as female',
+                  icon: <Heart className="w-5 h-5 fill-pink-100 stroke-[2.2]" />,
+                  iconBg: 'bg-rose-50 text-[#FF2E79] border-rose-100'
+                },
+                { 
+                  id: 'others', 
+                  label: 'Others', 
+                  desc: 'Non-binary / others',
+                  icon: <Sparkles className="w-5 h-5 stroke-[2.2]" />,
+                  iconBg: 'bg-purple-50 text-purple-600 border-purple-100'
+                }
+              ].map((g) => {
+                const isSelected = gender === g.id;
+                return (
+                  <button
+                    key={g.id}
+                    type="button"
+                    onClick={() => setGender(g.id)}
+                    className={`w-full p-4.5 sm:p-5 rounded-2xl text-base font-bold transition-all border-2 flex items-center justify-between cursor-pointer ${
+                      isSelected
+                        ? 'bg-rose-50/90 border-[#FF2E79] text-[#FF2E79] shadow-xs font-black scale-[1.01]'
+                        : 'bg-white text-slate-800 border-slate-200/90 hover:border-slate-300 shadow-2xs'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3.5">
+                      <div className={`w-11 h-11 rounded-2xl border flex items-center justify-center shrink-0 shadow-2xs ${g.iconBg}`}>
+                        {g.icon}
+                      </div>
+                      <div className="text-left">
+                        <span className="block text-base font-black text-slate-900">{g.label}</span>
+                        <span className="text-xs text-slate-400 font-medium">{g.desc}</span>
+                      </div>
                     </div>
-                  </div>
-                  {gender === g.id && <Check className="w-5 h-5 stroke-[3] text-[#FF2E79]" />}
-                </button>
-              ))}
+                    {isSelected && (
+                      <div className="w-6 h-6 rounded-full bg-[#FF2E79] text-white flex items-center justify-center shadow-xs shrink-0">
+                        <Check className="w-4 h-4 stroke-[3]" />
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
@@ -982,7 +1044,7 @@ export default function OnboardingForm({ user, onComplete }) {
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">University & College</h2>
               <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
-                Connect with verified students across colleges in Delhi NCR
+                Connect with verified students across top colleges in Delhi NCR
               </p>
             </div>
 
@@ -991,7 +1053,7 @@ export default function OnboardingForm({ user, onComplete }) {
                 <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
                   <GraduationCap className="w-4 h-4" />
                 </div>
-                <label className="text-sm font-bold text-slate-900">University *</label>
+                <label className="text-sm font-bold text-slate-900">University / College *</label>
               </div>
               <CustomSelect
                 value={university}
@@ -1001,13 +1063,16 @@ export default function OnboardingForm({ user, onComplete }) {
                 icon={GraduationCap}
               />
               {university === 'Other' && (
-                <input
-                  type="text"
-                  placeholder="Type your university name..."
-                  value={customUniversity}
-                  onChange={(e) => setCustomUniversity(e.target.value)}
-                  className="w-full h-14 min-h-[56px] bg-slate-50 border-2 border-slate-200/90 rounded-2xl px-4.5 text-base font-bold text-slate-900 placeholder-slate-400 focus:bg-white focus:border-[#FF2E79] focus:ring-4 focus:ring-pink-100 outline-none transition-all mt-2 shadow-2xs"
-                />
+                <div className="space-y-1.5 animate-step-transition">
+                  <label className="text-xs font-bold text-slate-700">Type Your College / University Name *</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. SRM University / IGDTUW / SNU..."
+                    value={customUniversity}
+                    onChange={(e) => setCustomUniversity(e.target.value)}
+                    className="w-full h-14 min-h-[56px] bg-slate-50 border-2 border-slate-200/90 rounded-2xl px-6 py-3.5 text-base font-bold text-slate-900 placeholder-slate-400 focus:bg-white focus:border-[#FF2E79] focus:ring-4 focus:ring-pink-100 outline-none transition-all shadow-2xs"
+                  />
+                </div>
               )}
             </div>
           </div>
@@ -1045,13 +1110,16 @@ export default function OnboardingForm({ user, onComplete }) {
                 placeholder="Select your branch / major..."
               />
               {branch === 'Other' && (
-                <input
-                  type="text"
-                  placeholder="Type your branch / major..."
-                  value={customBranch}
-                  onChange={(e) => setCustomBranch(e.target.value)}
-                  className="w-full h-14 min-h-[56px] bg-slate-50 border-2 border-slate-200/90 rounded-2xl px-4.5 text-base font-bold text-slate-900 placeholder-slate-400 focus:bg-white focus:border-[#FF2E79] focus:ring-4 focus:ring-pink-100 outline-none transition-all mt-2 shadow-2xs"
-                />
+                <div className="space-y-1.5 animate-step-transition">
+                  <label className="text-xs font-bold text-slate-700">Type Your Branch / Major *</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Aerospace / Fine Arts / Data Analytics..."
+                    value={customBranch}
+                    onChange={(e) => setCustomBranch(e.target.value)}
+                    className="w-full h-14 min-h-[56px] bg-slate-50 border-2 border-slate-200/90 rounded-2xl px-6 py-3.5 text-base font-bold text-slate-900 placeholder-slate-400 focus:bg-white focus:border-[#FF2E79] focus:ring-4 focus:ring-pink-100 outline-none transition-all shadow-2xs"
+                  />
+                </div>
               )}
             </div>
           </div>
@@ -1387,16 +1455,53 @@ export default function OnboardingForm({ user, onComplete }) {
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 16: Partner Preferences — Age & Height                               */}
-        {/* ========================================================================= */}
-        {/* ========================================================================= */}
-        {/* STEP 16: Partner Preferences — Age & Height                               */}
+        {/* STEP 16: Milestone Transition Page — Personal Details Completed           */}
         {/* ========================================================================= */}
         {step === 16 && (
-          <div key={16} className="space-y-4 animate-step-transition">
+          <div key={16} className="bg-white/95 backdrop-blur-md rounded-[32px] p-6 sm:p-8 border border-white/90 shadow-[0_15px_40px_rgba(255,46,121,0.22)] text-center relative overflow-hidden space-y-6 animate-step-transition my-auto">
+            <div className="relative z-10 space-y-4">
+              <div className="w-20 h-20 bg-rose-50 text-[#FF2E79] rounded-full flex items-center justify-center mx-auto shadow-md ring-8 ring-rose-100/60 animate-bounce">
+                <CheckCircle2 className="w-10 h-10 stroke-[2.5]" />
+              </div>
+
+              <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-rose-50 border border-rose-200 text-[#FF2E79] text-xs font-black uppercase tracking-wider shadow-2xs">
+                <Sparkles className="w-3.5 h-3.5 fill-[#FF2E79]" />
+                <span>STEP 1 OF 2 COMPLETED</span>
+              </div>
+
+              <div className="pt-2 px-2">
+                <WordByWordText
+                  text="Your Personal Details Are Completed! Now Let's Set Your Match Preferences."
+                  speed={70}
+                />
+              </div>
+
+              <p className="text-xs sm:text-sm text-slate-500 font-medium max-w-sm mx-auto leading-relaxed pt-1">
+                Your personal details have been saved successfully. Next, set your preferred partner criteria so our Cupid AI radar can find your highest compatibility matches!
+              </p>
+
+              <div className="pt-4">
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  className="w-full h-14 bg-gradient-to-r from-[#FF2E79] via-pink-600 to-[#FF2E79] hover:opacity-95 text-white font-black text-base rounded-full flex items-center justify-center gap-2.5 shadow-[0_8px_25px_rgba(255,46,121,0.35)] transition-all active:scale-[0.98] cursor-pointer tracking-wide"
+                >
+                  <span>Continue To Match Preferences</span>
+                  <ArrowRight className="w-5 h-5 stroke-[2.5]" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* STEP 17: Partner Preferences — Age & Height                               */}
+        {/* ========================================================================= */}
+        {step === 17 && (
+          <div key={17} className="space-y-4 animate-step-transition">
             <div className="text-left mb-2">
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                STEP 16 • IDEAL MATCH CRITERIA
+                STEP 17 • IDEAL MATCH CRITERIA
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Partner Stats</h2>
               <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
@@ -1451,13 +1556,13 @@ export default function OnboardingForm({ user, onComplete }) {
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 17: Partner Preferences — Gender                                     */}
+        {/* STEP 18: Partner Preferences — Gender                                     */}
         {/* ========================================================================= */}
-        {step === 17 && (
-          <div key={17} className="space-y-4 animate-step-transition">
+        {step === 18 && (
+          <div key={18} className="space-y-4 animate-step-transition">
             <div className="text-left mb-2">
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                STEP 17 • MATCH GENDER
+                STEP 18 • MATCH GENDER
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Preferred Gender</h2>
               <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
@@ -1492,13 +1597,13 @@ export default function OnboardingForm({ user, onComplete }) {
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 18: Partner Preferences — Preferred University                       */}
+        {/* STEP 19: Partner Preferences — Preferred University                       */}
         {/* ========================================================================= */}
-        {step === 18 && (
-          <div key={18} className="space-y-4 animate-step-transition text-left">
+        {step === 19 && (
+          <div key={19} className="space-y-4 animate-step-transition text-left">
             <div className="text-left mb-2">
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                STEP 18 • PREFERRED CAMPUS
+                STEP 19 • PREFERRED CAMPUS
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Preferred University</h2>
               <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
@@ -1506,10 +1611,10 @@ export default function OnboardingForm({ user, onComplete }) {
               </p>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-3">
               <label className="text-sm sm:text-base font-bold text-slate-900 block">Preferred University *</label>
               <div className="bg-white/90 backdrop-blur-md rounded-[28px] p-5 border border-white/80 shadow-xs flex flex-wrap gap-2.5">
-                {['Any University', ...POPULAR_UNIVERSITIES].map((u) => {
+                {['Any University', ...POPULAR_UNIVERSITIES, 'Other'].map((u) => {
                   const isSelected = prefUniversity.includes(u);
                   return (
                     <button
@@ -1528,18 +1633,30 @@ export default function OnboardingForm({ user, onComplete }) {
                   );
                 })}
               </div>
+              {prefUniversity.includes('Other') && (
+                <div className="space-y-1.5 animate-step-transition pt-1">
+                  <label className="text-xs font-bold text-slate-700">Type Preferred College / University Name *</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. SRM / IGDTUW / DTU..."
+                    value={customPrefUniversity}
+                    onChange={(e) => setCustomPrefUniversity(e.target.value)}
+                    className="w-full h-14 min-h-[56px] bg-slate-50 border-2 border-slate-200/90 rounded-2xl px-6 py-3.5 text-base font-bold text-slate-900 placeholder-slate-400 focus:bg-white focus:border-[#FF2E79] focus:ring-4 focus:ring-pink-100 outline-none transition-all shadow-2xs"
+                  />
+                </div>
+              )}
             </div>
           </div>
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 19: Partner Preferences — Preferred Major & Year                     */}
+        {/* STEP 20: Partner Preferences — Preferred Major & Year                     */}
         {/* ========================================================================= */}
-        {step === 19 && (
-          <div key={19} className="space-y-4 animate-step-transition text-left">
+        {step === 20 && (
+          <div key={20} className="space-y-4 animate-step-transition text-left">
             <div className="text-left mb-2">
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                STEP 19 • PREFERRED ACADEMICS
+                STEP 20 • PREFERRED ACADEMICS
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Preferred Branch & Year</h2>
               <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
@@ -1553,9 +1670,21 @@ export default function OnboardingForm({ user, onComplete }) {
                 <CustomSelect
                   value={prefBranch}
                   onChange={(val) => setPrefBranch(val)}
-                  options={['Any Branch', ...BRANCH_OPTIONS]}
+                  options={['Any Branch', ...BRANCH_OPTIONS, 'Other']}
                   placeholder="Select preferred branch..."
                 />
+                {prefBranch === 'Other' && (
+                  <div className="space-y-1.5 animate-step-transition pt-2">
+                    <label className="text-xs font-bold text-slate-700">Type Preferred Branch / Major *</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Architecture / Biotechnology..."
+                      value={customPrefBranch}
+                      onChange={(e) => setCustomPrefBranch(e.target.value)}
+                      className="w-full h-14 min-h-[56px] bg-slate-50 border-2 border-slate-200/90 rounded-2xl px-6 py-3.5 text-base font-bold text-slate-900 placeholder-slate-400 focus:bg-white focus:border-[#FF2E79] focus:ring-4 focus:ring-pink-100 outline-none transition-all shadow-2xs"
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2 pt-2">
@@ -1586,13 +1715,13 @@ export default function OnboardingForm({ user, onComplete }) {
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 20: Partner Preferences — Religion, Habits & Exes                   */}
+        {/* STEP 21: Partner Preferences — Religion, Habits & Exes                   */}
         {/* ========================================================================= */}
-        {step === 20 && (
-          <div key={20} className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-step-transition">
+        {step === 21 && (
+          <div key={21} className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-step-transition">
             <div>
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                STEP 20 • PARTNER LIFESTYLE
+                STEP 21 • PARTNER LIFESTYLE
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Habits & Exes</h2>
               <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
@@ -1676,13 +1805,13 @@ export default function OnboardingForm({ user, onComplete }) {
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 21: Partner Preferences — Personality & Vibe                         */}
+        {/* STEP 22: Partner Preferences — Personality & Vibe                         */}
         {/* ========================================================================= */}
-        {step === 21 && (
-          <div key={21} className="space-y-4 animate-step-transition">
+        {step === 22 && (
+          <div key={22} className="space-y-4 animate-step-transition">
             <div className="text-left mb-2">
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                STEP 21 • ENERGY & PERSONA
+                STEP 22 • ENERGY & PERSONA
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Personality & Vibe</h2>
               <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
@@ -1782,13 +1911,13 @@ export default function OnboardingForm({ user, onComplete }) {
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 22: Non-Negotiables                                                   */}
+        {/* STEP 23: Non-Negotiables                                                   */}
         {/* ========================================================================= */}
-        {step === 22 && (
-          <div key={22} className="space-y-4 animate-step-transition">
+        {step === 23 && (
+          <div key={23} className="space-y-4 animate-step-transition">
             <div className="text-left mb-2">
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                STEP 22 • STRICT FILTERS
+                STEP 23 • STRICT FILTERS
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Non-Negotiables</h2>
               <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
@@ -1850,13 +1979,13 @@ export default function OnboardingForm({ user, onComplete }) {
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 23: Terms and Conditions                                             */}
+        {/* STEP 24: Terms and Conditions                                             */}
         {/* ========================================================================= */}
-        {step === 23 && (
-          <div key={23} className="space-y-4 animate-step-transition">
+        {step === 24 && (
+          <div key={24} className="space-y-4 animate-step-transition">
             <div className="text-left mb-2">
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                STEP 23 • LEGAL AGREEMENT
+                STEP 24 • LEGAL AGREEMENT
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Terms & Conditions</h2>
               <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
@@ -1925,13 +2054,13 @@ export default function OnboardingForm({ user, onComplete }) {
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 24: Plan Selection                                                   */}
+        {/* STEP 25: Plan Selection                                                   */}
         {/* ========================================================================= */}
-        {step === 24 && (
-          <div key={24} className="space-y-4 animate-step-transition">
+        {step === 25 && (
+          <div key={25} className="space-y-4 animate-step-transition">
             <div className="text-left mb-2">
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                STEP 24 • PLAN TIER
+                STEP 25 • PLAN TIER
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Matchmaking Tier</h2>
               <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
@@ -2006,13 +2135,13 @@ export default function OnboardingForm({ user, onComplete }) {
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 25: Payment QR, Auto-Verify & Screenshot Upload                      */}
+        {/* STEP 26: Payment QR, Auto-Verify & Screenshot Upload                      */}
         {/* ========================================================================= */}
-        {step === 25 && (
-          <div key={25} className="space-y-4 animate-step-transition">
+        {step === 26 && (
+          <div key={26} className="space-y-4 animate-step-transition">
             <div className="text-left mb-2">
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                STEP 25 • FINAL ACTIVATION
+                STEP 26 • FINAL ACTIVATION
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Confirm & Pay</h2>
               <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">

@@ -107,7 +107,7 @@ export default function CustomSelect({
       {/* Dropdown Menu Popup - Floating above with z-[9999] */}
       {isOpen && (
         <div
-          className={`absolute left-0 right-0 top-[calc(100%+6px)] bg-white border-2 border-[#FF2E79] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.22)] z-[9999] animate-slide-up max-h-64 overflow-y-auto overscroll-contain py-1 ${dropdownClassName}`}
+          className={`absolute left-0 right-0 top-[calc(100%+8px)] bg-white border-2 border-rose-200 rounded-2xl shadow-[0_20px_50px_rgba(255,46,121,0.18)] z-[9999] animate-step-transition max-h-64 overflow-y-auto overscroll-contain p-2.5 space-y-1 ${dropdownClassName}`}
         >
           {normalizedOptions.map((opt) => {
             const isSelected = opt.value === value;
@@ -119,13 +119,13 @@ export default function CustomSelect({
                   e.stopPropagation();
                   handleSelect(opt.value);
                 }}
-                className={`w-full px-4.5 py-3.5 flex items-center justify-between text-left text-base transition-all cursor-pointer group border-b border-slate-100/60 last:border-b-0 ${
+                className={`w-full px-5 py-3.5 pl-4 rounded-xl flex items-center justify-between text-left text-sm sm:text-base font-bold transition-all cursor-pointer group ${
                   isSelected
-                    ? 'bg-rose-50/90 text-[#FF2E79] font-black border-l-4 border-l-[#FF2E79]'
-                    : 'text-slate-800 font-bold hover:bg-rose-50/50 hover:text-[#FF2E79]'
+                    ? 'bg-rose-50 text-[#FF2E79] font-black shadow-2xs ring-1 ring-[#FF2E79]/30'
+                    : 'text-slate-700 hover:bg-rose-50/60 hover:text-[#FF2E79]'
                 }`}
               >
-                <div className="flex items-center gap-2 min-w-0 flex-1 pr-2">
+                <div className="flex items-center gap-3 min-w-0 flex-1 pr-2">
                   <span className="truncate">{opt.label}</span>
                   {opt.isLive && (
                     <span
