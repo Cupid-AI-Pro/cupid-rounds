@@ -36,6 +36,8 @@ import {
   Lightbulb,
   Mail,
   Phone,
+  Smartphone,
+  CreditCard,
   MapPin
 } from 'lucide-react';
 import ScrollWheelPicker from './onboarding/ScrollWheelPicker';
@@ -532,7 +534,7 @@ export default function OnboardingForm({ user, onComplete }) {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Aditya Chauhan"
-                  className="w-full h-14 min-h-[56px] px-4.5 bg-slate-50 border-2 border-slate-200/90 rounded-2xl text-base font-bold text-slate-900 placeholder-slate-400 focus:bg-white focus:border-[#FF2E79] focus:ring-4 focus:ring-pink-100 outline-none transition-all shadow-2xs"
+                  className="w-full h-14 min-h-[56px] px-6 py-3.5 bg-slate-50 border-2 border-slate-200/90 rounded-2xl text-base font-bold text-slate-900 placeholder-slate-400 focus:bg-white focus:border-[#FF2E79] focus:ring-4 focus:ring-pink-100 outline-none transition-all shadow-2xs"
                 />
               </div>
 
@@ -548,7 +550,7 @@ export default function OnboardingForm({ user, onComplete }) {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="+91 98765 43210"
-                  className="w-full h-14 min-h-[56px] px-4.5 bg-slate-50 border-2 border-slate-200/90 rounded-2xl text-base font-bold text-slate-900 placeholder-slate-400 focus:bg-white focus:border-[#FF2E79] focus:ring-4 focus:ring-pink-100 outline-none transition-all shadow-2xs"
+                  className="w-full h-14 min-h-[56px] px-6 py-3.5 bg-slate-50 border-2 border-slate-200/90 rounded-2xl text-base font-bold text-slate-900 placeholder-slate-400 focus:bg-white focus:border-[#FF2E79] focus:ring-4 focus:ring-pink-100 outline-none transition-all shadow-2xs"
                 />
               </div>
 
@@ -564,7 +566,7 @@ export default function OnboardingForm({ user, onComplete }) {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="yourname@gmail.com"
-                  className="w-full h-14 min-h-[56px] px-4.5 bg-slate-50 border-2 border-slate-200/90 rounded-2xl text-base font-bold text-slate-900 placeholder-slate-400 focus:bg-white focus:border-[#FF2E79] focus:ring-4 focus:ring-pink-100 outline-none transition-all shadow-2xs"
+                  className="w-full h-14 min-h-[56px] px-6 py-3.5 bg-slate-50 border-2 border-slate-200/90 rounded-2xl text-base font-bold text-slate-900 placeholder-slate-400 focus:bg-white focus:border-[#FF2E79] focus:ring-4 focus:ring-pink-100 outline-none transition-all shadow-2xs"
                 />
               </div>
             </div>
@@ -599,19 +601,19 @@ export default function OnboardingForm({ user, onComplete }) {
                   value={hometown}
                   onChange={(e) => setHometown(e.target.value)}
                   placeholder="e.g. Delhi / Noida / Gurgaon"
-                  className="w-full h-14 min-h-[56px] px-4.5 bg-slate-50 border-2 border-slate-200/90 rounded-2xl text-base font-bold text-slate-900 placeholder-slate-400 focus:bg-white focus:border-[#FF2E79] focus:ring-4 focus:ring-pink-100 outline-none transition-all shadow-2xs"
+                  className="w-full h-14 min-h-[56px] px-6 py-3.5 bg-slate-50 border-2 border-slate-200/90 rounded-2xl text-base font-bold text-slate-900 placeholder-slate-400 focus:bg-white focus:border-[#FF2E79] focus:ring-4 focus:ring-pink-100 outline-none transition-all shadow-2xs"
                 />
               </div>
 
               <div className="space-y-2">
                 <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Quick Select:</span>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2.5">
                   {['Delhi NCR', 'Noida', 'Gurgaon', 'Faridabad', 'Ghaziabad'].map((city) => (
                     <button
                       key={city}
                       type="button"
                       onClick={() => setHometown(city)}
-                      className={`px-4 py-2.5 rounded-full text-xs font-bold border transition-all cursor-pointer ${
+                      className={`px-4.5 py-3 rounded-2xl min-h-[44px] text-xs sm:text-sm font-bold border transition-all cursor-pointer flex items-center justify-center text-center break-words ${
                         hometown === city
                           ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20'
                           : 'bg-white text-slate-800 border-slate-200 hover:border-pink-200 shadow-2xs'
@@ -760,7 +762,7 @@ export default function OnboardingForm({ user, onComplete }) {
                 </div>
               </div>
 
-              <div className="bg-slate-50 border-2 border-slate-200/90 rounded-2xl h-14 min-h-[56px] px-4.5 flex items-center gap-2.5 focus-within:bg-white focus-within:border-[#FF2E79] focus-within:ring-4 focus-within:ring-pink-100 transition-all shadow-2xs">
+              <div className="bg-slate-50 border-2 border-slate-200/90 rounded-2xl h-14 min-h-[56px] px-6 flex items-center gap-3 focus-within:bg-white focus-within:border-[#FF2E79] focus-within:ring-4 focus-within:ring-pink-100 transition-all shadow-2xs">
                 <span className="text-slate-400 font-extrabold text-lg select-none">@</span>
                 <input
                   type="text"
@@ -1073,9 +1075,9 @@ export default function OnboardingForm({ user, onComplete }) {
                       key={yr}
                       type="button"
                       onClick={() => setYearOfStudy(yr)}
-                      className={`px-5 py-3 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
+                      className={`px-4.5 py-3 rounded-2xl min-h-[44px] text-xs sm:text-sm font-bold border transition-all cursor-pointer flex items-center justify-center text-center break-words ${
                         isSelected
-                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
+                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20'
                           : 'bg-white text-slate-800 border-slate-200 hover:border-pink-200 shadow-2xs'
                       }`}
                     >
@@ -1119,9 +1121,9 @@ export default function OnboardingForm({ user, onComplete }) {
                       key={rel}
                       type="button"
                       onClick={() => setReligion(rel)}
-                      className={`px-5 py-3 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
+                      className={`px-4.5 py-3 rounded-2xl min-h-[44px] text-xs sm:text-sm font-bold border transition-all cursor-pointer flex items-center justify-center text-center break-words ${
                         isSelected
-                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
+                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20'
                           : 'bg-white text-slate-800 border-slate-200 hover:border-pink-200 shadow-2xs'
                       }`}
                     >
@@ -1157,7 +1159,7 @@ export default function OnboardingForm({ user, onComplete }) {
                 </div>
                 <label className="text-sm font-bold text-slate-900">Relationship Type *</label>
               </div>
-              <div className="grid grid-cols-2 gap-2.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 {[
                   'Serious Relationship', 
                   'Short-Term Relationships', 
@@ -1170,7 +1172,7 @@ export default function OnboardingForm({ user, onComplete }) {
                       key={type}
                       type="button"
                       onClick={() => toggleArrayItem(relationshipType, setRelationshipType, type)}
-                      className={`p-3.5 rounded-2xl text-left text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
+                      className={`px-4.5 py-3.5 rounded-2xl text-left text-xs sm:text-sm font-bold border transition-all cursor-pointer min-h-[50px] flex items-center justify-start leading-snug break-words ${
                         isSelected
                           ? 'bg-rose-50 border-[#FF2E79] text-[#FF2E79] shadow-xs font-black'
                           : 'bg-white border-slate-200 text-slate-800 hover:border-pink-200 shadow-2xs'
@@ -1216,9 +1218,9 @@ export default function OnboardingForm({ user, onComplete }) {
                       key={h}
                       type="button"
                       onClick={() => toggleArrayItem(habits, setHabits, h)}
-                      className={`px-5 py-3 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
+                      className={`px-4.5 py-3 rounded-2xl min-h-[44px] text-xs sm:text-sm font-bold border transition-all cursor-pointer flex items-center justify-center text-center break-words ${
                         isSelected
-                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
+                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20'
                           : 'bg-white text-slate-800 border-slate-200 hover:border-pink-200 shadow-2xs'
                       }`}
                     >
@@ -1263,9 +1265,9 @@ export default function OnboardingForm({ user, onComplete }) {
                         key={p}
                         type="button"
                         onClick={() => setPersonalityType(p)}
-                        className={`py-3 rounded-2xl text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
+                        className={`px-3 py-3 rounded-2xl min-h-[46px] text-xs sm:text-sm font-bold border transition-all cursor-pointer flex items-center justify-center text-center break-words ${
                           isSelected
-                            ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
+                            ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20'
                             : 'bg-white text-slate-800 border-slate-200 hover:border-pink-200 shadow-2xs'
                         }`}
                       >
@@ -1284,7 +1286,7 @@ export default function OnboardingForm({ user, onComplete }) {
                   </div>
                   <label className="text-sm font-bold text-slate-900">Qualities ({qualities.length} selected) *</label>
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2.5">
                   {QUALITIES_LIST.map((q) => {
                     const isSelected = qualities.includes(q);
                     return (
@@ -1292,9 +1294,9 @@ export default function OnboardingForm({ user, onComplete }) {
                         key={q}
                         type="button"
                         onClick={() => toggleArrayItem(qualities, setQualities, q)}
-                        className={`px-4 py-2.5 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
+                        className={`px-4.5 py-3 rounded-2xl min-h-[44px] text-xs sm:text-sm font-bold border transition-all cursor-pointer flex items-center justify-center text-center break-words ${
                           isSelected
-                            ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
+                            ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20'
                             : 'bg-white text-slate-800 border-slate-200 hover:border-pink-200 shadow-2xs'
                         }`}
                       >
@@ -1332,7 +1334,7 @@ export default function OnboardingForm({ user, onComplete }) {
                   </div>
                   <label className="text-sm font-bold text-slate-900">Dating Vibe *</label>
                 </div>
-                <div className="grid grid-cols-2 gap-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   {DATING_VIBES.map((v) => {
                     const isSelected = datingVibe.includes(v);
                     return (
@@ -1340,7 +1342,7 @@ export default function OnboardingForm({ user, onComplete }) {
                         key={v}
                         type="button"
                         onClick={() => toggleArrayItem(datingVibe, setDatingVibe, v)}
-                        className={`p-3 rounded-2xl text-xs sm:text-sm font-bold border transition-all text-left cursor-pointer ${
+                        className={`px-4 py-3.5 rounded-2xl text-left text-xs sm:text-sm font-bold border transition-all cursor-pointer min-h-[50px] flex items-center justify-start leading-snug break-words ${
                           isSelected
                             ? 'bg-rose-50 border-[#FF2E79] text-[#FF2E79] shadow-xs font-black'
                             : 'bg-white border-slate-200 text-slate-800 hover:border-pink-200 shadow-2xs'
@@ -1498,9 +1500,9 @@ export default function OnboardingForm({ user, onComplete }) {
                       key={u}
                       type="button"
                       onClick={() => toggleArrayItem(prefUniversity, setPrefUniversity, u)}
-                      className={`px-4.5 py-2.5 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
+                      className={`px-4.5 py-3 rounded-2xl min-h-[44px] text-xs sm:text-sm font-bold border transition-all cursor-pointer flex items-center justify-center text-center break-words ${
                         isSelected
-                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
+                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20'
                           : 'bg-white text-slate-800 border-slate-100 hover:border-pink-200 shadow-2xs'
                       }`}
                     >
@@ -1550,9 +1552,9 @@ export default function OnboardingForm({ user, onComplete }) {
                         key={yr}
                         type="button"
                         onClick={() => toggleArrayItem(prefYearOfStudy, setPrefYearOfStudy, yr)}
-                        className={`px-4.5 py-2.5 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
+                        className={`px-4.5 py-3 rounded-2xl min-h-[44px] text-xs sm:text-sm font-bold border transition-all cursor-pointer flex items-center justify-center text-center break-words ${
                           isSelected
-                            ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
+                            ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20'
                             : 'bg-white text-slate-800 border-slate-100 hover:border-pink-200 shadow-2xs'
                         }`}
                       >
@@ -1597,9 +1599,9 @@ export default function OnboardingForm({ user, onComplete }) {
                       key={r}
                       type="button"
                       onClick={() => toggleArrayItem(prefReligion, setPrefReligion, r)}
-                      className={`px-4.5 py-2.5 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
+                      className={`px-4.5 py-3 rounded-2xl min-h-[44px] text-xs sm:text-sm font-bold border transition-all cursor-pointer flex items-center justify-center text-center break-words ${
                         isSelected
-                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
+                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20'
                           : 'bg-white text-slate-800 border-slate-100 hover:border-pink-200 shadow-2xs'
                       }`}
                     >
@@ -1625,9 +1627,9 @@ export default function OnboardingForm({ user, onComplete }) {
                       key={h}
                       type="button"
                       onClick={() => toggleArrayItem(prefHabits, setPrefHabits, h)}
-                      className={`px-4.5 py-2.5 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
+                      className={`px-4.5 py-3 rounded-2xl min-h-[44px] text-xs sm:text-sm font-bold border transition-all cursor-pointer flex items-center justify-center text-center break-words ${
                         isSelected
-                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
+                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20'
                           : 'bg-white text-slate-800 border-slate-100 hover:border-pink-200 shadow-2xs'
                       }`}
                     >
@@ -1678,7 +1680,7 @@ export default function OnboardingForm({ user, onComplete }) {
                   </div>
                   <label className="text-sm sm:text-base font-bold text-slate-900">Preferred Personality *</label>
                 </div>
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                   {['Introvert', 'Ambivert', 'Extrovert', 'Any'].map((p) => {
                     const isSelected = prefPersonality === p;
                     return (
@@ -1686,9 +1688,9 @@ export default function OnboardingForm({ user, onComplete }) {
                         key={p}
                         type="button"
                         onClick={() => setPrefPersonality(p)}
-                        className={`py-2.5 rounded-full text-xs font-bold border transition-all cursor-pointer ${
+                        className={`px-3 py-3 rounded-2xl min-h-[46px] text-xs sm:text-sm font-bold border transition-all cursor-pointer flex items-center justify-center text-center break-words ${
                           isSelected
-                            ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
+                            ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20'
                             : 'bg-white text-slate-800 border-slate-200 hover:border-pink-200 shadow-2xs'
                         }`}
                       >
@@ -1707,7 +1709,7 @@ export default function OnboardingForm({ user, onComplete }) {
                   </div>
                   <label className="text-sm sm:text-base font-bold text-slate-900">Preferred Qualities *</label>
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2.5">
                   {QUALITIES_LIST.map((q) => {
                     const isSelected = prefQualities.includes(q);
                     return (
@@ -1715,9 +1717,9 @@ export default function OnboardingForm({ user, onComplete }) {
                         key={q}
                         type="button"
                         onClick={() => toggleArrayItem(prefQualities, setPrefQualities, q)}
-                        className={`px-3.5 py-2 rounded-full text-xs font-bold border transition-all cursor-pointer ${
+                        className={`px-4.5 py-3 rounded-2xl min-h-[44px] text-xs sm:text-sm font-bold border transition-all cursor-pointer flex items-center justify-center text-center break-words ${
                           isSelected
-                            ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
+                            ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20'
                             : 'bg-white text-slate-800 border-slate-200 hover:border-pink-200 shadow-2xs'
                         }`}
                       >
@@ -1736,7 +1738,7 @@ export default function OnboardingForm({ user, onComplete }) {
                   </div>
                   <label className="text-sm sm:text-base font-bold text-slate-900">Preferred Dating Vibe *</label>
                 </div>
-                <div className="grid grid-cols-2 gap-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   {DATING_VIBES.map((v) => {
                     const isSelected = prefDatingVibe.includes(v);
                     return (
@@ -1744,7 +1746,7 @@ export default function OnboardingForm({ user, onComplete }) {
                         key={v}
                         type="button"
                         onClick={() => toggleArrayItem(prefDatingVibe, setPrefDatingVibe, v)}
-                        className={`p-3 rounded-2xl text-xs font-bold border transition-all text-left cursor-pointer ${
+                        className={`px-4 py-3.5 rounded-2xl text-left text-xs sm:text-sm font-bold border transition-all cursor-pointer min-h-[50px] flex items-center justify-start leading-snug break-words ${
                           isSelected
                             ? 'bg-rose-50 border-[#FF2E79] text-[#FF2E79] shadow-xs font-black'
                             : 'bg-white border-slate-200 text-slate-800 hover:border-pink-200 shadow-2xs'
@@ -1801,9 +1803,9 @@ export default function OnboardingForm({ user, onComplete }) {
                       key={item}
                       type="button"
                       onClick={() => toggleArrayItem(nonNegotiables, setNonNegotiables, item)}
-                      className={`px-4.5 py-2.5 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
+                      className={`px-4.5 py-3 rounded-2xl min-h-[44px] text-xs sm:text-sm font-bold border transition-all cursor-pointer flex items-center justify-center text-center break-words ${
                         isSelected
-                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
+                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20'
                           : 'bg-white text-slate-800 border-slate-200 hover:border-pink-200 shadow-2xs'
                       }`}
                     >
@@ -1840,55 +1842,63 @@ export default function OnboardingForm({ user, onComplete }) {
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Terms & Conditions</h2>
               <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
-                Please review and check all 4 agreement clauses
+                Please review and check all 4 agreement clauses to proceed
               </p>
             </div>
 
-            <div className="bg-white/90 backdrop-blur-md border border-slate-100/90 rounded-[32px] p-5 space-y-4 text-left max-h-[360px] overflow-y-auto no-scrollbar shadow-xs relative overflow-visible">
-              <label className="flex items-start gap-3 text-xs text-slate-600 cursor-pointer pb-3.5 border-b border-slate-200/60">
+            <div className="bg-white/95 backdrop-blur-md border border-white/90 rounded-[32px] p-5 sm:p-6 space-y-3.5 text-left shadow-[0_10px_30px_rgba(255,182,193,0.30)] relative overflow-visible">
+              <label className={`flex items-start gap-3.5 p-4 rounded-2xl border transition-all cursor-pointer ${
+                agreedTerms.t1 ? 'bg-rose-50/60 border-[#FF2E79]/40' : 'bg-slate-50/60 border-slate-200/60'
+              }`}>
                 <input
                   type="checkbox"
                   checked={agreedTerms.t1}
                   onChange={(e) => setAgreedTerms({ ...agreedTerms, t1: e.target.checked })}
-                  className="mt-0.5 accent-[#FF2E79] w-4 h-4 rounded shrink-0"
+                  className="mt-1 accent-[#FF2E79] w-4.5 h-4.5 rounded shrink-0 cursor-pointer"
                 />
-                <span className="leading-relaxed font-medium">
+                <span className="text-xs sm:text-sm leading-relaxed font-medium text-slate-700">
                   The monetary remittance of ₹100 is strictly non-refundable. This fee solely remunerates the administrative exertions undertaken to procure a potentially compatible match.
                 </span>
               </label>
 
-              <label className="flex items-start gap-3 text-xs text-slate-600 cursor-pointer pb-3.5 border-b border-slate-200/60">
+              <label className={`flex items-start gap-3.5 p-4 rounded-2xl border transition-all cursor-pointer ${
+                agreedTerms.t2 ? 'bg-rose-50/60 border-[#FF2E79]/40' : 'bg-slate-50/60 border-slate-200/60'
+              }`}>
                 <input
                   type="checkbox"
                   checked={agreedTerms.t2}
                   onChange={(e) => setAgreedTerms({ ...agreedTerms, t2: e.target.checked })}
-                  className="mt-0.5 accent-[#FF2E79] w-4 h-4 rounded shrink-0"
+                  className="mt-1 accent-[#FF2E79] w-4.5 h-4.5 rounded shrink-0 cursor-pointer"
                 />
-                <span className="leading-relaxed font-medium">
+                <span className="text-xs sm:text-sm leading-relaxed font-medium text-slate-700">
                   By submitting your personal data and stipulated preferences, you irrevocably consent to the utilization of such information by Cupid for matching purposes.
                 </span>
               </label>
 
-              <label className="flex items-start gap-3 text-xs text-slate-600 cursor-pointer pb-3.5 border-b border-slate-200/60">
+              <label className={`flex items-start gap-3.5 p-4 rounded-2xl border transition-all cursor-pointer ${
+                agreedTerms.t3 ? 'bg-rose-50/60 border-[#FF2E79]/40' : 'bg-slate-50/60 border-slate-200/60'
+              }`}>
                 <input
                   type="checkbox"
                   checked={agreedTerms.t3}
                   onChange={(e) => setAgreedTerms({ ...agreedTerms, t3: e.target.checked })}
-                  className="mt-0.5 accent-[#FF2E79] w-4 h-4 rounded shrink-0"
+                  className="mt-1 accent-[#FF2E79] w-4.5 h-4.5 rounded shrink-0 cursor-pointer"
                 />
-                <span className="leading-relaxed font-medium">
+                <span className="text-xs sm:text-sm leading-relaxed font-medium text-slate-700">
                   Cupid's role is strictly mediatory; it merely effectuates an introduction between individuals deemed ostensibly compatible.
                 </span>
               </label>
 
-              <label className="flex items-start gap-3 text-xs text-slate-600 cursor-pointer">
+              <label className={`flex items-start gap-3.5 p-4 rounded-2xl border transition-all cursor-pointer ${
+                agreedTerms.t4 ? 'bg-rose-50/60 border-[#FF2E79]/40' : 'bg-slate-50/60 border-slate-200/60'
+              }`}>
                 <input
                   type="checkbox"
                   checked={agreedTerms.t4}
                   onChange={(e) => setAgreedTerms({ ...agreedTerms, t4: e.target.checked })}
-                  className="mt-0.5 accent-[#FF2E79] w-4 h-4 rounded shrink-0"
+                  className="mt-1 accent-[#FF2E79] w-4.5 h-4.5 rounded shrink-0 cursor-pointer"
                 />
-                <span className="leading-relaxed font-medium">
+                <span className="text-xs sm:text-sm leading-relaxed font-medium text-slate-700">
                   Any conduct deemed inappropriate, disrespectful, or constituting ghosting absolves Cupid of liability and may result in exclusion.
                 </span>
               </label>
@@ -2026,9 +2036,9 @@ export default function OnboardingForm({ user, onComplete }) {
                     type="button"
                     onClick={handleInstantAutoPay}
                     disabled={isVerifyingAutoPay}
-                    className="w-full h-[54px] min-h-[54px] bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-black text-sm rounded-2xl flex items-center justify-center gap-2 shadow-lg transition-all active:scale-[0.98] disabled:opacity-75 cursor-pointer"
+                    className="w-full h-14 min-h-[56px] bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-black text-sm rounded-2xl flex items-center justify-center gap-2 shadow-lg transition-all active:scale-[0.98] disabled:opacity-75 cursor-pointer"
                   >
-                    <span className="text-lg">📲</span>
+                    <Smartphone className="w-5 h-5 stroke-[2.2]" />
                     <span>Pay via PhonePe / GPay / BHIM</span>
                     <span className="ml-1 font-extrabold">{selectedPlan === 'basic' ? '₹100' : selectedPlan === 'premium' ? '₹250' : '₹449'}</span>
                   </button>
@@ -2075,8 +2085,11 @@ export default function OnboardingForm({ user, onComplete }) {
             {!autoVerifiedUtr && (
               <div className="space-y-4 text-left">
                 <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-left">
-                  <p className="text-xs font-black text-amber-800 mb-1">📸 After Paying:</p>
-                  <p className="text-[11px] text-amber-700 leading-relaxed font-medium">
+                  <div className="flex items-center gap-1.5 text-xs font-black text-amber-900 mb-1">
+                    <Camera className="w-4 h-4 text-amber-700 stroke-[2.2]" />
+                    <span>After Paying:</span>
+                  </div>
+                  <p className="text-[11px] text-amber-800 leading-relaxed font-medium pl-5">
                     1. Take a screenshot of the payment confirmation<br/>
                     2. Upload it below<br/>
                     3. Enter your UTR/transaction ID<br/>
@@ -2137,7 +2150,7 @@ export default function OnboardingForm({ user, onComplete }) {
                       placeholder="e.g. 408123456789"
                       value={manualUtr}
                       onChange={(e) => setManualUtr(e.target.value)}
-                      className="flex-1 h-14 min-h-[56px] px-4.5 bg-slate-50 border-2 border-slate-200/90 rounded-2xl text-base font-mono font-bold text-slate-900 placeholder-slate-400 focus:bg-white focus:border-[#FF2E79] focus:ring-4 focus:ring-pink-100 outline-none transition-all shadow-2xs"
+                      className="flex-1 h-14 min-h-[56px] px-6 py-3.5 bg-slate-50 border-2 border-slate-200/90 rounded-2xl text-base font-mono font-bold text-slate-900 placeholder-slate-400 focus:bg-white focus:border-[#FF2E79] focus:ring-4 focus:ring-pink-100 outline-none transition-all shadow-2xs"
                     />
                     <button
                       type="button"
@@ -2154,7 +2167,10 @@ export default function OnboardingForm({ user, onComplete }) {
                     </button>
                   </div>
                   {!screenshotPreview && manualUtr.trim() && (
-                    <p className="text-[10px] text-amber-600 font-semibold mt-1">⚠ Please also upload the payment screenshot above</p>
+                    <div className="flex items-center gap-1 text-[10px] text-amber-700 font-semibold mt-1">
+                      <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
+                      <span>Please also upload the payment screenshot above</span>
+                    </div>
                   )}
                 </div>
               </div>
@@ -2167,7 +2183,7 @@ export default function OnboardingForm({ user, onComplete }) {
                 placeholder="e.g. yourname@okhdfcbank or 9876543210"
                 value={refundUpi}
                 onChange={(e) => setRefundUpi(e.target.value)}
-                className="w-full h-14 min-h-[56px] px-4.5 bg-slate-50 border-2 border-slate-200/90 rounded-2xl text-base font-bold text-slate-900 placeholder-slate-400 focus:bg-white focus:border-[#FF2E79] focus:ring-4 focus:ring-pink-100 outline-none transition-all shadow-2xs"
+                className="w-full h-14 min-h-[56px] px-6 py-3.5 bg-slate-50 border-2 border-slate-200/90 rounded-2xl text-base font-bold text-slate-900 placeholder-slate-400 focus:bg-white focus:border-[#FF2E79] focus:ring-4 focus:ring-pink-100 outline-none transition-all shadow-2xs"
               />
             </div>
           </div>
