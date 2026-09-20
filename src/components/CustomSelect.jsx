@@ -107,7 +107,7 @@ export default function CustomSelect({
       {/* Dropdown Menu Popup - Floating above with z-[9999] */}
       {isOpen && (
         <div
-          className={`absolute left-0 right-0 top-[calc(100%+6px)] bg-white border-2 border-[#FF2E79] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.22)] z-[9999] overflow-hidden animate-slide-up max-h-60 overflow-y-auto no-scrollbar py-1 ${dropdownClassName}`}
+          className={`absolute left-0 right-0 top-[calc(100%+6px)] bg-white border-2 border-[#FF2E79] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.22)] z-[9999] animate-slide-up max-h-64 overflow-y-auto overscroll-contain py-1 ${dropdownClassName}`}
         >
           {normalizedOptions.map((opt) => {
             const isSelected = opt.value === value;
@@ -115,18 +115,14 @@ export default function CustomSelect({
               <button
                 key={opt.value}
                 type="button"
-                onPointerDown={(e) => {
-                  e.stopPropagation();
-                  handleSelect(opt.value);
-                }}
                 onClick={(e) => {
                   e.stopPropagation();
                   handleSelect(opt.value);
                 }}
-                className={`w-full px-4 py-3 flex items-center justify-between text-left text-base transition-all cursor-pointer group border-b border-slate-100/60 last:border-b-0 ${
+                className={`w-full px-4.5 py-3.5 flex items-center justify-between text-left text-base transition-all cursor-pointer group border-b border-slate-100/60 last:border-b-0 ${
                   isSelected
-                    ? 'bg-[#FF2E79] text-white font-black shadow-xs'
-                    : 'text-slate-800 font-bold hover:bg-rose-50 hover:text-[#FF2E79]'
+                    ? 'bg-rose-50/90 text-[#FF2E79] font-black border-l-4 border-l-[#FF2E79]'
+                    : 'text-slate-800 font-bold hover:bg-rose-50/50 hover:text-[#FF2E79]'
                 }`}
               >
                 <div className="flex items-center gap-2 min-w-0 flex-1 pr-2">
@@ -135,7 +131,7 @@ export default function CustomSelect({
                     <span
                       className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black shrink-0 ${
                         isSelected
-                          ? 'bg-white/20 text-white border border-white/30'
+                          ? 'bg-[#FF2E79] text-white border border-[#FF2E79]'
                           : 'bg-emerald-50 text-emerald-600 border border-emerald-200'
                       }`}
                     >
@@ -146,7 +142,7 @@ export default function CustomSelect({
                 </div>
 
                 {isSelected && (
-                  <Check className="w-5 h-5 text-white stroke-[3] shrink-0" />
+                  <Check className="w-5 h-5 text-[#FF2E79] stroke-[3] shrink-0" />
                 )}
               </button>
             );

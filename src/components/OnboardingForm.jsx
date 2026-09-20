@@ -58,14 +58,19 @@ const POPULAR_UNIVERSITIES = [
   "Sharda University", "IIT Delhi", "LLOYD University", "NIET University", 
   "Bennett University", "ABES University", "JIIT University", "Galgotias University", 
   "IILM University", "GL Bajaj University", "IGDTUW", "Delhi University (DU)", 
-  "DTU", "NSUT", "Amity University", "IP University (GGSIPU)"
+  "DTU", "NSUT", "Amity University", "IP University (GGSIPU)", "Jamia Millia Islamia",
+  "Jawaharlal Nehru University (JNU)", "SRM University", "BITS Pilani", "Manipal University", 
+  "Thapar Institute", "Chandigarh University", "Christ University", "Shiv Nadar University",
+  "Gautam Buddha University", "KCC Institute", "ITS Engineering College", "GCET Greater Noida"
 ];
 
 const BRANCH_OPTIONS = [
-  "Computer Science (CSE)", "AI & Data Science", "Information Technology",
-  "Electronics (ECE)", "Mechanical Engineering", "Civil Engineering",
-  "BBA / Commerce", "MBA", "Economics", "MBBS / Medical",
-  "Architecture / Design", "Law", "Psychology / Arts"
+  "Computer Science (CSE)", "AI & Data Science", "Information Technology (IT)",
+  "Electronics (ECE)", "Electrical Engineering (EEE)", "Mechanical Engineering", 
+  "Civil Engineering", "Biotechnology / Chemical", "BBA / Management", "MBA", 
+  "Economics / Commerce", "MBBS / BDS / Medical", "B.Pharm / Pharmacy",
+  "Architecture / Design", "Law (BA LLB / BBA LLB)", "Psychology / Arts / Humanities",
+  "Mass Communication / Journalism", "Fashion / Interior Design"
 ];
 
 const QUALITIES_LIST = [
@@ -509,8 +514,11 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* ========================================================================= */}
         {/* STEP 1: Personal Contact Info (Name, Phone, Email)                        */}
         {/* ========================================================================= */}
+        {/* ========================================================================= */}
+        {/* STEP 1: Personal Contact Info (Name, Phone, Email)                        */}
+        {/* ========================================================================= */}
         {step === 1 && (
-          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-slide-up">
+          <div key={1} className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-step-transition">
             <div>
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 01 • BASIC DETAILS
@@ -577,7 +585,7 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 2: Hometown & Location                                               */}
         {/* ========================================================================= */}
         {step === 2 && (
-          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-slide-up">
+          <div key={2} className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-step-transition">
             <div>
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 02 • YOUR LOCATION
@@ -613,12 +621,13 @@ export default function OnboardingForm({ user, onComplete }) {
                       key={city}
                       type="button"
                       onClick={() => setHometown(city)}
-                      className={`px-4.5 py-3 rounded-2xl min-h-[44px] text-xs sm:text-sm font-bold border transition-all cursor-pointer flex items-center justify-center text-center break-words ${
+                      className={`px-5 py-3.5 rounded-2xl min-h-[48px] text-xs sm:text-sm font-bold border-2 transition-all cursor-pointer flex items-center justify-center text-center break-words ${
                         hometown === city
-                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20'
-                          : 'bg-white text-slate-800 border-slate-200 hover:border-pink-200 shadow-2xs'
+                          ? 'bg-rose-50/90 border-[#FF2E79] text-[#FF2E79] shadow-xs font-black scale-[1.01]'
+                          : 'bg-white text-slate-800 border-slate-200/90 hover:border-slate-300 shadow-2xs'
                       }`}
                     >
+                      {hometown === city && '✓ '}
                       {city}
                     </button>
                   ))}
@@ -632,7 +641,7 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 3: Real Photos Upload (Min 2, Max 6)                                 */}
         {/* ========================================================================= */}
         {step === 3 && (
-          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-slide-up">
+          <div key={3} className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-step-transition">
             <div>
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 03 • PROFILE MEDIA
@@ -733,7 +742,7 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 4: Mandatory Instagram Handle                                        */}
         {/* ========================================================================= */}
         {step === 4 && (
-          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-slide-up">
+          <div key={4} className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-step-transition">
             <div>
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 04 • SOCIAL IDENTITY
@@ -787,7 +796,7 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 5: Choose 3D Character Avatar                                        */}
         {/* ========================================================================= */}
         {step === 5 && (
-          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-slide-up">
+          <div key={5} className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-step-transition">
             <div>
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 05 • AVATAR FLAIR
@@ -880,7 +889,7 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 6: Age & Height 3D Drum Wheels                                       */}
         {/* ========================================================================= */}
         {step === 6 && (
-          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-slide-up">
+          <div key={6} className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-step-transition">
             <div>
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 06 • STATS & BIOLOGY
@@ -921,7 +930,7 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 7: Gender Identity                                                   */}
         {/* ========================================================================= */}
         {step === 7 && (
-          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-slide-up">
+          <div key={7} className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-step-transition">
             <div>
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 07 • BIOLOGICAL IDENTITY
@@ -942,20 +951,20 @@ export default function OnboardingForm({ user, onComplete }) {
                   key={g.id}
                   type="button"
                   onClick={() => setGender(g.id)}
-                  className={`w-full p-4 sm:p-5 rounded-2xl text-base font-bold transition-all border flex items-center justify-between cursor-pointer ${
+                  className={`w-full p-4.5 sm:p-5 rounded-2xl text-base font-bold transition-all border-2 flex items-center justify-between cursor-pointer ${
                     gender === g.id
-                      ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-lg shadow-pink-500/25 scale-[1.01]'
-                      : 'bg-white text-slate-800 border-slate-200 hover:border-pink-200 shadow-2xs'
+                      ? 'bg-rose-50/90 border-[#FF2E79] text-[#FF2E79] shadow-xs font-black scale-[1.01]'
+                      : 'bg-white text-slate-800 border-slate-200/90 hover:border-slate-300 shadow-2xs'
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">{g.icon}</span>
                     <div className="text-left">
                       <span className="block text-base font-black">{g.label}</span>
-                      <span className={`text-xs ${gender === g.id ? 'text-pink-100' : 'text-slate-400'}`}>{g.desc}</span>
+                      <span className={`text-xs ${gender === g.id ? 'text-[#FF2E79]' : 'text-slate-400'}`}>{g.desc}</span>
                     </div>
                   </div>
-                  {gender === g.id && <Check className="w-5 h-5 stroke-[3]" />}
+                  {gender === g.id && <Check className="w-5 h-5 stroke-[3] text-[#FF2E79]" />}
                 </button>
               ))}
             </div>
@@ -966,7 +975,7 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 8: University & College                                              */}
         {/* ========================================================================= */}
         {step === 8 && (
-          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-slide-up">
+          <div key={8} className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-step-transition">
             <div>
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 08 • ACADEMICS
@@ -1007,8 +1016,11 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* ========================================================================= */}
         {/* STEP 9: Branch & Major                                                    */}
         {/* ========================================================================= */}
+        {/* ========================================================================= */}
+        {/* STEP 9: Branch & Major                                                    */}
+        {/* ========================================================================= */}
         {step === 9 && (
-          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-slide-up">
+          <div key={9} className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-step-transition">
             <div>
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 09 • MAJOR & FIELD
@@ -1049,7 +1061,7 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 10: Year of Study                                                    */}
         {/* ========================================================================= */}
         {step === 10 && (
-          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-slide-up">
+          <div key={10} className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-step-transition">
             <div>
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 10 • ACADEMIC LEVEL
@@ -1075,10 +1087,10 @@ export default function OnboardingForm({ user, onComplete }) {
                       key={yr}
                       type="button"
                       onClick={() => setYearOfStudy(yr)}
-                      className={`px-4.5 py-3 rounded-2xl min-h-[44px] text-xs sm:text-sm font-bold border transition-all cursor-pointer flex items-center justify-center text-center break-words ${
+                      className={`px-5 py-3.5 rounded-2xl min-h-[48px] text-xs sm:text-sm font-bold border-2 transition-all cursor-pointer flex items-center justify-center text-center break-words ${
                         isSelected
-                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20'
-                          : 'bg-white text-slate-800 border-slate-200 hover:border-pink-200 shadow-2xs'
+                          ? 'bg-rose-50/90 border-[#FF2E79] text-[#FF2E79] shadow-xs font-black scale-[1.01]'
+                          : 'bg-white text-slate-800 border-slate-200/90 hover:border-slate-300 shadow-2xs'
                       }`}
                     >
                       {isSelected && '✓ '}
@@ -1095,7 +1107,7 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 11: Religion & Beliefs                                               */}
         {/* ========================================================================= */}
         {step === 11 && (
-          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-slide-up">
+          <div key={11} className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-step-transition">
             <div>
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 11 • BELIEFS
@@ -1121,10 +1133,10 @@ export default function OnboardingForm({ user, onComplete }) {
                       key={rel}
                       type="button"
                       onClick={() => setReligion(rel)}
-                      className={`px-4.5 py-3 rounded-2xl min-h-[44px] text-xs sm:text-sm font-bold border transition-all cursor-pointer flex items-center justify-center text-center break-words ${
+                      className={`px-5 py-3.5 rounded-2xl min-h-[48px] text-xs sm:text-sm font-bold border-2 transition-all cursor-pointer flex items-center justify-center text-center break-words ${
                         isSelected
-                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20'
-                          : 'bg-white text-slate-800 border-slate-200 hover:border-pink-200 shadow-2xs'
+                          ? 'bg-rose-50/90 border-[#FF2E79] text-[#FF2E79] shadow-xs font-black scale-[1.01]'
+                          : 'bg-white text-slate-800 border-slate-200/90 hover:border-slate-300 shadow-2xs'
                       }`}
                     >
                       {isSelected && '✓ '}
@@ -1141,7 +1153,7 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 12: Relationship Goals                                               */}
         {/* ========================================================================= */}
         {step === 12 && (
-          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-slide-up">
+          <div key={12} className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-step-transition">
             <div>
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 12 • RELATIONSHIP GOALS
@@ -1172,10 +1184,10 @@ export default function OnboardingForm({ user, onComplete }) {
                       key={type}
                       type="button"
                       onClick={() => toggleArrayItem(relationshipType, setRelationshipType, type)}
-                      className={`px-4.5 py-3.5 rounded-2xl text-left text-xs sm:text-sm font-bold border transition-all cursor-pointer min-h-[50px] flex items-center justify-start leading-snug break-words ${
+                      className={`px-5 py-3.5 rounded-2xl text-left text-xs sm:text-sm font-bold border-2 transition-all cursor-pointer min-h-[52px] flex items-center justify-start leading-snug break-words ${
                         isSelected
-                          ? 'bg-rose-50 border-[#FF2E79] text-[#FF2E79] shadow-xs font-black'
-                          : 'bg-white border-slate-200 text-slate-800 hover:border-pink-200 shadow-2xs'
+                          ? 'bg-rose-50/90 border-[#FF2E79] text-[#FF2E79] shadow-xs font-black scale-[1.01]'
+                          : 'bg-white border-slate-200/90 text-slate-800 hover:border-slate-300 shadow-2xs'
                       }`}
                     >
                       {isSelected && '✓ '}
@@ -1192,7 +1204,7 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 13: Drinking / Smoking Habits                                         */}
         {/* ========================================================================= */}
         {step === 13 && (
-          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-slide-up">
+          <div key={13} className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-step-transition">
             <div>
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 13 • LIFESTYLE HABITS
@@ -1218,10 +1230,10 @@ export default function OnboardingForm({ user, onComplete }) {
                       key={h}
                       type="button"
                       onClick={() => toggleArrayItem(habits, setHabits, h)}
-                      className={`px-4.5 py-3 rounded-2xl min-h-[44px] text-xs sm:text-sm font-bold border transition-all cursor-pointer flex items-center justify-center text-center break-words ${
+                      className={`px-5 py-3.5 rounded-2xl min-h-[48px] text-xs sm:text-sm font-bold border-2 transition-all cursor-pointer flex items-center justify-center text-center break-words ${
                         isSelected
-                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20'
-                          : 'bg-white text-slate-800 border-slate-200 hover:border-pink-200 shadow-2xs'
+                          ? 'bg-rose-50/90 border-[#FF2E79] text-[#FF2E79] shadow-xs font-black scale-[1.01]'
+                          : 'bg-white text-slate-800 border-slate-200/90 hover:border-slate-300 shadow-2xs'
                       }`}
                     >
                       {isSelected && '✓ '}
@@ -1238,7 +1250,7 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 14: Personality Type & Qualities                                     */}
         {/* ========================================================================= */}
         {step === 14 && (
-          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-slide-up">
+          <div key={14} className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-step-transition">
             <div>
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 14 • YOUR PERSONA
@@ -1265,10 +1277,10 @@ export default function OnboardingForm({ user, onComplete }) {
                         key={p}
                         type="button"
                         onClick={() => setPersonalityType(p)}
-                        className={`px-3 py-3 rounded-2xl min-h-[46px] text-xs sm:text-sm font-bold border transition-all cursor-pointer flex items-center justify-center text-center break-words ${
+                        className={`px-4 py-3.5 rounded-2xl min-h-[48px] text-xs sm:text-sm font-bold border-2 transition-all cursor-pointer flex items-center justify-center text-center break-words ${
                           isSelected
-                            ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20'
-                            : 'bg-white text-slate-800 border-slate-200 hover:border-pink-200 shadow-2xs'
+                            ? 'bg-rose-50/90 border-[#FF2E79] text-[#FF2E79] shadow-xs font-black scale-[1.01]'
+                            : 'bg-white text-slate-800 border-slate-200/90 hover:border-slate-300 shadow-2xs'
                         }`}
                       >
                         {isSelected && '✓ '}
@@ -1294,10 +1306,10 @@ export default function OnboardingForm({ user, onComplete }) {
                         key={q}
                         type="button"
                         onClick={() => toggleArrayItem(qualities, setQualities, q)}
-                        className={`px-4.5 py-3 rounded-2xl min-h-[44px] text-xs sm:text-sm font-bold border transition-all cursor-pointer flex items-center justify-center text-center break-words ${
+                        className={`px-5 py-3.5 rounded-2xl min-h-[48px] text-xs sm:text-sm font-bold border-2 transition-all cursor-pointer flex items-center justify-center text-center break-words ${
                           isSelected
-                            ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20'
-                            : 'bg-white text-slate-800 border-slate-200 hover:border-pink-200 shadow-2xs'
+                            ? 'bg-rose-50/90 border-[#FF2E79] text-[#FF2E79] shadow-xs font-black scale-[1.01]'
+                            : 'bg-white text-slate-800 border-slate-200/90 hover:border-slate-300 shadow-2xs'
                         }`}
                       >
                         {isSelected && '✓ '}
@@ -1315,7 +1327,7 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 15: Dating Vibe & Past History                                       */}
         {/* ========================================================================= */}
         {step === 15 && (
-          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-slide-up">
+          <div key={15} className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-step-transition">
             <div>
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 15 • VIBE & EXES
@@ -1342,10 +1354,10 @@ export default function OnboardingForm({ user, onComplete }) {
                         key={v}
                         type="button"
                         onClick={() => toggleArrayItem(datingVibe, setDatingVibe, v)}
-                        className={`px-4 py-3.5 rounded-2xl text-left text-xs sm:text-sm font-bold border transition-all cursor-pointer min-h-[50px] flex items-center justify-start leading-snug break-words ${
+                        className={`px-5 py-3.5 rounded-2xl text-left text-xs sm:text-sm font-bold border-2 transition-all cursor-pointer min-h-[52px] flex items-center justify-start leading-snug break-words ${
                           isSelected
-                            ? 'bg-rose-50 border-[#FF2E79] text-[#FF2E79] shadow-xs font-black'
-                            : 'bg-white border-slate-200 text-slate-800 hover:border-pink-200 shadow-2xs'
+                            ? 'bg-rose-50/90 border-[#FF2E79] text-[#FF2E79] shadow-xs font-black scale-[1.01]'
+                            : 'bg-white border-slate-200/90 text-slate-800 hover:border-slate-300 shadow-2xs'
                         }`}
                       >
                         {isSelected && '✓ '}
@@ -1377,8 +1389,11 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* ========================================================================= */}
         {/* STEP 16: Partner Preferences — Age & Height                               */}
         {/* ========================================================================= */}
+        {/* ========================================================================= */}
+        {/* STEP 16: Partner Preferences — Age & Height                               */}
+        {/* ========================================================================= */}
         {step === 16 && (
-          <div className="space-y-4 animate-slide-up">
+          <div key={16} className="space-y-4 animate-step-transition">
             <div className="text-left mb-2">
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 16 • IDEAL MATCH CRITERIA
@@ -1439,7 +1454,7 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 17: Partner Preferences — Gender                                     */}
         {/* ========================================================================= */}
         {step === 17 && (
-          <div className="space-y-4 animate-slide-up">
+          <div key={17} className="space-y-4 animate-step-transition">
             <div className="text-left mb-2">
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 17 • MATCH GENDER
@@ -1460,12 +1475,13 @@ export default function OnboardingForm({ user, onComplete }) {
                       key={g}
                       type="button"
                       onClick={() => setPrefGender(g)}
-                      className={`py-4 rounded-2xl text-sm sm:text-base font-bold transition-all border flex items-center justify-center cursor-pointer ${
+                      className={`py-4 px-3 rounded-2xl text-sm sm:text-base font-bold transition-all border-2 flex items-center justify-center cursor-pointer ${
                         isSelected
-                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/25 scale-[1.02]'
-                          : 'bg-white text-slate-800 border-slate-200 hover:border-pink-200 shadow-2xs'
+                          ? 'bg-rose-50/90 border-[#FF2E79] text-[#FF2E79] shadow-xs font-black scale-[1.01]'
+                          : 'bg-white text-slate-800 border-slate-200/90 hover:border-slate-300 shadow-2xs'
                       }`}
                     >
+                      {isSelected && '✓ '}
                       {g}
                     </button>
                   );
@@ -1479,7 +1495,7 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 18: Partner Preferences — Preferred University                       */}
         {/* ========================================================================= */}
         {step === 18 && (
-          <div className="space-y-4 animate-slide-up text-left">
+          <div key={18} className="space-y-4 animate-step-transition text-left">
             <div className="text-left mb-2">
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 18 • PREFERRED CAMPUS
@@ -1500,10 +1516,10 @@ export default function OnboardingForm({ user, onComplete }) {
                       key={u}
                       type="button"
                       onClick={() => toggleArrayItem(prefUniversity, setPrefUniversity, u)}
-                      className={`px-4.5 py-3 rounded-2xl min-h-[44px] text-xs sm:text-sm font-bold border transition-all cursor-pointer flex items-center justify-center text-center break-words ${
+                      className={`px-5 py-3.5 rounded-2xl min-h-[48px] text-xs sm:text-sm font-bold border-2 transition-all cursor-pointer flex items-center justify-center text-center break-words ${
                         isSelected
-                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20'
-                          : 'bg-white text-slate-800 border-slate-100 hover:border-pink-200 shadow-2xs'
+                          ? 'bg-rose-50/90 border-[#FF2E79] text-[#FF2E79] shadow-xs font-black scale-[1.01]'
+                          : 'bg-white text-slate-800 border-slate-200/90 hover:border-slate-300 shadow-2xs'
                       }`}
                     >
                       {isSelected && '✓ '}
@@ -1520,7 +1536,7 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 19: Partner Preferences — Preferred Major & Year                     */}
         {/* ========================================================================= */}
         {step === 19 && (
-          <div className="space-y-4 animate-slide-up text-left">
+          <div key={19} className="space-y-4 animate-step-transition text-left">
             <div className="text-left mb-2">
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 19 • PREFERRED ACADEMICS
@@ -1552,10 +1568,10 @@ export default function OnboardingForm({ user, onComplete }) {
                         key={yr}
                         type="button"
                         onClick={() => toggleArrayItem(prefYearOfStudy, setPrefYearOfStudy, yr)}
-                        className={`px-4.5 py-3 rounded-2xl min-h-[44px] text-xs sm:text-sm font-bold border transition-all cursor-pointer flex items-center justify-center text-center break-words ${
+                        className={`px-5 py-3.5 rounded-2xl min-h-[48px] text-xs sm:text-sm font-bold border-2 transition-all cursor-pointer flex items-center justify-center text-center break-words ${
                           isSelected
-                            ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20'
-                            : 'bg-white text-slate-800 border-slate-100 hover:border-pink-200 shadow-2xs'
+                            ? 'bg-rose-50/90 border-[#FF2E79] text-[#FF2E79] shadow-xs font-black scale-[1.01]'
+                            : 'bg-white text-slate-800 border-slate-200/90 hover:border-slate-300 shadow-2xs'
                         }`}
                       >
                         {isSelected && '✓ '}
@@ -1573,7 +1589,7 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 20: Partner Preferences — Religion, Habits & Exes                   */}
         {/* ========================================================================= */}
         {step === 20 && (
-          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-slide-up">
+          <div key={20} className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-step-transition">
             <div>
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 20 • PARTNER LIFESTYLE
@@ -1599,12 +1615,13 @@ export default function OnboardingForm({ user, onComplete }) {
                       key={r}
                       type="button"
                       onClick={() => toggleArrayItem(prefReligion, setPrefReligion, r)}
-                      className={`px-4.5 py-3 rounded-2xl min-h-[44px] text-xs sm:text-sm font-bold border transition-all cursor-pointer flex items-center justify-center text-center break-words ${
+                      className={`px-5 py-3.5 rounded-2xl min-h-[48px] text-xs sm:text-sm font-bold border-2 transition-all cursor-pointer flex items-center justify-center text-center break-words ${
                         isSelected
-                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20'
-                          : 'bg-white text-slate-800 border-slate-100 hover:border-pink-200 shadow-2xs'
+                          ? 'bg-rose-50/90 border-[#FF2E79] text-[#FF2E79] shadow-xs font-black scale-[1.01]'
+                          : 'bg-white text-slate-800 border-slate-200/90 hover:border-slate-300 shadow-2xs'
                       }`}
                     >
+                      {isSelected && '✓ '}
                       {r}
                     </button>
                   );
@@ -1627,12 +1644,13 @@ export default function OnboardingForm({ user, onComplete }) {
                       key={h}
                       type="button"
                       onClick={() => toggleArrayItem(prefHabits, setPrefHabits, h)}
-                      className={`px-4.5 py-3 rounded-2xl min-h-[44px] text-xs sm:text-sm font-bold border transition-all cursor-pointer flex items-center justify-center text-center break-words ${
+                      className={`px-5 py-3.5 rounded-2xl min-h-[48px] text-xs sm:text-sm font-bold border-2 transition-all cursor-pointer flex items-center justify-center text-center break-words ${
                         isSelected
-                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20'
-                          : 'bg-white text-slate-800 border-slate-100 hover:border-pink-200 shadow-2xs'
+                          ? 'bg-rose-50/90 border-[#FF2E79] text-[#FF2E79] shadow-xs font-black scale-[1.01]'
+                          : 'bg-white text-slate-800 border-slate-200/90 hover:border-slate-300 shadow-2xs'
                       }`}
                     >
+                      {isSelected && '✓ '}
                       {h}
                     </button>
                   );
@@ -1661,7 +1679,7 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 21: Partner Preferences — Personality & Vibe                         */}
         {/* ========================================================================= */}
         {step === 21 && (
-          <div className="space-y-4 animate-slide-up">
+          <div key={21} className="space-y-4 animate-step-transition">
             <div className="text-left mb-2">
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 21 • ENERGY & PERSONA
@@ -1688,10 +1706,10 @@ export default function OnboardingForm({ user, onComplete }) {
                         key={p}
                         type="button"
                         onClick={() => setPrefPersonality(p)}
-                        className={`px-3 py-3 rounded-2xl min-h-[46px] text-xs sm:text-sm font-bold border transition-all cursor-pointer flex items-center justify-center text-center break-words ${
+                        className={`px-4 py-3.5 rounded-2xl min-h-[48px] text-xs sm:text-sm font-bold border-2 transition-all cursor-pointer flex items-center justify-center text-center break-words ${
                           isSelected
-                            ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20'
-                            : 'bg-white text-slate-800 border-slate-200 hover:border-pink-200 shadow-2xs'
+                            ? 'bg-rose-50/90 border-[#FF2E79] text-[#FF2E79] shadow-xs font-black scale-[1.01]'
+                            : 'bg-white text-slate-800 border-slate-200/90 hover:border-slate-300 shadow-2xs'
                         }`}
                       >
                         {isSelected && '✓ '}
@@ -1717,10 +1735,10 @@ export default function OnboardingForm({ user, onComplete }) {
                         key={q}
                         type="button"
                         onClick={() => toggleArrayItem(prefQualities, setPrefQualities, q)}
-                        className={`px-4.5 py-3 rounded-2xl min-h-[44px] text-xs sm:text-sm font-bold border transition-all cursor-pointer flex items-center justify-center text-center break-words ${
+                        className={`px-5 py-3.5 rounded-2xl min-h-[48px] text-xs sm:text-sm font-bold border-2 transition-all cursor-pointer flex items-center justify-center text-center break-words ${
                           isSelected
-                            ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20'
-                            : 'bg-white text-slate-800 border-slate-200 hover:border-pink-200 shadow-2xs'
+                            ? 'bg-rose-50/90 border-[#FF2E79] text-[#FF2E79] shadow-xs font-black scale-[1.01]'
+                            : 'bg-white text-slate-800 border-slate-200/90 hover:border-slate-300 shadow-2xs'
                         }`}
                       >
                         {isSelected && '✓ '}
@@ -1746,10 +1764,10 @@ export default function OnboardingForm({ user, onComplete }) {
                         key={v}
                         type="button"
                         onClick={() => toggleArrayItem(prefDatingVibe, setPrefDatingVibe, v)}
-                        className={`px-4 py-3.5 rounded-2xl text-left text-xs sm:text-sm font-bold border transition-all cursor-pointer min-h-[50px] flex items-center justify-start leading-snug break-words ${
+                        className={`px-5 py-3.5 rounded-2xl text-left text-xs sm:text-sm font-bold border-2 transition-all cursor-pointer min-h-[52px] flex items-center justify-start leading-snug break-words ${
                           isSelected
-                            ? 'bg-rose-50 border-[#FF2E79] text-[#FF2E79] shadow-xs font-black'
-                            : 'bg-white border-slate-200 text-slate-800 hover:border-pink-200 shadow-2xs'
+                            ? 'bg-rose-50/90 border-[#FF2E79] text-[#FF2E79] shadow-xs font-black scale-[1.01]'
+                            : 'bg-white border-slate-200/90 text-slate-800 hover:border-slate-300 shadow-2xs'
                         }`}
                       >
                         {isSelected && '✓ '}
@@ -1767,7 +1785,7 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 22: Non-Negotiables                                                   */}
         {/* ========================================================================= */}
         {step === 22 && (
-          <div className="space-y-4 animate-slide-up">
+          <div key={22} className="space-y-4 animate-step-transition">
             <div className="text-left mb-2">
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 22 • STRICT FILTERS
@@ -1803,10 +1821,10 @@ export default function OnboardingForm({ user, onComplete }) {
                       key={item}
                       type="button"
                       onClick={() => toggleArrayItem(nonNegotiables, setNonNegotiables, item)}
-                      className={`px-4.5 py-3 rounded-2xl min-h-[44px] text-xs sm:text-sm font-bold border transition-all cursor-pointer flex items-center justify-center text-center break-words ${
+                      className={`px-5 py-3.5 rounded-2xl min-h-[48px] text-xs sm:text-sm font-bold border-2 transition-all cursor-pointer flex items-center justify-center text-center break-words ${
                         isSelected
-                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20'
-                          : 'bg-white text-slate-800 border-slate-200 hover:border-pink-200 shadow-2xs'
+                          ? 'bg-rose-50/90 border-[#FF2E79] text-[#FF2E79] shadow-xs font-black scale-[1.01]'
+                          : 'bg-white text-slate-800 border-slate-200/90 hover:border-slate-300 shadow-2xs'
                       }`}
                     >
                       {isSelected && '✓ '}
@@ -1835,7 +1853,7 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 23: Terms and Conditions                                             */}
         {/* ========================================================================= */}
         {step === 23 && (
-          <div className="space-y-4 animate-slide-up">
+          <div key={23} className="space-y-4 animate-step-transition">
             <div className="text-left mb-2">
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 23 • LEGAL AGREEMENT
@@ -1910,7 +1928,7 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 24: Plan Selection                                                   */}
         {/* ========================================================================= */}
         {step === 24 && (
-          <div className="space-y-4 animate-slide-up">
+          <div key={24} className="space-y-4 animate-step-transition">
             <div className="text-left mb-2">
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 24 • PLAN TIER
@@ -1926,7 +1944,7 @@ export default function OnboardingForm({ user, onComplete }) {
                 onClick={() => setSelectedPlan('basic')}
                 className={`p-5 rounded-[28px] border-2 transition-all cursor-pointer text-left ${
                   selectedPlan === 'basic' 
-                    ? 'border-[#FF2E79] bg-white shadow-md ring-2 ring-pink-100' 
+                    ? 'border-[#FF2E79] bg-rose-50/90 shadow-md ring-2 ring-pink-100/60 scale-[1.01]' 
                     : 'border-slate-200 bg-white/80 hover:border-slate-300'
                 }`}
               >
@@ -1945,7 +1963,7 @@ export default function OnboardingForm({ user, onComplete }) {
                 onClick={() => setSelectedPlan('premium')}
                 className={`p-5 rounded-[28px] border-2 transition-all cursor-pointer text-left ${
                   selectedPlan === 'premium' 
-                    ? 'border-[#FF2E79] bg-white shadow-md ring-2 ring-pink-100' 
+                    ? 'border-[#FF2E79] bg-rose-50/90 shadow-md ring-2 ring-pink-100/60 scale-[1.01]' 
                     : 'border-slate-200 bg-white/80 hover:border-slate-300'
                 }`}
               >
@@ -1964,7 +1982,7 @@ export default function OnboardingForm({ user, onComplete }) {
                 onClick={() => setSelectedPlan('elite')}
                 className={`p-5 rounded-[28px] border-2 transition-all cursor-pointer text-left relative overflow-hidden ${
                   selectedPlan === 'elite' 
-                    ? 'border-[#FF2E79] bg-white shadow-xl ring-2 ring-[#FF2E79]' 
+                    ? 'border-[#FF2E79] bg-rose-50/90 shadow-xl ring-2 ring-[#FF2E79] scale-[1.01]' 
                     : 'border-slate-200 bg-white/80 hover:border-slate-300'
                 }`}
               >
@@ -1991,7 +2009,7 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 25: Payment QR, Auto-Verify & Screenshot Upload                      */}
         {/* ========================================================================= */}
         {step === 25 && (
-          <div className="space-y-4 animate-slide-up">
+          <div key={25} className="space-y-4 animate-step-transition">
             <div className="text-left mb-2">
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 25 • FINAL ACTIVATION
