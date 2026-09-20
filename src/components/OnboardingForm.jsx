@@ -451,7 +451,7 @@ export default function OnboardingForm({ user, onComplete }) {
         <div className="pt-2 pb-2">
           <button
             onClick={() => onComplete(activeUserToLaunch)}
-            className="w-full h-15 bg-slate-900 hover:bg-slate-800 text-white font-black text-base rounded-full flex items-center justify-center gap-2 shadow-xl transition-all active:scale-[0.98] cursor-pointer"
+            className="w-full h-[54px] bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-sm sm:text-base rounded-full flex items-center justify-center gap-2 shadow-xl transition-all active:scale-[0.98] cursor-pointer"
           >
             <span>Open Match Radar & Dashboard</span>
             <ArrowRight className="w-5 h-5" />
@@ -462,20 +462,20 @@ export default function OnboardingForm({ user, onComplete }) {
   }
 
   return (
-    <div className="flex-1 flex flex-col justify-between p-4 sm:p-6 h-full bg-gradient-to-b from-[#FFF0F4] via-[#FFEBEF] to-[#FFF5F8] text-slate-900 font-sans relative select-none overflow-y-auto">
+    <div className="flex-1 flex flex-col justify-between p-4 sm:p-5 h-full bg-gradient-to-b from-[#FFF0F4] via-[#FFEBEF] to-[#FFF5F8] text-slate-900 font-sans relative select-none overflow-y-auto">
       
-      {/* Top Header & Smooth Progress Bar with Cursive Tagline */}
-      <div className="sticky top-0 bg-[#FFF0F4]/95 backdrop-blur-md pt-2 pb-3 z-30 -mx-4 px-4 sm:-mx-6 sm:px-6">
+      {/* Top Header & Progress Bar */}
+      <div className="sticky top-0 bg-[#FFF0F4]/95 backdrop-blur-md pt-2 pb-3 z-40 -mx-4 px-4 sm:-mx-5 sm:px-5">
         <div className="flex items-center justify-between mb-2.5">
           {step > 1 ? (
             <button
               onClick={handleBack}
-              className="w-11 h-11 rounded-full bg-white shadow-sm flex items-center justify-center text-slate-800 hover:bg-slate-50 transition-all border border-rose-100 cursor-pointer active:scale-95"
+              className="w-10 h-10 rounded-full bg-white shadow-xs flex items-center justify-center text-slate-800 hover:bg-slate-50 transition-all border border-rose-100 cursor-pointer active:scale-95"
             >
-              <ChevronLeft className="w-6 h-6 stroke-[2.5]" />
+              <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
             </button>
           ) : (
-            <div className="w-11 h-11"></div>
+            <div className="w-10 h-10"></div>
           )}
 
           <CupidLogo size="xs" showText={true} textColor="dark" textSubtitle={`${user.state || 'DELHI NCR'} • ROUND 1`} />
@@ -488,91 +488,85 @@ export default function OnboardingForm({ user, onComplete }) {
         </div>
 
         {/* Stepper Progress Bar Pill Box */}
-        <div className="bg-white/90 backdrop-blur-md rounded-full p-2 shadow-2xs border border-white flex items-center gap-2">
-          <div className="flex-1 h-3 bg-rose-100/80 rounded-full overflow-hidden ml-1">
+        <div className="bg-white/90 backdrop-blur-md rounded-full p-1.5 shadow-2xs border border-white flex items-center gap-2">
+          <div className="flex-1 h-2.5 bg-rose-100/80 rounded-full overflow-hidden ml-1">
             <div
               className="h-full bg-gradient-to-r from-[#FF2E79] via-pink-500 to-rose-400 rounded-full transition-all duration-300 ease-out"
               style={{ width: `${(step / totalSteps) * 100}%` }}
             ></div>
           </div>
-          <span className="text-xs sm:text-sm font-black text-slate-900 bg-white px-3.5 py-1 rounded-full border border-rose-100 shadow-2xs">
+          <span className="text-xs font-black text-slate-900 bg-white px-3 py-0.5 rounded-full border border-rose-100 shadow-2xs">
             {step}<span className="text-slate-400 font-medium">/</span>{totalSteps}
           </span>
         </div>
       </div>
 
-      {/* Main Multi-Step Form Body */}
-      <div className="flex-1 flex flex-col justify-between py-4 overflow-y-auto no-scrollbar space-y-6">
+      {/* Main Multi-Step Form Body — Generous pb-36 bottom padding so content NEVER gets cut off by sticky footer */}
+      <div className="flex-1 py-3 pb-36 sm:pb-40 space-y-6 overflow-y-auto no-scrollbar">
         
         {/* ========================================================================= */}
         {/* STEP 1: Personal Contact Info (Name, Phone, Email)                        */}
         {/* ========================================================================= */}
         {step === 1 && (
-          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-6 sm:p-7 border border-white/90 shadow-[0_12px_36px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-6 animate-slide-up">
+          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-slide-up">
             <div>
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 01 • BASIC DETAILS
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Personal Info</h2>
-              <p className="text-sm text-slate-500 font-medium mt-1 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
                 Contact information for your private match results
               </p>
             </div>
 
-            <div className="space-y-5 pt-1">
+            <div className="space-y-4 pt-1">
               <div>
-                <div className="flex items-center gap-2.5 mb-2">
-                  <div className="w-8 h-8 rounded-full bg-rose-50 border border-pink-100 flex items-center justify-center text-[#FF2E79] shrink-0">
-                    <User className="w-4 h-4 stroke-[2.2]" />
+                <div className="flex items-center gap-2 mb-1.5">
+                  <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79] shrink-0">
+                    <User className="w-4 h-4" />
                   </div>
-                  <label className="text-sm sm:text-base font-bold text-slate-900">Full Name *</label>
+                  <label className="text-sm font-bold text-slate-900">Full Name *</label>
                 </div>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Aditya Chauhan"
-                  className="w-full h-15 px-4.5 bg-slate-50/80 border border-slate-200/80 rounded-2xl text-base sm:text-lg font-semibold text-slate-900 placeholder-slate-400 focus:bg-white focus:border-pink-400 focus:ring-4 focus:ring-pink-100 outline-none transition-all"
+                  className="w-full h-14 min-h-[56px] px-4.5 bg-slate-50 border-2 border-slate-200/90 rounded-2xl text-base font-bold text-slate-900 placeholder-slate-400 focus:bg-white focus:border-[#FF2E79] focus:ring-4 focus:ring-pink-100 outline-none transition-all shadow-2xs"
                 />
               </div>
 
               <div>
-                <div className="flex items-center gap-2.5 mb-2">
-                  <div className="w-8 h-8 rounded-full bg-rose-50 border border-pink-100 flex items-center justify-center text-[#FF2E79] shrink-0">
-                    <Phone className="w-4 h-4 stroke-[2.2]" />
+                <div className="flex items-center gap-2 mb-1.5">
+                  <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79] shrink-0">
+                    <Phone className="w-4 h-4" />
                   </div>
-                  <label className="text-sm sm:text-base font-bold text-slate-900">Phone Number *</label>
+                  <label className="text-sm font-bold text-slate-900">Phone Number *</label>
                 </div>
                 <input
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="+91 98765 43210"
-                  className="w-full h-15 px-4.5 bg-slate-50/80 border border-slate-200/80 rounded-2xl text-base sm:text-lg font-semibold text-slate-900 placeholder-slate-400 focus:bg-white focus:border-pink-400 focus:ring-4 focus:ring-pink-100 outline-none transition-all"
+                  className="w-full h-14 min-h-[56px] px-4.5 bg-slate-50 border-2 border-slate-200/90 rounded-2xl text-base font-bold text-slate-900 placeholder-slate-400 focus:bg-white focus:border-[#FF2E79] focus:ring-4 focus:ring-pink-100 outline-none transition-all shadow-2xs"
                 />
               </div>
 
               <div>
-                <div className="flex items-center gap-2.5 mb-2">
-                  <div className="w-8 h-8 rounded-full bg-rose-50 border border-pink-100 flex items-center justify-center text-[#FF2E79] shrink-0">
-                    <Mail className="w-4 h-4 stroke-[2.2]" />
+                <div className="flex items-center gap-2 mb-1.5">
+                  <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79] shrink-0">
+                    <Mail className="w-4 h-4" />
                   </div>
-                  <label className="text-sm sm:text-base font-bold text-slate-900">Email Id *</label>
+                  <label className="text-sm font-bold text-slate-900">Email Id *</label>
                 </div>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="yourname@gmail.com"
-                  className="w-full h-15 px-4.5 bg-slate-50/80 border border-slate-200/80 rounded-2xl text-base sm:text-lg font-semibold text-slate-900 placeholder-slate-400 focus:bg-white focus:border-pink-400 focus:ring-4 focus:ring-pink-100 outline-none transition-all"
+                  className="w-full h-14 min-h-[56px] px-4.5 bg-slate-50 border-2 border-slate-200/90 rounded-2xl text-base font-bold text-slate-900 placeholder-slate-400 focus:bg-white focus:border-[#FF2E79] focus:ring-4 focus:ring-pink-100 outline-none transition-all shadow-2xs"
                 />
               </div>
-            </div>
-
-            <div className="absolute -bottom-4 -right-4 pointer-events-none opacity-[0.12] text-[#FF2E79]">
-              <svg className="w-32 h-32 fill-none stroke-current stroke-[1.5]" viewBox="0 0 24 24">
-                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-              </svg>
             </div>
           </div>
         )}
@@ -581,45 +575,45 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 2: Hometown & Location                                               */}
         {/* ========================================================================= */}
         {step === 2 && (
-          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-6 sm:p-7 border border-white/90 shadow-[0_12px_36px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-6 animate-slide-up">
+          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-slide-up">
             <div>
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 02 • YOUR LOCATION
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Hometown & Region</h2>
-              <p className="text-sm text-slate-500 font-medium mt-1 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
                 Where are you originally from?
               </p>
             </div>
 
-            <div className="space-y-5 pt-1">
+            <div className="space-y-4 pt-1">
               <div>
-                <div className="flex items-center gap-2.5 mb-2">
-                  <div className="w-8 h-8 rounded-full bg-rose-50 border border-pink-100 flex items-center justify-center text-[#FF2E79] shrink-0">
-                    <MapPin className="w-4 h-4 stroke-[2.2]" />
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79] shrink-0">
+                    <MapPin className="w-4 h-4" />
                   </div>
-                  <label className="text-sm sm:text-base font-bold text-slate-900">Hometown / City *</label>
+                  <label className="text-sm font-bold text-slate-900">Hometown / City *</label>
                 </div>
                 <input
                   type="text"
                   value={hometown}
                   onChange={(e) => setHometown(e.target.value)}
                   placeholder="e.g. Delhi / Noida / Gurgaon"
-                  className="w-full h-15 px-4.5 bg-slate-50/80 border border-slate-200/80 rounded-2xl text-base sm:text-lg font-semibold text-slate-900 placeholder-slate-400 focus:bg-white focus:border-pink-400 focus:ring-4 focus:ring-pink-100 outline-none transition-all"
+                  className="w-full h-14 min-h-[56px] px-4.5 bg-slate-50 border-2 border-slate-200/90 rounded-2xl text-base font-bold text-slate-900 placeholder-slate-400 focus:bg-white focus:border-[#FF2E79] focus:ring-4 focus:ring-pink-100 outline-none transition-all shadow-2xs"
                 />
               </div>
 
-              <div className="space-y-2.5">
+              <div className="space-y-2">
                 <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Quick Select:</span>
-                <div className="flex flex-wrap gap-2.5">
+                <div className="flex flex-wrap gap-2">
                   {['Delhi NCR', 'Noida', 'Gurgaon', 'Faridabad', 'Ghaziabad'].map((city) => (
                     <button
                       key={city}
                       type="button"
                       onClick={() => setHometown(city)}
-                      className={`px-5 py-3 rounded-full text-sm font-bold border transition-all cursor-pointer ${
+                      className={`px-4 py-2.5 rounded-full text-xs font-bold border transition-all cursor-pointer ${
                         hometown === city
-                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
+                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20'
                           : 'bg-white text-slate-800 border-slate-200 hover:border-pink-200 shadow-2xs'
                       }`}
                     >
@@ -636,14 +630,14 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 3: Real Photos Upload (Min 2, Max 6)                                 */}
         {/* ========================================================================= */}
         {step === 3 && (
-          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-6 sm:p-7 border border-white/90 shadow-[0_12px_36px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-6 animate-slide-up">
+          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-slide-up">
             <div>
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 03 • PROFILE MEDIA
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Upload Your Best Photos</h2>
-              <p className="text-sm text-slate-500 font-medium mt-1 leading-relaxed">
-                Upload 2 to 6 of your best clear face photos. Authentic photos receive up to 3x more matches!
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
+                Upload 2 to 6 clear photos of yourself
               </p>
             </div>
 
@@ -656,10 +650,10 @@ export default function OnboardingForm({ user, onComplete }) {
               className="hidden"
             />
 
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-black text-slate-900 tracking-wide uppercase">
-                  UPLOADED PHOTOS ({userPhotos.length}/6) *
+                <label className="text-xs font-bold text-slate-900 tracking-wide uppercase">
+                  YOUR UPLOADED PHOTOS ({userPhotos.length}/6) *
                 </label>
                 {userPhotos.length >= 2 ? (
                   <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100 flex items-center gap-1 shadow-2xs">
@@ -682,7 +676,7 @@ export default function OnboardingForm({ user, onComplete }) {
                     return (
                       <div
                         key={slotIdx}
-                        className="relative aspect-square rounded-3xl overflow-hidden border-2 border-pink-100 shadow-sm group bg-slate-100"
+                        className="relative aspect-square rounded-3xl overflow-hidden border border-slate-200 shadow-sm group bg-slate-100"
                       >
                         <img
                           src={photo}
@@ -710,10 +704,10 @@ export default function OnboardingForm({ user, onComplete }) {
                       key={slotIdx}
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="aspect-square rounded-3xl border-2 border-dashed border-rose-200/90 hover:border-[#FF2E79] bg-pink-50/20 hover:bg-pink-50/50 flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer group shadow-2xs"
+                      className="aspect-square rounded-3xl border-2 border-dashed border-rose-200/90 hover:border-[#FF2E79] bg-pink-50/20 hover:bg-pink-50/50 flex flex-col items-center justify-center gap-1 transition-all cursor-pointer group shadow-2xs"
                     >
-                      <div className="w-9 h-9 rounded-full bg-pink-100/80 text-[#FF2E79] group-hover:bg-[#FF2E79] group-hover:text-white flex items-center justify-center transition-colors shadow-2xs">
-                        <Plus className="w-5 h-5 stroke-[2.5]" />
+                      <div className="w-8 h-8 rounded-full bg-pink-100/70 text-[#FF2E79] group-hover:bg-[#FF2E79] group-hover:text-white flex items-center justify-center transition-colors shadow-2xs">
+                        <Plus className="w-4 h-4 stroke-[2.5]" />
                       </div>
                       <span className="text-xs font-bold text-pink-500/80 group-hover:text-[#FF2E79]">
                         Upload
@@ -724,7 +718,7 @@ export default function OnboardingForm({ user, onComplete }) {
               </div>
 
               {photoError && (
-                <div className="p-3.5 rounded-2xl bg-red-50 border border-red-200 text-xs sm:text-sm font-bold text-red-600 text-left flex items-center gap-2 animate-shake">
+                <div className="p-3 rounded-2xl bg-red-50 border border-red-200 text-xs font-bold text-red-600 text-left flex items-center gap-2 animate-shake">
                   <AlertCircle className="w-4 h-4 shrink-0" />
                   <span>{photoError}</span>
                 </div>
@@ -737,43 +731,43 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 4: Mandatory Instagram Handle                                        */}
         {/* ========================================================================= */}
         {step === 4 && (
-          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-6 sm:p-7 border border-white/90 shadow-[0_12px_36px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-6 animate-slide-up">
+          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-slide-up">
             <div>
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 04 • SOCIAL IDENTITY
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Your Instagram Handle</h2>
-              <p className="text-sm text-slate-500 font-medium mt-1 leading-relaxed">
-                Helps us verify your profile and deliver confidential match results directly to your Insta
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
+                Helps us verify your profile and show your Insta flair
               </p>
             </div>
 
-            <div className="bg-white rounded-3xl p-5 border-2 border-pink-100 shadow-sm space-y-4">
-              <div className="flex items-center gap-3.5">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-400 via-rose-500 to-purple-600 flex items-center justify-center text-white shadow-md shrink-0">
-                  <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24">
+            <div className="bg-white rounded-3xl p-4 border border-slate-100 shadow-xs space-y-3 text-left">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-amber-400 via-rose-500 to-purple-600 flex items-center justify-center text-white shadow-xs shrink-0">
+                  <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
                     <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
                   </svg>
                 </div>
                 <div>
-                  <h4 className="text-base font-black text-slate-900 flex items-center gap-1">
-                    <span>Instagram Username</span>
+                  <h4 className="text-base font-bold text-slate-900 flex items-center gap-1">
+                    <span>Your Instagram Handle</span>
                     <span className="text-[#FF2E79]">*</span>
                   </h4>
-                  <p className="text-xs text-slate-500 font-medium mt-0.5">
-                    100% Mandatory for verification
+                  <p className="text-xs text-slate-400 font-normal mt-0.5">
+                    100% Mandatory for private verification
                   </p>
                 </div>
               </div>
 
-              <div className="bg-slate-50/90 border border-slate-200/90 rounded-2xl h-15 px-4.5 flex items-center gap-2 focus-within:bg-white focus-within:border-pink-400 focus-within:ring-4 focus-within:ring-rose-100 transition-all">
-                <span className="text-slate-400 font-black text-lg select-none">@</span>
+              <div className="bg-slate-50 border-2 border-slate-200/90 rounded-2xl h-14 min-h-[56px] px-4.5 flex items-center gap-2.5 focus-within:bg-white focus-within:border-[#FF2E79] focus-within:ring-4 focus-within:ring-pink-100 transition-all shadow-2xs">
+                <span className="text-slate-400 font-extrabold text-lg select-none">@</span>
                 <input
                   type="text"
                   value={instaId.replace(/^@/, '')}
                   onChange={(e) => setInstaId(e.target.value.replace(/^@/, ''))}
                   placeholder="yourusername"
-                  className="w-full bg-transparent outline-none text-base sm:text-lg font-bold text-slate-900 placeholder-slate-400"
+                  className="w-full h-full bg-transparent outline-none text-base font-bold text-slate-900 placeholder-slate-400"
                 />
               </div>
 
@@ -791,13 +785,13 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 5: Choose 3D Character Avatar                                        */}
         {/* ========================================================================= */}
         {step === 5 && (
-          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-6 sm:p-7 border border-white/90 shadow-[0_12px_36px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-6 animate-slide-up">
+          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-slide-up">
             <div>
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 05 • AVATAR FLAIR
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">3D Avatar & Coin Flip</h2>
-              <p className="text-sm text-slate-500 font-medium mt-1 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
                 Tap to preview how your profile card flips with your 3D avatar!
               </p>
             </div>
@@ -807,7 +801,7 @@ export default function OnboardingForm({ user, onComplete }) {
                 <div className="w-10 h-10 rounded-full bg-pink-50 border border-pink-100 flex items-center justify-center text-[#FF2E79] shadow-2xs shrink-0">
                   <Box className="w-5 h-5 stroke-[2.2]" />
                 </div>
-                <h4 className="text-base font-bold text-slate-900 tracking-tight">
+                <h4 className="text-sm font-bold text-slate-900 tracking-tight">
                   Choose 3D Character
                 </h4>
               </div>
@@ -815,9 +809,9 @@ export default function OnboardingForm({ user, onComplete }) {
               <button
                 type="button"
                 onClick={() => setIsFlippedPreview(!isFlippedPreview)}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-rose-50 text-xs font-black text-[#FF2E79] hover:bg-rose-100 transition-colors cursor-pointer shrink-0"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-50 text-xs font-extrabold text-[#FF2E79] hover:bg-rose-100 transition-colors cursor-pointer shrink-0"
               >
-                <RefreshCw className={`w-4 h-4 ${isFlippedPreview ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-3.5 h-3.5 ${isFlippedPreview ? 'animate-spin' : ''}`} />
                 <span>Flip Coin</span>
               </button>
             </div>
@@ -825,7 +819,7 @@ export default function OnboardingForm({ user, onComplete }) {
             <div className="flex items-center justify-center py-2">
               <div 
                 onClick={() => setIsFlippedPreview(!isFlippedPreview)}
-                className="relative w-28 h-28 cursor-pointer [perspective:1000px]"
+                className="relative w-24 h-24 cursor-pointer [perspective:1000px]"
               >
                 <div 
                   className={`w-full h-full rounded-full transition-transform duration-700 [transform-style:preserve-3d] shadow-xl border-4 border-[#FF2E79] ${
@@ -849,7 +843,7 @@ export default function OnboardingForm({ user, onComplete }) {
               </div>
             </div>
 
-            <div className="grid grid-cols-4 gap-3 pt-2 justify-items-center">
+            <div className="grid grid-cols-4 gap-3 pt-1 justify-items-center">
               {AVATAR_3D_CHARACTERS.map((char) => {
                 const isSelected = selectedAvatar3D === char.url;
                 return (
@@ -884,13 +878,13 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 6: Age & Height 3D Drum Wheels                                       */}
         {/* ========================================================================= */}
         {step === 6 && (
-          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-6 sm:p-7 border border-white/90 shadow-[0_12px_36px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-6 animate-slide-up">
+          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-slide-up">
             <div>
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 06 • STATS & BIOLOGY
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Age & Height</h2>
-              <p className="text-sm text-slate-500 font-medium mt-1 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
                 Scroll the wheels to select your age and height
               </p>
             </div>
@@ -925,18 +919,18 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 7: Gender Identity                                                   */}
         {/* ========================================================================= */}
         {step === 7 && (
-          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-6 sm:p-7 border border-white/90 shadow-[0_12px_36px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-6 animate-slide-up">
+          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-slide-up">
             <div>
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 07 • BIOLOGICAL IDENTITY
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Your Gender</h2>
-              <p className="text-sm text-slate-500 font-medium mt-1 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
                 Select your gender identity
               </p>
             </div>
 
-            <div className="space-y-4 pt-2">
+            <div className="space-y-3.5 pt-1">
               {[
                 { id: 'male', label: 'Male', icon: '♂', desc: 'Identify as male' },
                 { id: 'female', label: 'Female', icon: '♀', desc: 'Identify as female' },
@@ -946,20 +940,20 @@ export default function OnboardingForm({ user, onComplete }) {
                   key={g.id}
                   type="button"
                   onClick={() => setGender(g.id)}
-                  className={`w-full p-5 rounded-2xl text-base sm:text-lg font-bold transition-all border flex items-center justify-between cursor-pointer ${
+                  className={`w-full p-4 sm:p-5 rounded-2xl text-base font-bold transition-all border flex items-center justify-between cursor-pointer ${
                     gender === g.id
                       ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-lg shadow-pink-500/25 scale-[1.01]'
                       : 'bg-white text-slate-800 border-slate-200 hover:border-pink-200 shadow-2xs'
                   }`}
                 >
-                  <div className="flex items-center gap-3.5">
-                    <span className="text-3xl">{g.icon}</span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">{g.icon}</span>
                     <div className="text-left">
-                      <span className="block text-base sm:text-lg font-black">{g.label}</span>
+                      <span className="block text-base font-black">{g.label}</span>
                       <span className={`text-xs ${gender === g.id ? 'text-pink-100' : 'text-slate-400'}`}>{g.desc}</span>
                     </div>
                   </div>
-                  {gender === g.id && <Check className="w-6 h-6 stroke-[3]" />}
+                  {gender === g.id && <Check className="w-5 h-5 stroke-[3]" />}
                 </button>
               ))}
             </div>
@@ -970,23 +964,23 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 8: University & College                                              */}
         {/* ========================================================================= */}
         {step === 8 && (
-          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-6 sm:p-7 border border-white/90 shadow-[0_12px_36px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-6 animate-slide-up">
+          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-slide-up">
             <div>
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 08 • ACADEMICS
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">University & College</h2>
-              <p className="text-sm text-slate-500 font-medium mt-1 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
                 Connect with verified students across colleges in Delhi NCR
               </p>
             </div>
 
             <div className="space-y-4 pt-1">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-rose-50 border border-pink-100 flex items-center justify-center text-[#FF2E79]">
-                  <GraduationCap className="w-4 h-4 stroke-[2.2]" />
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
+                  <GraduationCap className="w-4 h-4" />
                 </div>
-                <label className="text-base font-bold text-slate-900">University *</label>
+                <label className="text-sm font-bold text-slate-900">University *</label>
               </div>
               <CustomSelect
                 value={university}
@@ -1001,7 +995,7 @@ export default function OnboardingForm({ user, onComplete }) {
                   placeholder="Type your university name..."
                   value={customUniversity}
                   onChange={(e) => setCustomUniversity(e.target.value)}
-                  className="w-full h-15 bg-slate-50/80 border border-slate-200/80 rounded-2xl px-4.5 text-base font-semibold text-slate-900 placeholder-slate-400 focus:bg-white focus:border-pink-300 outline-none transition-all mt-2"
+                  className="w-full h-14 min-h-[56px] bg-slate-50 border-2 border-slate-200/90 rounded-2xl px-4.5 text-base font-bold text-slate-900 placeholder-slate-400 focus:bg-white focus:border-[#FF2E79] focus:ring-4 focus:ring-pink-100 outline-none transition-all mt-2 shadow-2xs"
                 />
               )}
             </div>
@@ -1012,23 +1006,23 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 9: Branch & Major                                                    */}
         {/* ========================================================================= */}
         {step === 9 && (
-          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-6 sm:p-7 border border-white/90 shadow-[0_12px_36px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-6 animate-slide-up">
+          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-slide-up">
             <div>
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 09 • MAJOR & FIELD
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Branch & Major</h2>
-              <p className="text-sm text-slate-500 font-medium mt-1 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
                 What is your field of study or branch?
               </p>
             </div>
 
             <div className="space-y-4 pt-1">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-rose-50 border border-pink-100 flex items-center justify-center text-[#FF2E79]">
-                  <BookOpen className="w-4 h-4 stroke-[2.2]" />
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
+                  <BookOpen className="w-4 h-4" />
                 </div>
-                <label className="text-base font-bold text-slate-900">Branch *</label>
+                <label className="text-sm font-bold text-slate-900">Branch *</label>
               </div>
               <CustomSelect
                 value={branch}
@@ -1042,7 +1036,7 @@ export default function OnboardingForm({ user, onComplete }) {
                   placeholder="Type your branch / major..."
                   value={customBranch}
                   onChange={(e) => setCustomBranch(e.target.value)}
-                  className="w-full h-15 bg-slate-50/80 border border-slate-200/80 rounded-2xl px-4.5 text-base font-semibold text-slate-900 placeholder-slate-400 focus:bg-white focus:border-pink-300 outline-none transition-all mt-2"
+                  className="w-full h-14 min-h-[56px] bg-slate-50 border-2 border-slate-200/90 rounded-2xl px-4.5 text-base font-bold text-slate-900 placeholder-slate-400 focus:bg-white focus:border-[#FF2E79] focus:ring-4 focus:ring-pink-100 outline-none transition-all mt-2 shadow-2xs"
                 />
               )}
             </div>
@@ -1053,25 +1047,25 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 10: Year of Study                                                    */}
         {/* ========================================================================= */}
         {step === 10 && (
-          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-6 sm:p-7 border border-white/90 shadow-[0_12px_36px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-6 animate-slide-up">
+          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-slide-up">
             <div>
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 10 • ACADEMIC LEVEL
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Year Of Study</h2>
-              <p className="text-sm text-slate-500 font-medium mt-1 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
                 Select your current year of study
               </p>
             </div>
 
-            <div className="space-y-4 pt-1">
-              <div className="flex items-center gap-2.5 mb-1">
-                <div className="w-8 h-8 rounded-full bg-rose-50 border border-pink-100 flex items-center justify-center text-[#FF2E79]">
-                  <Award className="w-4 h-4 stroke-[2.2]" />
+            <div className="space-y-3 pt-1">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
+                  <Award className="w-4 h-4" />
                 </div>
-                <label className="text-base font-bold text-slate-900">Year Of Study *</label>
+                <label className="text-sm font-bold text-slate-900">Year Of Study *</label>
               </div>
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-2.5">
                 {['1st Year', '2nd Year', '3rd Year', '4th Year', 'Graduate'].map((yr) => {
                   const isSelected = yearOfStudy === yr;
                   return (
@@ -1079,7 +1073,7 @@ export default function OnboardingForm({ user, onComplete }) {
                       key={yr}
                       type="button"
                       onClick={() => setYearOfStudy(yr)}
-                      className={`px-6 py-3.5 rounded-full text-sm font-bold border transition-all cursor-pointer ${
+                      className={`px-5 py-3 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
                         isSelected
                           ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
                           : 'bg-white text-slate-800 border-slate-200 hover:border-pink-200 shadow-2xs'
@@ -1099,25 +1093,25 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 11: Religion & Beliefs                                               */}
         {/* ========================================================================= */}
         {step === 11 && (
-          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-6 sm:p-7 border border-white/90 shadow-[0_12px_36px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-6 animate-slide-up">
+          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-slide-up">
             <div>
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 11 • BELIEFS
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Religion</h2>
-              <p className="text-sm text-slate-500 font-medium mt-1 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
                 Select your religious background or beliefs
               </p>
             </div>
 
-            <div className="space-y-4 pt-1">
-              <div className="flex items-center gap-2.5 mb-1">
-                <div className="w-8 h-8 rounded-full bg-rose-50 border border-pink-100 flex items-center justify-center text-[#FF2E79]">
-                  <Flower2 className="w-4 h-4 stroke-[2.2]" />
+            <div className="space-y-3 pt-1">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
+                  <Flower2 className="w-4 h-4" />
                 </div>
-                <label className="text-base font-bold text-slate-900">Your Religion *</label>
+                <label className="text-sm font-bold text-slate-900">Your Religion *</label>
               </div>
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-2.5">
                 {['Hindu', 'Muslim', 'Sikh', 'Christian', 'Others'].map((rel) => {
                   const isSelected = religion === rel;
                   return (
@@ -1125,7 +1119,7 @@ export default function OnboardingForm({ user, onComplete }) {
                       key={rel}
                       type="button"
                       onClick={() => setReligion(rel)}
-                      className={`px-6 py-3.5 rounded-full text-sm font-bold border transition-all cursor-pointer ${
+                      className={`px-5 py-3 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
                         isSelected
                           ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
                           : 'bg-white text-slate-800 border-slate-200 hover:border-pink-200 shadow-2xs'
@@ -1145,25 +1139,25 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 12: Relationship Goals                                               */}
         {/* ========================================================================= */}
         {step === 12 && (
-          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-6 sm:p-7 border border-white/90 shadow-[0_12px_36px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-6 animate-slide-up">
+          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-slide-up">
             <div>
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 12 • RELATIONSHIP GOALS
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Looking For</h2>
-              <p className="text-sm text-slate-500 font-medium mt-1 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
                 What kind of connection are you hoping to find?
               </p>
             </div>
 
             <div className="space-y-3 pt-1">
-              <div className="flex items-center gap-2.5 mb-1">
-                <div className="w-8 h-8 rounded-full bg-rose-50 border border-pink-100 flex items-center justify-center text-[#FF2E79]">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
                   <Heart className="w-4 h-4 fill-pink-100" />
                 </div>
-                <label className="text-base font-bold text-slate-900">Relationship Type *</label>
+                <label className="text-sm font-bold text-slate-900">Relationship Type *</label>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2.5">
                 {[
                   'Serious Relationship', 
                   'Short-Term Relationships', 
@@ -1176,7 +1170,7 @@ export default function OnboardingForm({ user, onComplete }) {
                       key={type}
                       type="button"
                       onClick={() => toggleArrayItem(relationshipType, setRelationshipType, type)}
-                      className={`p-4 rounded-2xl text-left text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
+                      className={`p-3.5 rounded-2xl text-left text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
                         isSelected
                           ? 'bg-rose-50 border-[#FF2E79] text-[#FF2E79] shadow-xs font-black'
                           : 'bg-white border-slate-200 text-slate-800 hover:border-pink-200 shadow-2xs'
@@ -1196,25 +1190,25 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 13: Drinking / Smoking Habits                                         */}
         {/* ========================================================================= */}
         {step === 13 && (
-          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-6 sm:p-7 border border-white/90 shadow-[0_12px_36px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-6 animate-slide-up">
+          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-slide-up">
             <div>
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 13 • LIFESTYLE HABITS
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Habits</h2>
-              <p className="text-sm text-slate-500 font-medium mt-1 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
                 Select your drinking or smoking habits
               </p>
             </div>
 
-            <div className="space-y-4 pt-1">
-              <div className="flex items-center gap-2.5 mb-1">
-                <div className="w-8 h-8 rounded-full bg-rose-50 border border-pink-100 flex items-center justify-center text-[#FF2E79]">
-                  <Wine className="w-4 h-4 stroke-[2.2]" />
+            <div className="space-y-3 pt-1">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
+                  <Wine className="w-4 h-4" />
                 </div>
-                <label className="text-base font-bold text-slate-900">Drinking / Smoking Habits *</label>
+                <label className="text-sm font-bold text-slate-900">Drinking / Smoking Habits *</label>
               </div>
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-2.5">
                 {['Smoke', 'Drink', 'Drugs', 'Weed', 'None'].map((h) => {
                   const isSelected = habits.includes(h);
                   return (
@@ -1222,7 +1216,7 @@ export default function OnboardingForm({ user, onComplete }) {
                       key={h}
                       type="button"
                       onClick={() => toggleArrayItem(habits, setHabits, h)}
-                      className={`px-6 py-3.5 rounded-full text-sm font-bold border transition-all cursor-pointer ${
+                      className={`px-5 py-3 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
                         isSelected
                           ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
                           : 'bg-white text-slate-800 border-slate-200 hover:border-pink-200 shadow-2xs'
@@ -1242,26 +1236,26 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 14: Personality Type & Qualities                                     */}
         {/* ========================================================================= */}
         {step === 14 && (
-          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-6 sm:p-7 border border-white/90 shadow-[0_12px_36px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-6 animate-slide-up">
+          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-slide-up">
             <div>
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 14 • YOUR PERSONA
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Personality & Traits</h2>
-              <p className="text-sm text-slate-500 font-medium mt-1 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
                 How would you describe your personality and top qualities?
               </p>
             </div>
 
-            <div className="space-y-5">
-              <div className="space-y-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full bg-rose-50 border border-pink-100 flex items-center justify-center text-[#FF2E79]">
+            <div className="space-y-4">
+              <div className="space-y-2.5">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
                     <Smile className="w-4 h-4" />
                   </div>
-                  <label className="text-base font-bold text-slate-900">Personality Type *</label>
+                  <label className="text-sm font-bold text-slate-900">Personality Type *</label>
                 </div>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-3 gap-2.5">
                   {['Introvert', 'Ambivert', 'Extrovert'].map((p) => {
                     const isSelected = personalityType === p;
                     return (
@@ -1269,7 +1263,7 @@ export default function OnboardingForm({ user, onComplete }) {
                         key={p}
                         type="button"
                         onClick={() => setPersonalityType(p)}
-                        className={`py-3.5 rounded-2xl text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
+                        className={`py-3 rounded-2xl text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
                           isSelected
                             ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
                             : 'bg-white text-slate-800 border-slate-200 hover:border-pink-200 shadow-2xs'
@@ -1283,14 +1277,14 @@ export default function OnboardingForm({ user, onComplete }) {
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full bg-rose-50 border border-pink-100 flex items-center justify-center text-[#FF2E79]">
+              <div className="space-y-2.5">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
                     <Sparkles className="w-4 h-4" />
                   </div>
-                  <label className="text-base font-bold text-slate-900">Qualities ({qualities.length} selected) *</label>
+                  <label className="text-sm font-bold text-slate-900">Qualities ({qualities.length} selected) *</label>
                 </div>
-                <div className="flex flex-wrap gap-2.5">
+                <div className="flex flex-wrap gap-2">
                   {QUALITIES_LIST.map((q) => {
                     const isSelected = qualities.includes(q);
                     return (
@@ -1298,7 +1292,7 @@ export default function OnboardingForm({ user, onComplete }) {
                         key={q}
                         type="button"
                         onClick={() => toggleArrayItem(qualities, setQualities, q)}
-                        className={`px-4.5 py-2.5 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
+                        className={`px-4 py-2.5 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
                           isSelected
                             ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
                             : 'bg-white text-slate-800 border-slate-200 hover:border-pink-200 shadow-2xs'
@@ -1319,26 +1313,26 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 15: Dating Vibe & Past History                                       */}
         {/* ========================================================================= */}
         {step === 15 && (
-          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-6 sm:p-7 border border-white/90 shadow-[0_12px_36px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-6 animate-slide-up">
+          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-slide-up">
             <div>
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 15 • VIBE & EXES
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Dating Vibe & Exes</h2>
-              <p className="text-sm text-slate-500 font-medium mt-1 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
                 Your ideal date vibe and past relationship experience
               </p>
             </div>
 
-            <div className="space-y-5">
-              <div className="space-y-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full bg-rose-50 border border-pink-100 flex items-center justify-center text-[#FF2E79]">
+            <div className="space-y-4">
+              <div className="space-y-2.5">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
                     <Coffee className="w-4 h-4" />
                   </div>
-                  <label className="text-base font-bold text-slate-900">Dating Vibe *</label>
+                  <label className="text-sm font-bold text-slate-900">Dating Vibe *</label>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-2.5">
                   {DATING_VIBES.map((v) => {
                     const isSelected = datingVibe.includes(v);
                     return (
@@ -1346,7 +1340,7 @@ export default function OnboardingForm({ user, onComplete }) {
                         key={v}
                         type="button"
                         onClick={() => toggleArrayItem(datingVibe, setDatingVibe, v)}
-                        className={`p-3.5 rounded-2xl text-xs sm:text-sm font-bold border transition-all text-left cursor-pointer ${
+                        className={`p-3 rounded-2xl text-xs sm:text-sm font-bold border transition-all text-left cursor-pointer ${
                           isSelected
                             ? 'bg-rose-50 border-[#FF2E79] text-[#FF2E79] shadow-xs font-black'
                             : 'bg-white border-slate-200 text-slate-800 hover:border-pink-200 shadow-2xs'
@@ -1360,12 +1354,12 @@ export default function OnboardingForm({ user, onComplete }) {
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full bg-rose-50 border border-pink-100 flex items-center justify-center text-[#FF2E79]">
+              <div className="space-y-2.5">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
                     <Heart className="w-4 h-4 fill-pink-100" />
                   </div>
-                  <label className="text-base font-bold text-slate-900">Number of Exes *</label>
+                  <label className="text-sm font-bold text-slate-900">Number of Exes *</label>
                 </div>
                 <CustomSelect
                   value={numberOfExes.toString()}
@@ -1388,7 +1382,7 @@ export default function OnboardingForm({ user, onComplete }) {
                 STEP 16 • IDEAL MATCH CRITERIA
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Partner Stats</h2>
-              <p className="text-sm text-slate-500 font-medium mt-1 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
                 Describe your ideal partner's age range and minimum height
               </p>
             </div>
@@ -1402,8 +1396,8 @@ export default function OnboardingForm({ user, onComplete }) {
               </span>
             </div>
 
-            <div className="bg-white/90 backdrop-blur-md rounded-[28px] p-5 border border-white/80 shadow-xs space-y-3 text-left">
-              <label className="text-base font-bold text-slate-900 block">
+            <div className="bg-white/90 backdrop-blur-md rounded-[28px] p-5 border border-white/80 shadow-xs space-y-3 text-left relative overflow-visible">
+              <label className="text-sm sm:text-base font-bold text-slate-900 block">
                 Preferred Age ({prefMinAge} - {prefMaxAge} yrs) *
               </label>
               <div className="flex items-center gap-3 pt-2 pb-1">
@@ -1427,8 +1421,8 @@ export default function OnboardingForm({ user, onComplete }) {
               </div>
             </div>
 
-            <div className="bg-white/90 backdrop-blur-md rounded-[28px] p-5 border border-white/80 shadow-xs space-y-3 text-left">
-              <label className="text-base font-bold text-slate-900 block">Preferred Height *</label>
+            <div className="bg-white/90 backdrop-blur-md rounded-[28px] p-5 border border-white/80 shadow-xs space-y-3 text-left relative overflow-visible">
+              <label className="text-sm sm:text-base font-bold text-slate-900 block">Preferred Height *</label>
               <CustomSelect
                 value={prefHeight}
                 onChange={(val) => setPrefHeight(val)}
@@ -1449,13 +1443,13 @@ export default function OnboardingForm({ user, onComplete }) {
                 STEP 17 • MATCH GENDER
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Preferred Gender</h2>
-              <p className="text-sm text-slate-500 font-medium mt-1 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
                 What gender do you prefer in your match?
               </p>
             </div>
 
-            <div className="bg-white/90 backdrop-blur-md rounded-[28px] p-6 border border-white/80 shadow-xs space-y-4 text-left">
-              <label className="text-base font-bold text-slate-900 block">Preferred Gender *</label>
+            <div className="bg-white/90 backdrop-blur-md rounded-[28px] p-5 border border-white/80 shadow-xs space-y-4 text-left relative overflow-visible">
+              <label className="text-sm sm:text-base font-bold text-slate-900 block">Preferred Gender *</label>
               <div className="grid grid-cols-3 gap-3">
                 {['Male', 'Female', 'Others'].map((g) => {
                   const isSelected = prefGender === g;
@@ -1464,7 +1458,7 @@ export default function OnboardingForm({ user, onComplete }) {
                       key={g}
                       type="button"
                       onClick={() => setPrefGender(g)}
-                      className={`py-4 rounded-2xl text-base font-bold transition-all border flex items-center justify-center cursor-pointer ${
+                      className={`py-4 rounded-2xl text-sm sm:text-base font-bold transition-all border flex items-center justify-center cursor-pointer ${
                         isSelected
                           ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/25 scale-[1.02]'
                           : 'bg-white text-slate-800 border-slate-200 hover:border-pink-200 shadow-2xs'
@@ -1489,13 +1483,13 @@ export default function OnboardingForm({ user, onComplete }) {
                 STEP 18 • PREFERRED CAMPUS
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Preferred University</h2>
-              <p className="text-sm text-slate-500 font-medium mt-1 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
                 Select preferred campus and colleges for your match
               </p>
             </div>
 
             <div className="space-y-2">
-              <label className="text-base font-bold text-slate-900 block">Preferred University *</label>
+              <label className="text-sm sm:text-base font-bold text-slate-900 block">Preferred University *</label>
               <div className="bg-white/90 backdrop-blur-md rounded-[28px] p-5 border border-white/80 shadow-xs flex flex-wrap gap-2.5">
                 {['Any University', ...POPULAR_UNIVERSITIES].map((u) => {
                   const isSelected = prefUniversity.includes(u);
@@ -1504,7 +1498,7 @@ export default function OnboardingForm({ user, onComplete }) {
                       key={u}
                       type="button"
                       onClick={() => toggleArrayItem(prefUniversity, setPrefUniversity, u)}
-                      className={`px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
+                      className={`px-4.5 py-2.5 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
                         isSelected
                           ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
                           : 'bg-white text-slate-800 border-slate-100 hover:border-pink-200 shadow-2xs'
@@ -1530,14 +1524,14 @@ export default function OnboardingForm({ user, onComplete }) {
                 STEP 19 • PREFERRED ACADEMICS
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Preferred Branch & Year</h2>
-              <p className="text-sm text-slate-500 font-medium mt-1 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
                 Preferred field of study and academic year for your match
               </p>
             </div>
 
             <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-base font-bold text-slate-900 block">Preferred Branch *</label>
+              <div className="space-y-2 relative overflow-visible">
+                <label className="text-sm sm:text-base font-bold text-slate-900 block">Preferred Branch *</label>
                 <CustomSelect
                   value={prefBranch}
                   onChange={(val) => setPrefBranch(val)}
@@ -1547,7 +1541,7 @@ export default function OnboardingForm({ user, onComplete }) {
               </div>
 
               <div className="space-y-2 pt-2">
-                <label className="text-base font-bold text-slate-900 block">Preferred year of study *</label>
+                <label className="text-sm sm:text-base font-bold text-slate-900 block">Preferred year of study *</label>
                 <div className="bg-white/90 backdrop-blur-md rounded-[28px] p-5 border border-white/80 shadow-xs flex flex-wrap gap-2.5">
                   {['Any Year', '1st Year', '2nd Year', '3rd Year', '4th Year', 'Graduate'].map((yr) => {
                     const isSelected = prefYearOfStudy.includes(yr);
@@ -1556,7 +1550,7 @@ export default function OnboardingForm({ user, onComplete }) {
                         key={yr}
                         type="button"
                         onClick={() => toggleArrayItem(prefYearOfStudy, setPrefYearOfStudy, yr)}
-                        className={`px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
+                        className={`px-4.5 py-2.5 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
                           isSelected
                             ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
                             : 'bg-white text-slate-800 border-slate-100 hover:border-pink-200 shadow-2xs'
@@ -1577,23 +1571,23 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* STEP 20: Partner Preferences — Religion, Habits & Exes                   */}
         {/* ========================================================================= */}
         {step === 20 && (
-          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-6 sm:p-7 border border-white/90 shadow-[0_12px_36px_rgba(255,182,193,0.35)] text-left relative overflow-hidden space-y-6 animate-slide-up">
+          <div className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-slide-up">
             <div>
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
                 STEP 20 • PARTNER LIFESTYLE
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Habits & Exes</h2>
-              <p className="text-sm text-slate-500 font-medium mt-1 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
                 Select religion, habits and past history preferences
               </p>
             </div>
 
-            <div className="space-y-4">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-rose-50 border border-pink-100 flex items-center justify-center text-[#FF2E79] shrink-0">
-                  <Flower2 className="w-4 h-4 stroke-[2.2]" />
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
+                  <Flower2 className="w-4 h-4" />
                 </div>
-                <label className="text-base font-bold text-slate-900">Preferred Religion *</label>
+                <label className="text-sm sm:text-base font-bold text-slate-900">Preferred Religion *</label>
               </div>
               <div className="flex flex-wrap gap-2.5">
                 {['Any', 'Hindu', 'Muslim', 'Sikh', 'Christian', 'Others'].map((r) => {
@@ -1603,7 +1597,7 @@ export default function OnboardingForm({ user, onComplete }) {
                       key={r}
                       type="button"
                       onClick={() => toggleArrayItem(prefReligion, setPrefReligion, r)}
-                      className={`px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
+                      className={`px-4.5 py-2.5 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
                         isSelected
                           ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
                           : 'bg-white text-slate-800 border-slate-100 hover:border-pink-200 shadow-2xs'
@@ -1616,12 +1610,12 @@ export default function OnboardingForm({ user, onComplete }) {
               </div>
             </div>
 
-            <div className="space-y-4">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-rose-50 border border-pink-100 flex items-center justify-center text-[#FF2E79] shrink-0">
-                  <Wine className="w-4 h-4 stroke-[2.2]" />
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
+                  <Wine className="w-4 h-4" />
                 </div>
-                <label className="text-base font-bold text-slate-900">Preferred Habits *</label>
+                <label className="text-sm sm:text-base font-bold text-slate-900">Preferred Habits *</label>
               </div>
               <div className="flex flex-wrap gap-2.5">
                 {['None', 'Drink', 'Smoke', 'Weed', 'Doesn\'t matter'].map((h) => {
@@ -1631,7 +1625,7 @@ export default function OnboardingForm({ user, onComplete }) {
                       key={h}
                       type="button"
                       onClick={() => toggleArrayItem(prefHabits, setPrefHabits, h)}
-                      className={`px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
+                      className={`px-4.5 py-2.5 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
                         isSelected
                           ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
                           : 'bg-white text-slate-800 border-slate-100 hover:border-pink-200 shadow-2xs'
@@ -1644,12 +1638,12 @@ export default function OnboardingForm({ user, onComplete }) {
               </div>
             </div>
 
-            <div className="space-y-4">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-rose-50 border border-pink-100 flex items-center justify-center text-[#FF2E79] shrink-0">
-                  <Heart className="w-4 h-4 fill-rose-100 text-[#FF2E79]" />
+            <div className="space-y-3 relative overflow-visible">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
+                  <Heart className="w-4 h-4 fill-pink-100" />
                 </div>
-                <label className="text-base font-bold text-slate-900">Preferred Number Of Exes *</label>
+                <label className="text-sm sm:text-base font-bold text-slate-900">Preferred Number Of Exes *</label>
               </div>
               <CustomSelect
                 value={prefExes}
@@ -1671,18 +1665,18 @@ export default function OnboardingForm({ user, onComplete }) {
                 STEP 21 • ENERGY & PERSONA
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Personality & Vibe</h2>
-              <p className="text-sm text-slate-500 font-medium mt-1 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
                 What traits and dating vibe do you desire in your match?
               </p>
             </div>
 
-            <div className="bg-white/90 backdrop-blur-md rounded-[32px] p-6 border border-slate-100/90 shadow-xs space-y-6 text-left relative overflow-hidden">
-              <div className="space-y-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full bg-rose-50 border border-pink-100 flex items-center justify-center text-[#FF2E79] shrink-0">
+            <div className="bg-white/90 backdrop-blur-md rounded-[32px] p-5 border border-slate-100/90 shadow-xs space-y-5 text-left relative overflow-visible">
+              <div className="space-y-2.5">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
                     <Smile className="w-4 h-4" />
                   </div>
-                  <label className="text-base font-bold text-slate-900">Preferred Personality *</label>
+                  <label className="text-sm sm:text-base font-bold text-slate-900">Preferred Personality *</label>
                 </div>
                 <div className="grid grid-cols-4 gap-2">
                   {['Introvert', 'Ambivert', 'Extrovert', 'Any'].map((p) => {
@@ -1706,14 +1700,14 @@ export default function OnboardingForm({ user, onComplete }) {
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full bg-rose-50 border border-pink-100 flex items-center justify-center text-[#FF2E79] shrink-0">
+              <div className="space-y-2.5">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
                     <Sparkles className="w-4 h-4" />
                   </div>
-                  <label className="text-base font-bold text-slate-900">Preferred Qualities *</label>
+                  <label className="text-sm sm:text-base font-bold text-slate-900">Preferred Qualities *</label>
                 </div>
-                <div className="flex flex-wrap gap-2.5">
+                <div className="flex flex-wrap gap-2">
                   {QUALITIES_LIST.map((q) => {
                     const isSelected = prefQualities.includes(q);
                     return (
@@ -1721,7 +1715,7 @@ export default function OnboardingForm({ user, onComplete }) {
                         key={q}
                         type="button"
                         onClick={() => toggleArrayItem(prefQualities, setPrefQualities, q)}
-                        className={`px-4 py-2.5 rounded-full text-xs sm:text-sm font-bold border transition-all cursor-pointer ${
+                        className={`px-3.5 py-2 rounded-full text-xs font-bold border transition-all cursor-pointer ${
                           isSelected
                             ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-md shadow-pink-500/20 scale-[1.02]'
                             : 'bg-white text-slate-800 border-slate-200 hover:border-pink-200 shadow-2xs'
@@ -1735,12 +1729,12 @@ export default function OnboardingForm({ user, onComplete }) {
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full bg-rose-50 border border-pink-100 flex items-center justify-center text-[#FF2E79] shrink-0">
+              <div className="space-y-2.5">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
                     <Coffee className="w-4 h-4" />
                   </div>
-                  <label className="text-base font-bold text-slate-900">Preferred Dating Vibe *</label>
+                  <label className="text-sm sm:text-base font-bold text-slate-900">Preferred Dating Vibe *</label>
                 </div>
                 <div className="grid grid-cols-2 gap-2.5">
                   {DATING_VIBES.map((v) => {
@@ -1750,7 +1744,7 @@ export default function OnboardingForm({ user, onComplete }) {
                         key={v}
                         type="button"
                         onClick={() => toggleArrayItem(prefDatingVibe, setPrefDatingVibe, v)}
-                        className={`p-3.5 rounded-2xl text-xs font-bold border transition-all text-left cursor-pointer ${
+                        className={`p-3 rounded-2xl text-xs font-bold border transition-all text-left cursor-pointer ${
                           isSelected
                             ? 'bg-rose-50 border-[#FF2E79] text-[#FF2E79] shadow-xs font-black'
                             : 'bg-white border-slate-200 text-slate-800 hover:border-pink-200 shadow-2xs'
@@ -1777,12 +1771,12 @@ export default function OnboardingForm({ user, onComplete }) {
                 STEP 22 • STRICT FILTERS
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Non-Negotiables</h2>
-              <p className="text-sm text-slate-500 font-medium mt-1 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
                 Parameters on which you are not willing to compromise
               </p>
             </div>
 
-            <div className="p-4 bg-pink-50/70 border border-pink-100/80 rounded-2xl flex items-center gap-3 text-xs sm:text-sm text-slate-700 shadow-2xs text-left">
+            <div className="p-3.5 bg-pink-50/70 border border-pink-100/80 rounded-2xl flex items-center gap-3 text-xs text-slate-700 shadow-2xs text-left">
               <div className="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center text-[#FF2E79] shrink-0">
                 <Lightbulb className="w-4 h-4 fill-pink-200" />
               </div>
@@ -1791,12 +1785,12 @@ export default function OnboardingForm({ user, onComplete }) {
               </span>
             </div>
 
-            <div className="bg-white/90 backdrop-blur-md rounded-[32px] p-6 border border-slate-100/90 shadow-xs space-y-4 text-left">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-rose-50 border border-pink-100 flex items-center justify-center text-[#FF2E79] shrink-0">
+            <div className="bg-white/90 backdrop-blur-md rounded-[32px] p-5 border border-slate-100/90 shadow-xs space-y-4 text-left relative overflow-visible">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79] shrink-0">
                   <ShieldCheck className="w-4 h-4" />
                 </div>
-                <label className="text-base font-bold text-slate-900 block">My Non Negotiables Are *</label>
+                <label className="text-sm sm:text-base font-bold text-slate-900 block">My Non Negotiables Are *</label>
               </div>
 
               <div className="flex flex-wrap gap-2.5">
@@ -1821,12 +1815,12 @@ export default function OnboardingForm({ user, onComplete }) {
               </div>
             </div>
 
-            <label className="flex items-start gap-3 text-xs sm:text-sm text-slate-600 text-left bg-white/90 backdrop-blur-md p-5 rounded-3xl border border-slate-100 shadow-2xs cursor-pointer">
+            <label className="flex items-start gap-3 text-xs text-slate-600 text-left bg-white/90 backdrop-blur-md p-4 rounded-3xl border border-slate-100 shadow-2xs cursor-pointer">
               <input
                 type="checkbox"
                 checked={autoThreeRounds}
                 onChange={(e) => setAutoThreeRounds(e.target.checked)}
-                className="mt-0.5 accent-[#FF2E79] w-4.5 h-4.5 rounded shrink-0"
+                className="mt-0.5 accent-[#FF2E79] w-4 h-4 rounded shrink-0"
               />
               <span className="leading-relaxed font-medium">
                 Automatically receive matches in the next 3 rounds on round days, without filling the form again.
@@ -1845,54 +1839,54 @@ export default function OnboardingForm({ user, onComplete }) {
                 STEP 23 • LEGAL AGREEMENT
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Terms & Conditions</h2>
-              <p className="text-sm text-slate-500 font-medium mt-1 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
                 Please review and check all 4 agreement clauses
               </p>
             </div>
 
-            <div className="bg-white/90 backdrop-blur-md border border-slate-100/90 rounded-[32px] p-6 space-y-4 text-left max-h-[360px] overflow-y-auto no-scrollbar shadow-xs">
-              <label className="flex items-start gap-3.5 text-xs sm:text-sm text-slate-600 cursor-pointer pb-3.5 border-b border-slate-200/60">
+            <div className="bg-white/90 backdrop-blur-md border border-slate-100/90 rounded-[32px] p-5 space-y-4 text-left max-h-[360px] overflow-y-auto no-scrollbar shadow-xs relative overflow-visible">
+              <label className="flex items-start gap-3 text-xs text-slate-600 cursor-pointer pb-3.5 border-b border-slate-200/60">
                 <input
                   type="checkbox"
                   checked={agreedTerms.t1}
                   onChange={(e) => setAgreedTerms({ ...agreedTerms, t1: e.target.checked })}
-                  className="mt-0.5 accent-[#FF2E79] w-4.5 h-4.5 rounded shrink-0"
+                  className="mt-0.5 accent-[#FF2E79] w-4 h-4 rounded shrink-0"
                 />
                 <span className="leading-relaxed font-medium">
                   The monetary remittance of ₹100 is strictly non-refundable. This fee solely remunerates the administrative exertions undertaken to procure a potentially compatible match.
                 </span>
               </label>
 
-              <label className="flex items-start gap-3.5 text-xs sm:text-sm text-slate-600 cursor-pointer pb-3.5 border-b border-slate-200/60">
+              <label className="flex items-start gap-3 text-xs text-slate-600 cursor-pointer pb-3.5 border-b border-slate-200/60">
                 <input
                   type="checkbox"
                   checked={agreedTerms.t2}
                   onChange={(e) => setAgreedTerms({ ...agreedTerms, t2: e.target.checked })}
-                  className="mt-0.5 accent-[#FF2E79] w-4.5 h-4.5 rounded shrink-0"
+                  className="mt-0.5 accent-[#FF2E79] w-4 h-4 rounded shrink-0"
                 />
                 <span className="leading-relaxed font-medium">
                   By submitting your personal data and stipulated preferences, you irrevocably consent to the utilization of such information by Cupid for matching purposes.
                 </span>
               </label>
 
-              <label className="flex items-start gap-3.5 text-xs sm:text-sm text-slate-600 cursor-pointer pb-3.5 border-b border-slate-200/60">
+              <label className="flex items-start gap-3 text-xs text-slate-600 cursor-pointer pb-3.5 border-b border-slate-200/60">
                 <input
                   type="checkbox"
                   checked={agreedTerms.t3}
                   onChange={(e) => setAgreedTerms({ ...agreedTerms, t3: e.target.checked })}
-                  className="mt-0.5 accent-[#FF2E79] w-4.5 h-4.5 rounded shrink-0"
+                  className="mt-0.5 accent-[#FF2E79] w-4 h-4 rounded shrink-0"
                 />
                 <span className="leading-relaxed font-medium">
                   Cupid's role is strictly mediatory; it merely effectuates an introduction between individuals deemed ostensibly compatible.
                 </span>
               </label>
 
-              <label className="flex items-start gap-3.5 text-xs sm:text-sm text-slate-600 cursor-pointer">
+              <label className="flex items-start gap-3 text-xs text-slate-600 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={agreedTerms.t4}
                   onChange={(e) => setAgreedTerms({ ...agreedTerms, t4: e.target.checked })}
-                  className="mt-0.5 accent-[#FF2E79] w-4.5 h-4.5 rounded shrink-0"
+                  className="mt-0.5 accent-[#FF2E79] w-4 h-4 rounded shrink-0"
                 />
                 <span className="leading-relaxed font-medium">
                   Any conduct deemed inappropriate, disrespectful, or constituting ghosting absolves Cupid of liability and may result in exclusion.
@@ -1912,7 +1906,7 @@ export default function OnboardingForm({ user, onComplete }) {
                 STEP 24 • PLAN TIER
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Matchmaking Tier</h2>
-              <p className="text-sm text-slate-500 font-medium mt-1 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
                 Choose your guarantee level for this active round
               </p>
             </div>
@@ -1927,10 +1921,10 @@ export default function OnboardingForm({ user, onComplete }) {
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-black text-slate-900 text-base">100 Rupee Plan</span>
+                  <span className="font-black text-slate-900 text-sm">100 Rupee Plan</span>
                   <span className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">Standard</span>
                 </div>
-                <ul className="text-xs sm:text-sm text-slate-600 mt-2.5 space-y-1.5 leading-relaxed font-medium">
+                <ul className="text-xs text-slate-600 mt-2.5 space-y-1.5 leading-relaxed font-medium">
                   <li>• Participate in 1 matchmaking round</li>
                   <li>• Chance of 1 match based on compatibility</li>
                   <li>• 100% anonymous matching process</li>
@@ -1946,10 +1940,10 @@ export default function OnboardingForm({ user, onComplete }) {
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-black text-slate-900 text-base">250 Rupee Plan</span>
-                  <span className="text-xs font-extrabold text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">100% Refund Guarantee</span>
+                  <span className="font-black text-slate-900 text-sm">250 Rupee Plan</span>
+                  <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">100% Refund Guarantee</span>
                 </div>
-                <ul className="text-xs sm:text-sm text-slate-600 mt-2.5 space-y-1.5 leading-relaxed font-medium">
+                <ul className="text-xs text-slate-600 mt-2.5 space-y-1.5 leading-relaxed font-medium">
                   <li>• Higher priority placement in round</li>
                   <li>• Profile preview before match confirmation</li>
                   <li>• <strong>Full refund if no match is found</strong></li>
@@ -1966,14 +1960,14 @@ export default function OnboardingForm({ user, onComplete }) {
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="font-black text-slate-900 text-base">449 Rupee Plan</span>
-                    <span className="text-[10px] font-black bg-[#FF2E79] text-white px-2.5 py-0.5 rounded-full uppercase">
+                    <span className="font-black text-slate-900 text-sm">449 Rupee Plan</span>
+                    <span className="text-[9px] font-black bg-[#FF2E79] text-white px-2.5 py-0.5 rounded-full uppercase">
                       VIP ELITE
                     </span>
                   </div>
                   <span className="text-xs font-black text-[#FF2E79]">Highest Match Rate</span>
                 </div>
-                <ul className="text-xs sm:text-sm text-slate-700 mt-2.5 space-y-1.5 font-medium leading-relaxed">
+                <ul className="text-xs text-slate-700 mt-2.5 space-y-1.5 font-medium leading-relaxed">
                   <li>• Highest VIP priority matching placement</li>
                   <li>• Mutual approval only (no one-sided matches)</li>
                   <li>• <strong>No mutual match = instant full refund</strong></li>
@@ -1993,19 +1987,19 @@ export default function OnboardingForm({ user, onComplete }) {
                 STEP 25 • FINAL ACTIVATION
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Confirm & Pay</h2>
-              <p className="text-sm text-slate-500 font-medium mt-1 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
                 Entry fee is one-time and verified instantly
               </p>
             </div>
 
-            <div className="bg-white/90 backdrop-blur-md border border-slate-100/90 rounded-[32px] p-6 text-center space-y-4 shadow-xs">
-              <div className="flex items-center justify-between text-sm font-bold text-slate-700 pb-3 border-b border-slate-200/60">
+            <div className="bg-white/90 backdrop-blur-md border border-slate-100/90 rounded-[32px] p-5 text-center space-y-4 shadow-xs relative overflow-visible">
+              <div className="flex items-center justify-between text-xs font-bold text-slate-700 pb-3 border-b border-slate-200/60">
                 <span>Exact Required Amount:</span>
                 <div className="text-right">
-                  <span className="text-[#FF2E79] text-2xl font-black">
+                  <span className="text-[#FF2E79] text-xl font-black">
                     {selectedPlan === 'basic' ? '₹100' : selectedPlan === 'premium' ? '₹250' : '₹449'}
                   </span>
-                  <span className="text-[10px] text-slate-400 font-extrabold block uppercase tracking-wider mt-0.5">
+                  <span className="text-[9px] text-slate-400 font-extrabold block uppercase tracking-wider mt-0.5">
                     Pre-Locked Amount
                   </span>
                 </div>
@@ -2015,13 +2009,13 @@ export default function OnboardingForm({ user, onComplete }) {
                 <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-left flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
                   <div>
-                    <span className="text-sm font-black text-emerald-900 block">
+                    <span className="text-xs font-black text-emerald-900 block">
                       Payment of ₹{selectedPlan === 'basic' ? '100' : selectedPlan === 'premium' ? '250' : '449'} Verified!
                     </span>
-                    <span className="text-xs text-emerald-700 font-mono block mt-0.5">
+                    <span className="text-[10px] text-emerald-700 font-mono block mt-0.5">
                       Bank Ref / UTR: {autoVerifiedUtr}
                     </span>
-                    <span className="text-xs text-slate-500 block mt-1 font-medium">
+                    <span className="text-[10px] text-slate-500 block mt-1 font-medium">
                       Exact amount matched. Profile is automatically activated.
                     </span>
                   </div>
@@ -2032,23 +2026,23 @@ export default function OnboardingForm({ user, onComplete }) {
                     type="button"
                     onClick={handleInstantAutoPay}
                     disabled={isVerifyingAutoPay}
-                    className="w-full h-15 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-black text-sm sm:text-base rounded-2xl flex items-center justify-center gap-2.5 shadow-lg transition-all active:scale-[0.98] disabled:opacity-75 cursor-pointer"
+                    className="w-full h-[54px] min-h-[54px] bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-black text-sm rounded-2xl flex items-center justify-center gap-2 shadow-lg transition-all active:scale-[0.98] disabled:opacity-75 cursor-pointer"
                   >
-                    <span className="text-xl">📲</span>
+                    <span className="text-lg">📲</span>
                     <span>Pay via PhonePe / GPay / BHIM</span>
                     <span className="ml-1 font-extrabold">{selectedPlan === 'basic' ? '₹100' : selectedPlan === 'premium' ? '₹250' : '₹449'}</span>
                   </button>
 
                   <div className="relative flex items-center justify-center my-2">
                     <div className="border-t border-slate-200 w-full"></div>
-                    <span className="bg-slate-50 px-3 text-xs font-bold text-slate-400 uppercase tracking-wider absolute">
+                    <span className="bg-slate-50 px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider absolute">
                       or scan locked QR
                     </span>
                   </div>
 
-                  <div className="w-40 h-40 mx-auto bg-white p-2.5 rounded-2xl border-2 border-rose-100 shadow-md flex items-center justify-center relative">
+                  <div className="w-36 h-36 mx-auto bg-white p-2 rounded-2xl border-2 border-rose-100 shadow-md flex items-center justify-center relative">
                     <img
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(
                         `upi://pay?pa=aditya.378%40superyes&pn=CupidRound&am=${
                           selectedPlan === 'basic' ? '100.00' : selectedPlan === 'premium' ? '250.00' : '449.00'
                         }&cu=INR&tn=Cupid_Round_${selectedPlan}_Plan`
@@ -2065,13 +2059,13 @@ export default function OnboardingForm({ user, onComplete }) {
                       setCopiedUpi(true);
                       setTimeout(() => setCopiedUpi(false), 2000);
                     }}
-                    className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-white border border-slate-200 text-xs sm:text-sm font-bold text-slate-700 hover:bg-slate-100 shadow-sm transition-all"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-100 shadow-sm transition-all"
                   >
-                    <Copy className="w-4 h-4 text-[#FF2E79]" />
+                    <Copy className="w-3.5 h-3.5 text-[#FF2E79]" />
                     <span>{copiedUpi ? '✓ Copied!' : 'aditya.378@superyes'}</span>
                   </button>
                   
-                  <p className="text-xs text-slate-500 font-medium text-center leading-relaxed">
+                  <p className="text-[10px] text-slate-500 font-medium text-center leading-relaxed">
                     After payment, enter your <strong>12-digit UTR</strong> below to confirm your entry.
                   </p>
                 </div>
@@ -2080,9 +2074,9 @@ export default function OnboardingForm({ user, onComplete }) {
 
             {!autoVerifiedUtr && (
               <div className="space-y-4 text-left">
-                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4.5 text-left">
-                  <p className="text-xs sm:text-sm font-black text-amber-800 mb-1">📸 After Paying:</p>
-                  <p className="text-xs text-amber-700 leading-relaxed font-medium">
+                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-left">
+                  <p className="text-xs font-black text-amber-800 mb-1">📸 After Paying:</p>
+                  <p className="text-[11px] text-amber-700 leading-relaxed font-medium">
                     1. Take a screenshot of the payment confirmation<br/>
                     2. Upload it below<br/>
                     3. Enter your UTR/transaction ID<br/>
@@ -2091,7 +2085,7 @@ export default function OnboardingForm({ user, onComplete }) {
                 </div>
 
                 <div>
-                  <label className="form-label text-sm font-bold text-slate-700 mb-2 block">
+                  <label className="form-label text-xs font-bold text-slate-700 mb-2 block">
                     Upload Payment Screenshot *
                   </label>
                   <input
@@ -2107,34 +2101,34 @@ export default function OnboardingForm({ user, onComplete }) {
                       <img
                         src={screenshotPreview}
                         alt="Payment Screenshot"
-                        className="w-full max-h-52 object-contain rounded-2xl border-2 border-emerald-300 bg-emerald-50"
+                        className="w-full max-h-48 object-contain rounded-2xl border-2 border-emerald-300 bg-emerald-50"
                       />
                       <button
                         type="button"
                         onClick={() => { setScreenshotPreview(''); setScreenshotFile(null); }}
-                        className="absolute top-2 right-2 w-8 h-8 bg-slate-900/70 text-white rounded-full flex items-center justify-center text-sm font-bold cursor-pointer"
+                        className="absolute top-2 right-2 w-7 h-7 bg-slate-900/70 text-white rounded-full flex items-center justify-center text-xs font-bold cursor-pointer"
                       >
                         ✕
                       </button>
-                      <div className="mt-1 flex items-center gap-1.5 text-emerald-700 text-xs font-bold">
-                        <Check className="w-4 h-4" />
-                        <span>Screenshot uploaded successfully</span>
+                      <div className="mt-1 flex items-center gap-1 text-emerald-700 text-[11px] font-bold">
+                        <Check className="w-3.5 h-3.5" />
+                        <span>Screenshot uploaded</span>
                       </div>
                     </div>
                   ) : (
                     <label
                       htmlFor="screenshot-upload"
-                      className="flex flex-col items-center justify-center gap-2 w-full h-32 border-2 border-dashed border-slate-300 hover:border-[#FF2E79] rounded-2xl bg-slate-50 cursor-pointer transition-colors"
+                      className="flex flex-col items-center justify-center gap-2 w-full h-28 border-2 border-dashed border-slate-300 hover:border-[#FF2E79] rounded-2xl bg-slate-50 cursor-pointer transition-colors"
                     >
-                      <Upload className="w-7 h-7 text-slate-400" />
-                      <span className="text-sm font-semibold text-slate-600">Tap to upload payment screenshot</span>
-                      <span className="text-xs text-slate-400">JPG, PNG — from your PhonePe / GPay</span>
+                      <Upload className="w-6 h-6 text-slate-400" />
+                      <span className="text-xs font-semibold text-slate-500">Tap to upload payment screenshot</span>
+                      <span className="text-[10px] text-slate-400">JPG, PNG — from your PhonePe / GPay</span>
                     </label>
                   )}
                 </div>
 
                 <div>
-                  <label className="form-label text-sm font-bold text-slate-700 mb-1.5 block">
+                  <label className="text-xs font-bold text-slate-700 mb-1.5 block">
                     UTR / Transaction Reference ID *
                   </label>
                   <div className="flex gap-2">
@@ -2143,37 +2137,37 @@ export default function OnboardingForm({ user, onComplete }) {
                       placeholder="e.g. 408123456789"
                       value={manualUtr}
                       onChange={(e) => setManualUtr(e.target.value)}
-                      className="form-input text-sm flex-1 h-15 rounded-2xl font-mono font-bold"
+                      className="flex-1 h-14 min-h-[56px] px-4.5 bg-slate-50 border-2 border-slate-200/90 rounded-2xl text-base font-mono font-bold text-slate-900 placeholder-slate-400 focus:bg-white focus:border-[#FF2E79] focus:ring-4 focus:ring-pink-100 outline-none transition-all shadow-2xs"
                     />
                     <button
                       type="button"
                       onClick={handleVerifyUtr}
                       disabled={isVerifyingAutoPay || !manualUtr.trim() || !screenshotPreview}
-                      className="px-6 h-15 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-xs sm:text-sm font-bold rounded-2xl transition-all active:scale-95 shrink-0 cursor-pointer flex items-center gap-2"
+                      className="px-5 h-14 min-h-[56px] bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-sm font-bold rounded-2xl transition-all active:scale-95 shrink-0 cursor-pointer flex items-center gap-1.5"
                     >
                       {isVerifyingAutoPay ? (
                         <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
                       ) : (
-                        <Check className="w-4 h-4" />
+                        <Check className="w-4 h-4 stroke-[2.5]" />
                       )}
                       <span>Submit</span>
                     </button>
                   </div>
                   {!screenshotPreview && manualUtr.trim() && (
-                    <p className="text-xs text-amber-600 font-semibold mt-1">⚠ Please also upload the payment screenshot above</p>
+                    <p className="text-[10px] text-amber-600 font-semibold mt-1">⚠ Please also upload the payment screenshot above</p>
                   )}
                 </div>
               </div>
             )}
 
             <div className="text-left">
-              <label className="form-label text-xs sm:text-sm font-bold text-slate-700">Your UPI ID for Instant 100% Refund (if applicable) *</label>
+              <label className="text-xs font-bold text-slate-700 mb-1.5 block">Your UPI ID for Instant 100% Refund (if applicable) *</label>
               <input
                 type="text"
                 placeholder="e.g. yourname@okhdfcbank or 9876543210"
                 value={refundUpi}
                 onChange={(e) => setRefundUpi(e.target.value)}
-                className="form-input text-base h-15 rounded-2xl font-semibold"
+                className="w-full h-14 min-h-[56px] px-4.5 bg-slate-50 border-2 border-slate-200/90 rounded-2xl text-base font-bold text-slate-900 placeholder-slate-400 focus:bg-white focus:border-[#FF2E79] focus:ring-4 focus:ring-pink-100 outline-none transition-all shadow-2xs"
               />
             </div>
           </div>
@@ -2181,31 +2175,30 @@ export default function OnboardingForm({ user, onComplete }) {
 
       </div>
 
-      {/* Sticky Bottom Navigation Bar — Thick, Bold, Luxurious Next Button */}
-      <div className="sticky bottom-0 bg-[#FFF0F4]/95 backdrop-blur-md pt-3.5 pb-4 border-t border-rose-100/50 z-30 -mx-4 px-4 sm:-mx-6 sm:px-6">
+      {/* Sticky Bottom Navigation Bar — Ergonomic h-12 Capsule Next Button */}
+      <div className="sticky bottom-0 bg-[#FFF0F4]/95 backdrop-blur-md pt-2.5 pb-2.5 border-t border-rose-100/50 z-30 -mx-4 px-4 sm:-mx-5 sm:px-5">
         {step < totalSteps ? (
           <button
             type="button"
             onClick={handleNext}
-            className="w-full h-16 sm:h-17 bg-gradient-to-r from-[#FF2E79] via-[#FF1E6D] to-[#FF2E79] hover:opacity-95 text-white font-black text-lg sm:text-xl rounded-full flex items-center justify-center gap-3 shadow-[0_14px_36px_rgba(255,46,121,0.45)] transition-all active:scale-[0.98] cursor-pointer tracking-wide"
+            className="w-full h-12 min-h-[48px] bg-gradient-to-r from-[#FF2E79] via-pink-600 to-[#FF2E79] hover:opacity-95 text-white font-black text-base rounded-full flex items-center justify-center gap-2 shadow-[0_6px_18px_rgba(255,46,121,0.30)] transition-all active:scale-[0.98] cursor-pointer tracking-wide"
           >
             <span>Next Step</span>
-            <span className="text-2xl font-normal">→</span>
-            <ChevronRight className="w-6 h-6 opacity-90 stroke-[3]" />
+            <ArrowRight className="w-4.5 h-4.5 stroke-[2.5]" />
           </button>
         ) : (
           <div>
             {!(autoVerifiedUtr || isUtrVerified || paymentProofUploaded) ? (
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <button
                   type="button"
                   disabled={true}
-                  className="w-full h-16 sm:h-17 bg-slate-200 text-slate-400 font-bold text-sm sm:text-base rounded-full flex items-center justify-center gap-2 cursor-not-allowed shadow-none"
+                  className="w-full h-12 min-h-[48px] bg-slate-200 text-slate-400 font-bold text-xs sm:text-sm rounded-full flex items-center justify-center gap-2 cursor-not-allowed shadow-none"
                 >
-                  <AlertCircle className="w-5 h-5 text-slate-400" />
+                  <AlertCircle className="w-4 h-4 text-slate-400" />
                   <span>Upload Screenshot + Enter UTR to Submit</span>
                 </button>
-                <p className="text-xs text-center text-slate-400 font-medium">
+                <p className="text-[10px] text-center text-slate-400 font-medium">
                   Pay via PhonePe/GPay → upload screenshot → enter UTR → submit.
                 </p>
               </div>
@@ -2214,17 +2207,17 @@ export default function OnboardingForm({ user, onComplete }) {
                 type="button"
                 onClick={handleFinalSubmit}
                 disabled={isSubmitting}
-                className="w-full h-16 sm:h-17 bg-gradient-to-r from-[#FF2E79] via-[#FF1E6D] to-[#FF2E79] hover:opacity-95 text-white font-black text-base sm:text-lg rounded-full flex items-center justify-center gap-3 shadow-[0_14px_36px_rgba(255,46,121,0.45)] transition-all active:scale-[0.98] disabled:opacity-75 cursor-pointer"
+                className="w-full h-12 min-h-[48px] bg-gradient-to-r from-[#FF2E79] via-pink-600 to-[#FF2E79] hover:opacity-95 text-white font-black text-base rounded-full flex items-center justify-center gap-2 shadow-[0_6px_18px_rgba(255,46,121,0.30)] transition-all active:scale-[0.98] disabled:opacity-75 cursor-pointer"
               >
                 {isSubmitting ? (
-                  <div className="flex items-center gap-2.5">
-                    <span className="w-5 h-5 rounded-full border-2 border-white border-t-transparent animate-spin"></span>
+                  <div className="flex items-center gap-2">
+                    <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin"></span>
                     <span>Submitting for Admin Verification...</span>
                   </div>
                 ) : (
                   <>
                     <span>Submit — Pending Admin Verification</span>
-                    <ArrowRight className="w-6 h-6 stroke-[2.5]" />
+                    <ArrowRight className="w-4.5 h-4.5 stroke-[2.5]" />
                   </>
                 )}
               </button>
@@ -2253,7 +2246,7 @@ export default function OnboardingForm({ user, onComplete }) {
             <button
               type="button"
               onClick={() => setShowPhotoWarningModal(false)}
-              className="w-full h-13 bg-[#FF2E79] hover:bg-[#e02469] text-white font-extrabold text-sm tracking-wide rounded-full shadow-[0_8px_20px_rgba(255,46,121,0.35)] transition-all active:scale-[0.98] cursor-pointer"
+              className="w-full h-12 bg-[#FF2E79] hover:bg-[#e02469] text-white font-extrabold text-sm tracking-wide rounded-full shadow-[0_8px_20px_rgba(255,46,121,0.35)] transition-all active:scale-[0.98] cursor-pointer"
             >
               Upload Photos
             </button>

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown, Check, Sparkles } from 'lucide-react';
+import { ChevronDown, Check } from 'lucide-react';
 
 export default function CustomSelect({
   value,
@@ -17,20 +17,24 @@ export default function CustomSelect({
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  // Close on outside click
+  // Close on outside click safely
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsOpen(false);
       }
     };
+    let timer;
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('touchstart', handleClickOutside);
+      timer = setTimeout(() => {
+        document.addEventListener('pointerdown', handleClickOutside);
+        document.addEventListener('click', handleClickOutside);
+      }, 50);
     }
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('touchstart', handleClickOutside);
+      clearTimeout(timer);
+      document.removeEventListener('pointerdown', handleClickOutside);
+      document.removeEventListener('click', handleClickOutside);
     };
   }, [isOpen]);
 
@@ -52,13 +56,13 @@ export default function CustomSelect({
   };
 
   return (
-    <div ref={dropdownRef} className={`relative select-none ${className}`}>
+    <div ref={dropdownRef} className={`relative select-none ${isOpen ? 'z-[100]' : 'z-20'} ${className}`}>
       {/* Trigger Button */}
       <button
         type="button"
         disabled={disabled}
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full h-14 sm:h-15 px-4 bg-white/95 rounded-2xl border transition-all flex items-center justify-between text-left cursor-pointer group shadow-2xs ${
+        className={`w-full h-[54px] min-h-[54px] px-4 bg-white rounded-2xl border transition-all flex items-center justify-between text-left cursor-pointer group shadow-2xs ${
           isOpen
             ? 'border-[#FF2E79] ring-4 ring-[#FF2E79]/15 shadow-md bg-white'
             : 'border-slate-200 hover:border-pink-300 hover:bg-[#FFF9FA]/80'
@@ -74,7 +78,7 @@ export default function CustomSelect({
           <div className="flex items-center gap-2 min-w-0 truncate">
             {selectedOption ? (
               <>
-                <span className="text-sm sm:text-base font-bold text-slate-900 truncate">
+                <span className="text-base font-bold text-slate-900 truncate">
                   {selectedOption.label}
                 </span>
                 {selectedOption.isLive && (
@@ -85,7 +89,7 @@ export default function CustomSelect({
                 )}
               </>
             ) : (
-              <span className="text-sm sm:text-base font-semibold text-slate-400 truncate">
+              <span className="text-base font-semibold text-slate-400 truncate">
                 {placeholder}
               </span>
             )}
@@ -100,10 +104,10 @@ export default function CustomSelect({
         </div>
       </button>
 
-      {/* Dropdown Menu Popup */}
+      {/* Dropdown Menu Popup - Floating above with z-[9999] */}
       {isOpen && (
         <div
-          className={`absolute left-0 right-0 top-full mt-2 bg-white/95 backdrop-blur-xl border-2 border-pink-200 rounded-2xl shadow-[0_20px_48px_-10px_rgba(255,45,85,0.22),0_6px_20px_rgba(0,0,0,0.08)] z-50 overflow-hidden animate-slide-up max-h-64 overflow-y-auto no-scrollbar py-2 ${dropdownClassName}`}
+          className={`absolute left-0 right-0 top-[calc(100%+6px)] bg-white border-2 border-[#FF2E79] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.22)] z-[9999] overflow-hidden animate-slide-up max-h-60 overflow-y-auto no-scrollbar py-1 ${dropdownClassName}`}
         >
           {normalizedOptions.map((opt) => {
             const isSelected = opt.value === value;
@@ -111,11 +115,18 @@ export default function CustomSelect({
               <button
                 key={opt.value}
                 type="button"
-                onClick={() => handleSelect(opt.value)}
-                className={`w-full px-4 py-3.5 flex items-center justify-between text-left text-sm sm:text-base transition-all cursor-pointer group border-b border-slate-100/60 last:border-b-0 ${
+                onPointerDown={(e) => {
+                  e.stopPropagation();
+                  handleSelect(opt.value);
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSelect(opt.value);
+                }}
+                className={`w-full px-4 py-3 flex items-center justify-between text-left text-base transition-all cursor-pointer group border-b border-slate-100/60 last:border-b-0 ${
                   isSelected
-                    ? 'bg-[#FF2E79] text-white font-extrabold shadow-xs'
-                    : 'text-slate-800 font-bold hover:bg-rose-50/80 hover:text-[#FF2E79]'
+                    ? 'bg-[#FF2E79] text-white font-black shadow-xs'
+                    : 'text-slate-800 font-bold hover:bg-rose-50 hover:text-[#FF2E79]'
                 }`}
               >
                 <div className="flex items-center gap-2 min-w-0 flex-1 pr-2">
