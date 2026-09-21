@@ -1,26 +1,17 @@
-import { getUsers, saveUsers, getActiveState, setActiveState, createMatch, getCurrentUser, setCurrentUser } from './storage';
-import { STATES_LIST, PLANS_INFO } from '../data/mockData';
+import { getUsers, saveUsers, getActiveState, setActiveState, createMatch, getCurrentUser, setCurrentUser, getStatesList } from './storage';
+import { PLANS_INFO } from '../data/mockData';
 
 // Round State Storage Key
 const ROUND_STATE_KEY = 'cupid_round_state_v2';
-const ROUND_SCHEDULE_KEY = 'cupid_state_schedules_v2';
+const CUSTOM_SCHEDULES_KEY = 'cupid_custom_schedules_v1';
 
-/**
- * 10-day State Rotation Schedule Definition
- * Each state has a 1-day active window every 10 days.
- */
-export const STATE_ROTATION_CONFIG = [
-  { state: "Delhi NCR", offsetDay: 0 },
-  { state: "Punjab", offsetDay: 1 },
-  { state: "Haryana", offsetDay: 2 },
-  { state: "Uttar Pradesh", offsetDay: 3 },
-  { state: "Rajasthan", offsetDay: 4 },
-  { state: "Maharashtra", offsetDay: 5 },
-  { state: "Karnataka", offsetDay: 6 },
-  { state: "Gujarat", offsetDay: 7 },
-  { state: "West Bengal", offsetDay: 8 },
-  { state: "Madhya Pradesh", offsetDay: 9 }
-];
+export const getRotationConfig = () => {
+  const states = getStatesList();
+  return states.map((state, index) => ({
+    state,
+    offsetDay: index % 10
+  }));
+};
 
 export const ROUND_PHASES = {
   REGISTRATION: 'registration', // Phase 0: 24h Registration & Plan Purchase
@@ -76,15 +67,56 @@ export const saveRoundState = (state) => {
 };
 
 /**
+ * Custom override schedule storage helper
+ */
+const getCustomSchedules = () => {
+  const json = localStorage.getItem(CUSTOM_SCHEDULES_KEY);
+  return json ? JSON.parse(json) : {};
+};
+
+export const updateStateScheduleDate = (stateName, dateString, roundNum = 1) => {
+  const customMap = getCustomSchedules();
+  customMap[stateName] = {
+    customDate: dateString,
+    roundNumber: Number(roundNum) || 1,
+    updatedAt: new Date().toISOString()
+  };
+  localStorage.setItem(CUSTOM_SCHEDULES_KEY, JSON.stringify(customMap));
+};
+
+/**
  * Calculate the next upcoming round date for any state based on 10-day cycle
  */
 export const getStateRoundSchedule = (stateName) => {
   const roundState = getRoundState();
-  const configIndex = STATE_ROTATION_CONFIG.findIndex(s => s.state.toLowerCase() === stateName.toLowerCase());
-  const activeIndex = STATE_ROTATION_CONFIG.findIndex(s => s.state.toLowerCase() === roundState.activeState.toLowerCase());
+  const rotationConfig = getRotationConfig();
+  const configIndex = rotationConfig.findIndex(s => s.state.toLowerCase() === stateName.toLowerCase());
+  const activeIndex = rotationConfig.findIndex(s => s.state.toLowerCase() === roundState.activeState.toLowerCase());
 
-  const daysDifference = (configIndex - activeIndex + 10) % 10;
-  const isToday = daysDifference === 0;
+  const safeConfigIndex = configIndex !== -1 ? configIndex : 0;
+  const safeActiveIndex = activeIndex !== -1 ? activeIndex : 0;
+
+  const daysDifference = (safeConfigIndex - safeActiveIndex + 10) % 10;
+  const isToday = daysDifference === 0 && stateName.toLowerCase() === roundState.activeState.toLowerCase();
+
+  const customMap = getCustomSchedules();
+  if (customMap[stateName] && customMap[stateName].customDate) {
+    const customDate = new Date(customMap[stateName].customDate);
+    const formatted = customDate.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      weekday: 'short',
+      year: 'numeric'
+    });
+    return {
+      state: stateName,
+      isToday,
+      daysLeft: daysDifference,
+      nextRoundDate: formatted,
+      rawDate: customMap[stateName].customDate,
+      roundNumber: customMap[stateName].roundNumber || roundState.roundNumber
+    };
+  }
 
   const targetDate = new Date();
   targetDate.setDate(targetDate.getDate() + daysDifference);
@@ -100,7 +132,8 @@ export const getStateRoundSchedule = (stateName) => {
     isToday,
     daysLeft: daysDifference,
     nextRoundDate: formattedDate,
-    roundNumber: roundState.roundNumber + (daysDifference === 0 ? 0 : 0)
+    rawDate: targetDate.toISOString().split('T')[0],
+    roundNumber: roundState.roundNumber
   };
 };
 
@@ -108,7 +141,7 @@ export const getStateRoundSchedule = (stateName) => {
  * Get all states' 10-day schedule overview
  */
 export const getAllStateSchedules = () => {
-  return STATE_ROTATION_CONFIG.map(item => getStateRoundSchedule(item.state));
+  return getStatesList().map(st => getStateRoundSchedule(st));
 };
 
 /**

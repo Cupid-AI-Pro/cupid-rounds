@@ -4,8 +4,178 @@ const KEYS = {
   USERS: 'cupid_users',
   ACTIVE_STATE: 'cupid_active_state',
   CURRENT_USER: 'cupid_current_user',
-  PAYMENT_SUBMISSIONS: 'cupid_payment_submissions'
+  PAYMENT_SUBMISSIONS: 'cupid_payment_submissions',
+  ADMIN_AUTH: 'cupid_admin_auth_v1',
+  STATES_LIST: 'cupid_custom_states_list_v1',
+  COLLEGES_MAP: 'cupid_custom_colleges_map_v1'
 };
+
+// ─── Admin Auth Helpers ───────────────────────────────────────────────────────
+export const isAdminAuthenticated = () => {
+  return localStorage.getItem(KEYS.ADMIN_AUTH) === 'true';
+};
+
+export const setAdminAuthenticated = (status) => {
+  if (status) {
+    localStorage.setItem(KEYS.ADMIN_AUTH, 'true');
+  } else {
+    localStorage.removeItem(KEYS.ADMIN_AUTH);
+  }
+};
+
+// ─── States Management Helpers ────────────────────────────────────────────────
+const DEFAULT_STATES = [
+  "Delhi NCR",
+  "Uttar Pradesh",
+  "Haryana",
+  "Punjab",
+  "Rajasthan",
+  "Maharashtra",
+  "Karnataka",
+  "Gujarat",
+  "West Bengal",
+  "Madhya Pradesh"
+];
+
+export const getStatesList = () => {
+  const json = localStorage.getItem(KEYS.STATES_LIST);
+  if (!json) {
+    localStorage.setItem(KEYS.STATES_LIST, JSON.stringify(DEFAULT_STATES));
+    return DEFAULT_STATES;
+  }
+  try {
+    const parsed = JSON.parse(json);
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : DEFAULT_STATES;
+  } catch (e) {
+    return DEFAULT_STATES;
+  }
+};
+
+export const addState = (newStateName) => {
+  const trimmed = newStateName?.trim();
+  if (!trimmed) return false;
+  const list = getStatesList();
+  if (!list.includes(trimmed)) {
+    list.push(trimmed);
+    localStorage.setItem(KEYS.STATES_LIST, JSON.stringify(list));
+    return true;
+  }
+  return false;
+};
+
+export const updateState = (oldName, newName) => {
+  const trimmed = newName?.trim();
+  if (!trimmed || oldName === trimmed) return false;
+  const list = getStatesList();
+  const idx = list.indexOf(oldName);
+  if (idx !== -1) {
+    list[idx] = trimmed;
+    localStorage.setItem(KEYS.STATES_LIST, JSON.stringify(list));
+
+    // Also update active state if affected
+    if (getActiveState() === oldName) {
+      setActiveState(trimmed);
+    }
+    return true;
+  }
+  return false;
+};
+
+export const deleteState = (stateName) => {
+  const list = getStatesList();
+  if (list.length <= 1) return false; // Prevent empty list
+  const filtered = list.filter(s => s !== stateName);
+  localStorage.setItem(KEYS.STATES_LIST, JSON.stringify(filtered));
+  if (getActiveState() === stateName) {
+    setActiveState(filtered[0]);
+  }
+  return true;
+};
+
+// ─── Colleges Management Helpers ──────────────────────────────────────────────
+const DEFAULT_COLLEGES = {
+  "Delhi NCR": [
+    "IIT Delhi", "Sharda University", "LLOYD University", "NIET University", 
+    "Bennett University", "ABES University", "JIIT University", "Galgotias University", 
+    "IILM University", "GL Bajaj University", "Delhi University (DU)", "DTU"
+  ],
+  "Uttar Pradesh": [
+    "AKTU Lucknow", "BHU Varanasi", "Amity Noida", "Integral University", "SRM Modinagar"
+  ],
+  "Haryana": [
+    "Ashoka University", "O.P. Jindal Global University", "YMCA Faridabad", "Manav Rachna"
+  ],
+  "Punjab": [
+    "Thapar University", "LPU Phagwara", "Chandigarh University", "PEC Chandigarh"
+  ],
+  "Rajasthan": [
+    "BITS Pilani", "MNIT Jaipur", "Manipal University Jaipur", "JK Lakshmipat University"
+  ]
+};
+
+export const getCollegesMap = () => {
+  const json = localStorage.getItem(KEYS.COLLEGES_MAP);
+  if (!json) {
+    localStorage.setItem(KEYS.COLLEGES_MAP, JSON.stringify(DEFAULT_COLLEGES));
+    return DEFAULT_COLLEGES;
+  }
+  try {
+    return JSON.parse(json);
+  } catch (e) {
+    return DEFAULT_COLLEGES;
+  }
+};
+
+export const getCollegesByState = (stateName) => {
+  const map = getCollegesMap();
+  if (map[stateName]) return map[stateName];
+  // Fallback to default list if state is new
+  return [
+    "Central State University",
+    "State Institute of Technology",
+    "Government Degree College",
+    "City Arts & Science College"
+  ];
+};
+
+export const addCollege = (stateName, collegeName) => {
+  const trimmed = collegeName?.trim();
+  if (!trimmed) return false;
+  const map = getCollegesMap();
+  if (!map[stateName]) map[stateName] = [];
+  if (!map[stateName].includes(trimmed)) {
+    map[stateName].push(trimmed);
+    localStorage.setItem(KEYS.COLLEGES_MAP, JSON.stringify(map));
+    return true;
+  }
+  return false;
+};
+
+export const updateCollege = (stateName, oldCollegeName, newCollegeName) => {
+  const trimmed = newCollegeName?.trim();
+  if (!trimmed || oldCollegeName === trimmed) return false;
+  const map = getCollegesMap();
+  if (map[stateName]) {
+    const idx = map[stateName].indexOf(oldCollegeName);
+    if (idx !== -1) {
+      map[stateName][idx] = trimmed;
+      localStorage.setItem(KEYS.COLLEGES_MAP, JSON.stringify(map));
+      return true;
+    }
+  }
+  return false;
+};
+
+export const deleteCollege = (stateName, collegeName) => {
+  const map = getCollegesMap();
+  if (map[stateName]) {
+    map[stateName] = map[stateName].filter(c => c !== collegeName);
+    localStorage.setItem(KEYS.COLLEGES_MAP, JSON.stringify(map));
+    return true;
+  }
+  return false;
+};
+
 
 // ─── Payment Submission Helpers ───────────────────────────────────────────────
 export const getPaymentSubmissions = () => {
