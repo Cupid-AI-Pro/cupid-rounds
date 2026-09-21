@@ -162,17 +162,17 @@ export default function SwipeableDeck({
             : 'transform 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
         }}
       >
-        {/* Background Profile Photo */}
+        {/* Background Profile Photo (Positioned to highlight face at top) */}
         <img
           src={currentCandidate.avatar}
           alt={currentCandidate.name}
           className="w-full h-full object-cover pointer-events-none"
-          style={{ objectPosition: 'center 20%' }}
+          style={{ objectPosition: 'center 10%' }}
         />
 
         {/* Top Header Overlays: Location Pill & Three-Dots Menu */}
-        <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-20 pointer-events-none">
-          <span className="bg-black/35 backdrop-blur-md px-3 py-1 rounded-full text-xs font-semibold text-white/90 flex items-center gap-1.5 border border-white/20">
+        <div className="absolute top-3.5 left-4 right-4 flex items-center justify-between z-20 pointer-events-none">
+          <span className="bg-black/40 backdrop-blur-md px-3 py-1 rounded-full text-[11px] font-bold text-white/90 flex items-center gap-1.5 border border-white/20 shadow-sm">
             <MapPin className="w-3.5 h-3.5 text-white/90" />
             <span>
               {currentCandidate.university?.split(' ')[0] || 'Bennett'}, {currentCandidate.state?.split(' ')[0] || 'Delhi'}
@@ -185,37 +185,37 @@ export default function SwipeableDeck({
               e.stopPropagation();
               onOpenDetail(currentCandidate);
             }}
-            className="w-8 h-8 rounded-full bg-black/35 backdrop-blur-md flex items-center justify-center text-white/90 border border-white/20 pointer-events-auto hover:bg-black/50 transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white/90 border border-white/20 pointer-events-auto hover:bg-black/60 transition-colors cursor-pointer shadow-sm"
           >
             <MoreHorizontal className="w-4 h-4" />
           </button>
         </div>
 
         {/* Cursive Decorative Overlay Text on Right */}
-        <div className="absolute top-1/3 right-6 z-20 pointer-events-none -rotate-6 text-right">
-          <p className="font-cursive text-2xl text-white/90 drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)] font-bold tracking-wide">
+        <div className="absolute top-1/4 right-5 z-20 pointer-events-none -rotate-6 text-right">
+          <p className="font-cursive text-2xl text-white/90 drop-shadow-[0_2px_10px_rgba(0,0,0,0.7)] font-bold tracking-wide">
             Maybe you? ♡
           </p>
         </div>
 
         {/* Swipe Indicators */}
         {swipeDirection === 'like' && (
-          <div className="absolute top-12 left-6 border-2 border-emerald-400 bg-emerald-500/90 backdrop-blur-md text-white font-black text-xl px-5 py-1.5 rounded-2xl -rotate-12 tracking-wider shadow-2xl pointer-events-none z-30">
+          <div className="absolute top-10 left-6 border-2 border-emerald-400 bg-emerald-500/90 backdrop-blur-md text-white font-black text-xl px-5 py-1.5 rounded-2xl -rotate-12 tracking-wider shadow-2xl pointer-events-none z-30">
             LIKE ♡
           </div>
         )}
         {swipeDirection === 'pass' && (
-          <div className="absolute top-12 right-6 border-2 border-rose-400 bg-rose-500/90 backdrop-blur-md text-white font-black text-xl px-5 py-1.5 rounded-2xl rotate-12 tracking-wider shadow-2xl pointer-events-none z-30">
+          <div className="absolute top-10 right-6 border-2 border-rose-400 bg-rose-500/90 backdrop-blur-md text-white font-black text-xl px-5 py-1.5 rounded-2xl rotate-12 tracking-wider shadow-2xl pointer-events-none z-30">
             PASS ✕
           </div>
         )}
 
         {/* Bottom Details Overlay & Action Buttons */}
-        <div className="absolute inset-x-0 bottom-0 pt-28 pb-5 px-5 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none z-20">
-          <div className="space-y-2">
+        <div className="absolute inset-x-0 bottom-0 pt-16 pb-4 px-4 bg-gradient-to-t from-black/95 via-black/55 to-transparent pointer-events-none z-20">
+          <div className="space-y-1.5">
             {/* Name and Verified Badge */}
             <div className="flex items-center gap-2">
-              <h2 className="text-2xl font-black text-white tracking-tight drop-shadow-sm">
+              <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight drop-shadow-sm">
                 {currentCandidate.name}
               </h2>
               <div className="w-4 h-4 rounded-full bg-[#FF2E79] flex items-center justify-center text-white shrink-0 shadow-sm">
@@ -229,33 +229,33 @@ export default function SwipeableDeck({
             </p>
 
             {/* Dark Frosted Attribute Pills */}
-            <div className="flex flex-wrap items-center gap-1.5 pt-1 pb-3">
-              <span className="bg-black/40 backdrop-blur-md border border-white/20 px-3 py-1 rounded-full text-xs font-medium text-white/90 flex items-center gap-1.5">
-                <GraduationCap className="w-3.5 h-3.5 text-white/80" />
+            <div className="flex flex-wrap items-center gap-1.5 pt-0.5 pb-2">
+              <span className="bg-black/50 backdrop-blur-md border border-white/20 px-2.5 py-0.5 rounded-full text-[11px] font-medium text-white/90 flex items-center gap-1">
+                <GraduationCap className="w-3 h-3 text-white/80" />
                 <span>{currentCandidate.branch?.split(' ')[0] || 'Design'}</span>
               </span>
-              <span className="bg-black/40 backdrop-blur-md border border-white/20 px-3 py-1 rounded-full text-xs font-medium text-white/90 flex items-center gap-1.5">
-                <Navigation className="w-3.5 h-3.5 text-white/80" />
+              <span className="bg-black/50 backdrop-blur-md border border-white/20 px-2.5 py-0.5 rounded-full text-[11px] font-medium text-white/90 flex items-center gap-1">
+                <Navigation className="w-3 h-3 text-white/80" />
                 <span>{currentCandidate.hometown || currentCandidate.state || 'Delhi'}</span>
               </span>
-              <span className="bg-black/40 backdrop-blur-md border border-white/20 px-3 py-1 rounded-full text-xs font-medium text-white/90 flex items-center gap-1.5">
-                <Sun className="w-3.5 h-3.5 text-white/80" />
+              <span className="bg-black/50 backdrop-blur-md border border-white/20 px-2.5 py-0.5 rounded-full text-[11px] font-medium text-white/90 flex items-center gap-1">
+                <Sun className="w-3 h-3 text-white/80" />
                 <span>Leo</span>
               </span>
             </div>
 
             {/* Circular Action Buttons (Cross, Hot Pink Heart, Send) */}
-            <div className="flex items-center justify-center gap-4 pointer-events-auto pt-1">
+            <div className="flex items-center justify-center gap-4 pointer-events-auto pt-0.5">
               <button
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
                   triggerSwipe('pass');
                 }}
-                className="w-13 h-13 sm:w-14 sm:h-14 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-md border border-white/20 text-white flex items-center justify-center shadow-lg active:scale-90 transition-all cursor-pointer"
+                className="w-12 h-12 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-md border border-white/25 text-white flex items-center justify-center shadow-lg active:scale-90 transition-all cursor-pointer"
                 title="Pass"
               >
-                <X className="w-6 h-6 stroke-[2.5]" />
+                <X className="w-5 h-5 stroke-[2.5]" />
               </button>
 
               <button
@@ -264,10 +264,10 @@ export default function SwipeableDeck({
                   e.stopPropagation();
                   triggerSwipe('like');
                 }}
-                className="w-16 h-16 sm:w-16 sm:h-16 rounded-full bg-gradient-to-r from-[#FF2E79] to-[#FF4B93] text-white flex items-center justify-center shadow-[0_8px_30px_rgba(255,46,121,0.6)] border border-white/40 active:scale-90 transition-all cursor-pointer"
+                className="w-14 h-14 rounded-full bg-gradient-to-r from-[#FF2E79] to-[#FF4B93] text-white flex items-center justify-center shadow-[0_6px_25px_rgba(255,46,121,0.6)] border border-white/40 active:scale-90 transition-all cursor-pointer"
                 title="Like Profile"
               >
-                <Heart className="w-8 h-8 fill-white text-white" />
+                <Heart className="w-7 h-7 fill-white text-white" />
               </button>
 
               <button
@@ -276,10 +276,10 @@ export default function SwipeableDeck({
                   e.stopPropagation();
                   onOpenDetail(currentCandidate);
                 }}
-                className="w-13 h-13 sm:w-14 sm:h-14 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-md border border-white/20 text-white flex items-center justify-center shadow-lg active:scale-90 transition-all cursor-pointer"
+                className="w-12 h-12 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-md border border-white/25 text-white flex items-center justify-center shadow-lg active:scale-90 transition-all cursor-pointer"
                 title="View Full Profile"
               >
-                <Send className="w-5 h-5 stroke-[2] -rotate-12 translate-x-0.5" />
+                <Send className="w-4.5 h-4.5 stroke-[2] -rotate-12 translate-x-0.5" />
               </button>
             </div>
           </div>

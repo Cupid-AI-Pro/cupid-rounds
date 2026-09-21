@@ -259,45 +259,8 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
             </div>
           </div>
 
-          {/* Stories Horizontal Scroll Row (Exact Match to Image 1) */}
-          <div className="mb-3 select-none">
-            <div className="flex gap-3 items-center overflow-x-auto pb-1.5 no-scrollbar">
-              <div className="flex flex-col items-center gap-1 shrink-0">
-                <div 
-                  onClick={() => setCurrentTab('radar')}
-                  className="w-14 h-14 bg-white/90 rounded-full flex items-center justify-center cursor-pointer border-2 border-pink-100/90 shadow-2xs text-[#FF2E79] font-light text-2xl hover:scale-105 transition-transform"
-                >
-                  +
-                </div>
-                <span className="text-[11px] font-bold text-slate-700">Add Story</span>
-              </div>
-
-              <div className="flex flex-col items-center gap-1 shrink-0">
-                <div 
-                  onClick={() => setCurrentTab('profile')}
-                  className="w-14 h-14 rounded-full p-[2.5px] bg-gradient-to-tr from-[#FF2E79] via-pink-400 to-rose-300 shadow-2xs cursor-pointer hover:scale-105 transition-transform"
-                >
-                  <img src={user.avatar} alt="Your Story" className="w-full h-full object-cover rounded-full bg-white" />
-                </div>
-                <span className="text-[11px] font-bold text-slate-700">Your Story</span>
-              </div>
-
-              {candidates.map((c) => (
-                <div key={c.id} className="flex flex-col items-center gap-1 shrink-0">
-                  <div 
-                    onClick={() => setExpandedCandidate(c)}
-                    className="w-14 h-14 rounded-full p-[2.5px] bg-gradient-to-tr from-[#FF2E79] via-pink-400 to-rose-300 shadow-2xs cursor-pointer hover:scale-105 transition-transform"
-                  >
-                    <img src={c.avatar} alt={c.name} className="w-full h-full object-cover rounded-full bg-white" />
-                  </div>
-                  <span className="text-[11px] font-bold text-slate-700">{c.name.split(' ')[0]}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
           {/* Segmented Filter Pills Bar (Exact Match to Image 1) */}
-          <div className="flex items-center justify-between gap-2 mb-3 select-none">
+          <div className="flex items-center justify-between gap-2 mb-2.5 select-none">
             <div className="bg-white/90 backdrop-blur-md rounded-full p-1 border border-white/90 shadow-2xs flex items-center gap-1 flex-1">
               <button
                 onClick={() => setActiveFilter('nearby')}
@@ -334,7 +297,7 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
             </div>
           </div>
 
-          {/* Card Deck Container (Exact Match to Image 1) */}
+          {/* Card Deck Container (Expanded to fill vertical space) */}
           {isFemaleLimitReached ? (
             <div className="flex-1 flex flex-col items-center justify-center p-6 bg-white/90 backdrop-blur-md rounded-[28px] border border-white text-center shadow-sm">
               <div className="w-14 h-14 bg-pink-50 text-[#FF2E79] rounded-full flex items-center justify-center mb-3">
@@ -353,7 +316,7 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
               </button>
             </div>
           ) : (
-            <div className="flex-1 relative overflow-visible pr-4" style={{ minHeight: 0 }}>
+            <div className="flex-1 relative overflow-visible h-full min-h-0 pb-1" style={{ minHeight: 0 }}>
               <SwipeableDeck
                 candidates={candidates}
                 user={user}
