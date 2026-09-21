@@ -197,6 +197,7 @@ export default function App() {
             <OnboardingForm 
               user={currentUser} 
               onComplete={handleOnboardingComplete}
+              onCancel={handleLogout}
             />
           ) : (
             <UserDashboard 

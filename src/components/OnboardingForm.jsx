@@ -133,7 +133,7 @@ function WordByWordText({ text, speed = 75 }) {
   );
 }
 
-export default function OnboardingForm({ user, onComplete }) {
+export default function OnboardingForm({ user, onComplete, onCancel }) {
   const [step, setStep] = useState(() => {
     const params = new URLSearchParams(window.location.search);
     const parsedStep = parseInt(params.get('step') || '1', 10);
@@ -524,21 +524,22 @@ export default function OnboardingForm({ user, onComplete }) {
   }
 
   return (
-    <div className="flex-1 flex flex-col justify-between p-4 sm:p-5 h-full bg-gradient-to-b from-[#FFF0F4] via-[#FFEBEF] to-[#FFF5F8] text-slate-900 font-sans relative select-none overflow-y-auto">
-      
-      {/* Top Header & Progress Bar */}
+    <div className="flex-1 flex flex-col justify-between p-4 sm:p-5 h-full bg-gradient-to-b from-[#FFF0F4] via-[#FFEBEF] to-[#FFF5F8] text-slate-900 font-sans relative select-none overflow-y-auto">      {/* Top Header & Progress Bar */}
       <div className="sticky top-0 bg-[#FFF0F4]/95 backdrop-blur-md pt-2 pb-3 z-40 -mx-4 px-4 sm:-mx-5 sm:px-5">
         <div className="flex items-center justify-between mb-2.5">
-          {step > 1 ? (
-            <button
-              onClick={handleBack}
-              className="w-10 h-10 rounded-full bg-white shadow-xs flex items-center justify-center text-slate-800 hover:bg-slate-50 transition-all border border-rose-100 cursor-pointer active:scale-95"
-            >
-              <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
-            </button>
-          ) : (
-            <div className="w-10 h-10"></div>
-          )}
+          <button
+            onClick={() => {
+              if (step > 1) {
+                handleBack();
+              } else if (onCancel) {
+                onCancel();
+              }
+            }}
+            className="w-10 h-10 rounded-full bg-white shadow-xs flex items-center justify-center text-slate-800 hover:bg-slate-50 transition-all border border-rose-100 cursor-pointer active:scale-95"
+            title="Back to Sign In"
+          >
+            <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
+          </button>
 
           <CupidLogo size="xs" showText={true} textColor="dark" textSubtitle={`${user.state || 'DELHI NCR'} • ROUND 1`} />
 
@@ -569,15 +570,23 @@ export default function OnboardingForm({ user, onComplete }) {
         {/* ========================================================================= */}
         {/* STEP 1: Personal Contact Info (Name, Phone, Email)                        */}
         {/* ========================================================================= */}
-        {/* ========================================================================= */}
-        {/* STEP 1: Personal Contact Info (Name, Phone, Email)                        */}
-        {/* ========================================================================= */}
         {step === 1 && (
           <div key={1} className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-step-transition">
             <div>
-              <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                STEP 01 • BASIC DETAILS
-              </span>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block">
+                  STEP 01 • BASIC DETAILS
+                </span>
+                {onCancel && (
+                  <button
+                    type="button"
+                    onClick={onCancel}
+                    className="text-xs font-bold text-[#FF2E79] hover:underline cursor-pointer"
+                  >
+                    Back to Sign In
+                  </button>
+                )}
+              </div>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Personal Info</h2>
               <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
                 Contact information for your private match results

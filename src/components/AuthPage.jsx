@@ -232,10 +232,14 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
         setIsWaitlisted(true);
         return;
       }
+
+      // Ensure signing in activates account so user lands directly in UserDashboard!
+      matchedUser.status = 'active';
+      saveUsers(users);
       setCurrentUser(matchedUser);
       onLoginSuccess(matchedUser);
     } else {
-      // If account is not found, automatically initialize a new user profile so user is never blocked!
+      // If account is not found, automatically initialize an active user profile so user goes directly to app!
       const isEmail = cleanInput.includes('@');
       const cleanName = isEmail 
         ? cleanInput.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
@@ -249,18 +253,20 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
         gender: 'male',
         state: activeState || 'Delhi NCR',
         plan: 'elite',
-        bio: '',
-        occupation: '',
-        income: '',
+        bio: 'Looking for a genuine connection',
+        occupation: 'Professional',
+        income: '12 LPA',
+        university: 'Bennett University',
+        branch: 'Computer Science (CSE)',
         avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&auto=format&fit=crop&q=80',
-        interests: [],
-        contact: '',
+        interests: ['Travel', 'Music', 'Fitness'],
+        contact: '@user_insta',
         likedProfiles: [],
         receivedLikes: [],
         matches: [],
         declinedMatches: [],
         suggestedMatches: [],
-        status: 'onboarding'
+        status: 'active'
       };
 
       users.push(newUser);
