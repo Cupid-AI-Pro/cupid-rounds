@@ -21,7 +21,6 @@ export default function SwipeableDeck({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
-  const [swipeDirection, setSwipeDirection] = useState(null);
   const startPosRef = useRef({ x: 0, y: 0 });
   const isDraggingRef = useRef(false);
   const containerRef = useRef(null);
@@ -30,8 +29,29 @@ export default function SwipeableDeck({
     setCurrentIndex(0);
   }, [candidates.length]);
 
-  const currentCandidate = candidates[currentIndex];
-  const nextCandidate = candidates[currentIndex + 1];
+  if (!candidates || candidates.length === 0) {
+    return (
+      <div className="w-full h-full flex flex-col justify-center items-center text-center p-6 bg-white/90 backdrop-blur-xl border border-rose-100 rounded-[32px] select-none shadow-lg">
+        <div className="w-14 h-14 rounded-2xl bg-rose-50 text-[#FF2E79] flex items-center justify-center mb-3 border border-rose-100">
+          <Heart className="w-7 h-7 fill-[#FF2E79]/20" />
+        </div>
+        <h4 className="text-lg font-black text-slate-900 font-display">All Caught Up!</h4>
+        <p className="text-xs text-slate-500 max-w-[240px] mt-1 leading-relaxed">
+          You have reviewed all active candidates for this round. Check back later for new profiles.
+        </p>
+      </div>
+    );
+  }
+
+  // Safe index in loop
+  const validIndex = currentIndex % candidates.length;
+  const currentCandidate = candidates[validIndex];
+  const nextCandidate = candidates.length > 1 ? candidates[(validIndex + 1) % candidates.length] : null;
+
+  const handleNextCard = () => {
+    setDragOffset({ x: 0, y: 0 });
+    setCurrentIndex(prev => (prev + 1) % candidates.length);
+  };
 
   const handleTouchStart = (e) => {
     isDraggingRef.current = true;
@@ -44,18 +64,17 @@ export default function SwipeableDeck({
     const dx = e.touches[0].clientX - startPosRef.current.x;
     const dy = e.touches[0].clientY - startPosRef.current.y;
     setDragOffset({ x: dx, y: dy });
-    if (dx > 40) setSwipeDirection('like');
-    else if (dx < -40) setSwipeDirection('pass');
-    else setSwipeDirection(null);
   };
 
   const handleTouchEnd = () => {
     if (!isDraggingRef.current) return;
     isDraggingRef.current = false;
     setIsDragging(false);
-    if (dragOffset.x > 90) triggerSwipe('like');
-    else if (dragOffset.x < -90) triggerSwipe('pass');
-    else { setDragOffset({ x: 0, y: 0 }); setSwipeDirection(null); }
+    if (Math.abs(dragOffset.x) > 60) {
+      handleNextCard();
+    } else {
+      setDragOffset({ x: 0, y: 0 });
+    }
   };
 
   const handleMouseDown = (e) => {
@@ -70,17 +89,16 @@ export default function SwipeableDeck({
       const dx = e.clientX - startPosRef.current.x;
       const dy = e.clientY - startPosRef.current.y;
       setDragOffset({ x: dx, y: dy });
-      if (dx > 40) setSwipeDirection('like');
-      else if (dx < -40) setSwipeDirection('pass');
-      else setSwipeDirection(null);
     };
     const handleMouseUp = () => {
       if (!isDraggingRef.current) return;
       isDraggingRef.current = false;
       setIsDragging(false);
-      if (dragOffset.x > 90) triggerSwipe('like');
-      else if (dragOffset.x < -90) triggerSwipe('pass');
-      else { setDragOffset({ x: 0, y: 0 }); setSwipeDirection(null); }
+      if (Math.abs(dragOffset.x) > 60) {
+        handleNextCard();
+      } else {
+        setDragOffset({ x: 0, y: 0 });
+      }
     };
     if (isDragging) {
       window.addEventListener('mousemove', handleMouseMove);
@@ -92,28 +110,13 @@ export default function SwipeableDeck({
     };
   }, [isDragging, dragOffset.x]);
 
-  const triggerSwipe = (dir) => {
+  const handleHeartClick = (e) => {
+    e.stopPropagation();
     if (!currentCandidate) return;
-    if (dir === 'like') onLike(currentCandidate);
-    else onDecline(currentCandidate);
+    onLike(currentCandidate);
     setDragOffset({ x: 0, y: 0 });
-    setSwipeDirection(null);
-    setCurrentIndex(prev => prev + 1);
+    setCurrentIndex(prev => (candidates.length > 1 ? prev % (candidates.length - 1) : 0));
   };
-
-  if (!currentCandidate) {
-    return (
-      <div className="w-full h-full flex flex-col justify-center items-center text-center p-6 bg-white/90 backdrop-blur-xl border border-rose-100 rounded-[32px] select-none shadow-lg">
-        <div className="w-14 h-14 rounded-2xl bg-rose-50 text-[#FF2E79] flex items-center justify-center mb-3 border border-rose-100">
-          <Heart className="w-7 h-7 fill-[#FF2E79]/20" />
-        </div>
-        <h4 className="text-lg font-black text-slate-900 font-display">All Caught Up!</h4>
-        <p className="text-xs text-slate-500 max-w-[240px] mt-1 leading-relaxed">
-          You have reviewed all active candidates for this round. Check back later for new profiles.
-        </p>
-      </div>
-    );
-  }
 
   const rotateDeg = dragOffset.x * 0.05;
   const isDraggingCard = isDragging && (dragOffset.x !== 0 || dragOffset.y !== 0);
@@ -198,18 +201,6 @@ export default function SwipeableDeck({
           </p>
         </div>
 
-        {/* Swipe Indicators */}
-        {swipeDirection === 'like' && (
-          <div className="absolute top-10 left-6 border-2 border-emerald-400 bg-emerald-500/90 backdrop-blur-md text-white font-black text-xl px-5 py-1.5 rounded-2xl -rotate-12 tracking-wider shadow-2xl pointer-events-none z-30">
-            LIKE ♡
-          </div>
-        )}
-        {swipeDirection === 'pass' && (
-          <div className="absolute top-10 right-6 border-2 border-rose-400 bg-rose-500/90 backdrop-blur-md text-white font-black text-xl px-5 py-1.5 rounded-2xl rotate-12 tracking-wider shadow-2xl pointer-events-none z-30">
-            PASS ✕
-          </div>
-        )}
-
         {/* Bottom Details Overlay & Action Buttons */}
         <div className="absolute inset-x-0 bottom-0 pt-16 pb-4 px-4 bg-gradient-to-t from-black/95 via-black/55 to-transparent pointer-events-none z-20">
           <div className="space-y-1.5">
@@ -250,22 +241,19 @@ export default function SwipeableDeck({
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
-                  triggerSwipe('pass');
+                  handleNextCard();
                 }}
                 className="w-12 h-12 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-md border border-white/25 text-white flex items-center justify-center shadow-lg active:scale-90 transition-all cursor-pointer"
-                title="Pass"
+                title="Next Profile"
               >
                 <X className="w-5 h-5 stroke-[2.5]" />
               </button>
 
               <button
                 type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  triggerSwipe('like');
-                }}
+                onClick={handleHeartClick}
                 className="w-14 h-14 rounded-full bg-gradient-to-r from-[#FF2E79] to-[#FF4B93] text-white flex items-center justify-center shadow-[0_6px_25px_rgba(255,46,121,0.6)] border border-white/40 active:scale-90 transition-all cursor-pointer"
-                title="Like Profile"
+                title="Select Match / Like Profile"
               >
                 <Heart className="w-7 h-7 fill-white text-white" />
               </button>
@@ -288,3 +276,4 @@ export default function SwipeableDeck({
     </div>
   );
 }
+
