@@ -596,10 +596,10 @@ export default function AdminDashboard({ activeState, onStateChange }) {
       </aside>
 
       {/* RIGHT MAIN CONTENT AREA */}
-      <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl">
+      <main className="flex-1 p-3 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 max-w-7xl overflow-x-hidden">
         
         {/* TOP HEADER BAR (Search + Admin User Profile) */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
           <div className="relative w-full sm:w-80">
             <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
@@ -607,30 +607,53 @@ export default function AdminDashboard({ activeState, onStateChange }) {
               placeholder="Search users, matches, reports..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-10 pl-10 pr-4 rounded-full bg-white border border-[#FFE1EB] text-xs text-slate-700 focus:outline-none focus:border-[#FF2E79] shadow-2xs"
+              className="w-full h-9 sm:h-10 pl-10 pr-4 rounded-full bg-white border border-[#FFE1EB] text-xs text-slate-700 focus:outline-none focus:border-[#FF2E79] shadow-2xs"
             />
           </div>
 
-          <div className="flex items-center gap-4 w-full sm:w-auto justify-end">
-            <button
-              type="button"
-              onClick={() => setActiveNav('verifications')}
-              className="w-10 h-10 rounded-full bg-white border border-[#FFE1EB] flex items-center justify-center relative text-slate-600 hover:bg-rose-50 transition-colors cursor-pointer"
-              title="Notifications / Pending Verifications"
-            >
-              <Bell className="w-4.5 h-4.5" />
-              {stats.pendingPayments > 0 && (
-                <span className="w-2.5 h-2.5 rounded-full bg-[#FF2E79] absolute top-2 right-2 ring-2 ring-white" />
-              )}
-            </button>
+          <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+            {/* Quick Section Chips for Mobile Navigation */}
+            <div className="flex md:hidden items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
+              {[
+                { id: 'dashboard', label: 'Overview' },
+                { id: 'verifications', label: `Verifications ${stats.pendingPayments ? `(${stats.pendingPayments})` : ''}` },
+                { id: 'users', label: 'Users' },
+                { id: 'rounds', label: 'Rounds' },
+                { id: 'settings', label: 'Settings' }
+              ].map(chip => (
+                <button
+                  key={chip.id}
+                  onClick={() => setActiveNav(chip.id)}
+                  className={`px-3 py-1 rounded-full text-[11px] font-bold shrink-0 transition-colors ${
+                    activeNav === chip.id ? 'bg-[#FF2E79] text-white' : 'bg-white text-slate-600 border border-slate-200'
+                  }`}
+                >
+                  {chip.label}
+                </button>
+              ))}
+            </div>
 
-            <div className="flex items-center gap-2.5 bg-white border border-[#FFE1EB] px-3 py-1.5 rounded-full shadow-2xs">
-              <img
-                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"
-                alt="Admin Profile"
-                className="w-7 h-7 rounded-full object-cover ring-2 ring-[#FF2E79]/30"
-              />
-              <span className="text-xs font-black text-slate-800">Admin</span>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => setActiveNav('verifications')}
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-[#FFE1EB] flex items-center justify-center relative text-slate-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                title="Notifications / Pending Verifications"
+              >
+                <Bell className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
+                {stats.pendingPayments > 0 && (
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#FF2E79] absolute top-1.5 right-1.5 ring-2 ring-white" />
+                )}
+              </button>
+
+              <div className="flex items-center gap-2 bg-white border border-[#FFE1EB] px-2.5 py-1 rounded-full shadow-2xs">
+                <img
+                  src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"
+                  alt="Admin Profile"
+                  className="w-6 h-6 sm:w-7 sm:h-7 rounded-full object-cover ring-2 ring-[#FF2E79]/30"
+                />
+                <span className="text-xs font-black text-slate-800">Admin</span>
+              </div>
             </div>
           </div>
         </div>
@@ -639,47 +662,47 @@ export default function AdminDashboard({ activeState, onStateChange }) {
             VIEW 1: MAIN DASHBOARD OVERVIEW (IMAGE 2 EXACT MATCH)
            ═══════════════════════════════════════════════════════════════════════ */}
         {activeNav === 'dashboard' && (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             
             {/* Dashboard Welcome Header */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1.5 sm:gap-2">
               <div>
-                <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-1.5">
                   <span>Welcome back, Admin</span>
                   <span className="inline-block animate-bounce">👋</span>
                 </h1>
-                <p className="text-xs text-slate-500 font-medium">
+                <p className="text-[11px] sm:text-xs text-slate-500 font-medium">
                   Here's what's happening on Cupid today.
                 </p>
               </div>
 
               <div className="flex items-center gap-3">
                 <span className="font-cursive text-sm text-[#FF2E79] font-bold hidden md:inline">Good People Brighter Stories ♡</span>
-                <div className="bg-white border border-[#FFE1EB] px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-700 flex items-center gap-2 shadow-2xs">
+                <div className="bg-white border border-[#FFE1EB] px-3 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold text-slate-700 flex items-center gap-1.5 shadow-2xs">
                   <Calendar className="w-3.5 h-3.5 text-[#FF2E79]" />
                   <span>Sep 21, 2026</span>
                 </div>
               </div>
             </div>
 
-            {/* Row 1: Top 4 Summary Metric Cards (Matching Image 2) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Row 1: Top 4 Summary Metric Cards (2x2 grid on mobile, 4-col on desktop) */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
               
               {/* Card 1: Total Users */}
-              <div className="bg-white p-5 rounded-2xl border border-[#FFE1EB] shadow-xs flex items-center justify-between">
-                <div className="space-y-1">
-                  <div className="w-9 h-9 rounded-xl bg-pink-100/60 text-[#FF2E79] flex items-center justify-center">
-                    <Users className="w-4.5 h-4.5" />
+              <div className="bg-white p-3 sm:p-5 rounded-2xl border border-[#FFE1EB] shadow-xs flex items-center justify-between">
+                <div className="space-y-0.5 sm:space-y-1">
+                  <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-pink-100/60 text-[#FF2E79] flex items-center justify-center">
+                    <Users className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5" />
                   </div>
-                  <p className="text-xs text-slate-500 font-medium pt-1">Total Users</p>
-                  <h3 className="text-2xl font-black text-slate-900 tracking-tight">{stats.totalUsers.toLocaleString()}</h3>
-                  <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-500">
-                    <TrendingUp className="w-3.5 h-3.5" />
+                  <p className="text-[10px] sm:text-xs text-slate-500 font-medium pt-0.5">Total Users</p>
+                  <h3 className="text-lg sm:text-2xl font-black text-slate-900 tracking-tight">{stats.totalUsers.toLocaleString()}</h3>
+                  <div className="flex items-center gap-0.5 text-[10px] sm:text-[11px] font-bold text-emerald-500">
+                    <TrendingUp className="w-3 h-3" />
                     <span>↑ 12%</span>
                   </div>
                 </div>
                 {/* Sparkline SVG */}
-                <div className="w-20 h-12 text-[#FF2E79]">
+                <div className="w-12 h-8 sm:w-20 sm:h-12 text-[#FF2E79] shrink-0">
                   <svg className="w-full h-full" viewBox="0 0 100 40">
                     <path
                       d="M0 30 Q25 35 50 15 T100 5"
@@ -693,20 +716,20 @@ export default function AdminDashboard({ activeState, onStateChange }) {
               </div>
 
               {/* Card 2: Total Matches */}
-              <div className="bg-white p-5 rounded-2xl border border-[#FFE1EB] shadow-xs flex items-center justify-between">
-                <div className="space-y-1">
-                  <div className="w-9 h-9 rounded-xl bg-pink-100/60 text-[#FF2E79] flex items-center justify-center">
-                    <Heart className="w-4.5 h-4.5 fill-current" />
+              <div className="bg-white p-3 sm:p-5 rounded-2xl border border-[#FFE1EB] shadow-xs flex items-center justify-between">
+                <div className="space-y-0.5 sm:space-y-1">
+                  <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-pink-100/60 text-[#FF2E79] flex items-center justify-center">
+                    <Heart className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 fill-current" />
                   </div>
-                  <p className="text-xs text-slate-500 font-medium pt-1">Total Matches</p>
-                  <h3 className="text-2xl font-black text-slate-900 tracking-tight">{stats.totalMatches.toLocaleString()}</h3>
-                  <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-500">
-                    <TrendingUp className="w-3.5 h-3.5" />
+                  <p className="text-[10px] sm:text-xs text-slate-500 font-medium pt-0.5">Total Matches</p>
+                  <h3 className="text-lg sm:text-2xl font-black text-slate-900 tracking-tight">{stats.totalMatches.toLocaleString()}</h3>
+                  <div className="flex items-center gap-0.5 text-[10px] sm:text-[11px] font-bold text-emerald-500">
+                    <TrendingUp className="w-3 h-3" />
                     <span>↑ 18%</span>
                   </div>
                 </div>
                 {/* Sparkline SVG */}
-                <div className="w-20 h-12 text-[#FF2E79]">
+                <div className="w-12 h-8 sm:w-20 sm:h-12 text-[#FF2E79] shrink-0">
                   <svg className="w-full h-full" viewBox="0 0 100 40">
                     <path
                       d="M0 25 Q30 30 60 10 T100 15"
@@ -720,20 +743,20 @@ export default function AdminDashboard({ activeState, onStateChange }) {
               </div>
 
               {/* Card 3: New Signups */}
-              <div className="bg-white p-5 rounded-2xl border border-[#FFE1EB] shadow-xs flex items-center justify-between">
-                <div className="space-y-1">
-                  <div className="w-9 h-9 rounded-xl bg-pink-100/60 text-[#FF2E79] flex items-center justify-center">
-                    <UserPlus className="w-4.5 h-4.5" />
+              <div className="bg-white p-3 sm:p-5 rounded-2xl border border-[#FFE1EB] shadow-xs flex items-center justify-between">
+                <div className="space-y-0.5 sm:space-y-1">
+                  <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-pink-100/60 text-[#FF2E79] flex items-center justify-center">
+                    <UserPlus className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5" />
                   </div>
-                  <p className="text-xs text-slate-500 font-medium pt-1">New Signups</p>
-                  <h3 className="text-2xl font-black text-slate-900 tracking-tight">{stats.newSignups}</h3>
-                  <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-500">
-                    <TrendingUp className="w-3.5 h-3.5" />
+                  <p className="text-[10px] sm:text-xs text-slate-500 font-medium pt-0.5">New Signups</p>
+                  <h3 className="text-lg sm:text-2xl font-black text-slate-900 tracking-tight">{stats.newSignups}</h3>
+                  <div className="flex items-center gap-0.5 text-[10px] sm:text-[11px] font-bold text-emerald-500">
+                    <TrendingUp className="w-3 h-3" />
                     <span>↑ 6%</span>
                   </div>
                 </div>
                 {/* Sparkline SVG */}
-                <div className="w-20 h-12 text-[#FF2E79]">
+                <div className="w-12 h-8 sm:w-20 sm:h-12 text-[#FF2E79] shrink-0">
                   <svg className="w-full h-full" viewBox="0 0 100 40">
                     <path
                       d="M0 35 Q30 20 60 25 T100 8"
@@ -747,20 +770,20 @@ export default function AdminDashboard({ activeState, onStateChange }) {
               </div>
 
               {/* Card 4: Revenue */}
-              <div className="bg-white p-5 rounded-2xl border border-[#FFE1EB] shadow-xs flex items-center justify-between">
-                <div className="space-y-1">
-                  <div className="w-9 h-9 rounded-xl bg-pink-100/60 text-[#FF2E79] flex items-center justify-center font-bold text-sm">
+              <div className="bg-white p-3 sm:p-5 rounded-2xl border border-[#FFE1EB] shadow-xs flex items-center justify-between">
+                <div className="space-y-0.5 sm:space-y-1">
+                  <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-pink-100/60 text-[#FF2E79] flex items-center justify-center font-bold text-xs sm:text-sm">
                     ₹
                   </div>
-                  <p className="text-xs text-slate-500 font-medium pt-1">Revenue</p>
-                  <h3 className="text-2xl font-black text-slate-900 tracking-tight">₹1,24,980</h3>
-                  <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-500">
-                    <TrendingUp className="w-3.5 h-3.5" />
+                  <p className="text-[10px] sm:text-xs text-slate-500 font-medium pt-0.5">Revenue</p>
+                  <h3 className="text-base sm:text-2xl font-black text-slate-900 tracking-tight">₹1,24,980</h3>
+                  <div className="flex items-center gap-0.5 text-[10px] sm:text-[11px] font-bold text-emerald-500">
+                    <TrendingUp className="w-3 h-3" />
                     <span>↑ 22%</span>
                   </div>
                 </div>
                 {/* Sparkline SVG */}
-                <div className="w-20 h-12 text-[#FF2E79]">
+                <div className="w-12 h-8 sm:w-20 sm:h-12 text-[#FF2E79] shrink-0">
                   <svg className="w-full h-full" viewBox="0 0 100 40">
                     <path
                       d="M0 30 Q25 25 50 10 T100 2"
@@ -776,22 +799,22 @@ export default function AdminDashboard({ activeState, onStateChange }) {
             </div>
 
             {/* Row 2: Charts & Recent Activity (Image 2 exact middle section) */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
               
               {/* User Growth Line Chart (2 Cols) */}
-              <div className="lg:col-span-2 bg-white p-5 rounded-2xl border border-[#FFE1EB] shadow-xs space-y-4">
+              <div className="lg:col-span-2 bg-white p-3.5 sm:p-5 rounded-2xl border border-[#FFE1EB] shadow-xs space-y-3 sm:space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-base font-black text-slate-900">User Growth</h3>
-                    <p className="text-xs text-slate-400">New users over the last 30 days</p>
+                    <h3 className="text-sm sm:text-base font-black text-slate-900">User Growth</h3>
+                    <p className="text-[10px] sm:text-xs text-slate-400">New users over the last 30 days</p>
                   </div>
-                  <div className="bg-slate-50 border border-slate-200 px-3 py-1 rounded-lg text-xs font-semibold text-slate-600">
+                  <div className="bg-slate-50 border border-slate-200 px-2.5 py-0.5 sm:py-1 rounded-lg text-[11px] sm:text-xs font-semibold text-slate-600">
                     Last 30 days ∨
                   </div>
                 </div>
 
                 {/* Smooth Area Line Chart SVG */}
-                <div className="w-full h-60 pt-4">
+                <div className="w-full h-44 sm:h-60 pt-2 sm:pt-4">
                   <svg className="w-full h-full overflow-visible" viewBox="0 0 500 180">
                     <defs>
                       <linearGradient id="growthGrad" x1="0" y1="0" x2="0" y2="1">
@@ -819,7 +842,7 @@ export default function AdminDashboard({ activeState, onStateChange }) {
                       strokeLinecap="round"
                     />
                   </svg>
-                  <div className="flex justify-between text-[11px] font-semibold text-slate-400 pt-2">
+                  <div className="flex justify-between text-[10px] sm:text-[11px] font-semibold text-slate-400 pt-1.5 sm:pt-2">
                     <span>Aug 22</span>
                     <span>Aug 29</span>
                     <span>Sep 5</span>
@@ -830,23 +853,23 @@ export default function AdminDashboard({ activeState, onStateChange }) {
               </div>
 
               {/* User Distribution & Activity Timeline (1 Col) */}
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 
                 {/* User Distribution Donut Chart */}
-                <div className="bg-white p-5 rounded-2xl border border-[#FFE1EB] shadow-xs space-y-4">
+                <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-[#FFE1EB] shadow-xs space-y-3 sm:space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-base font-black text-slate-900">User Distribution</h3>
-                      <p className="text-xs text-slate-400">By verification status</p>
+                      <h3 className="text-sm sm:text-base font-black text-slate-900">User Distribution</h3>
+                      <p className="text-[10px] sm:text-xs text-slate-400">By verification status</p>
                     </div>
                     <button type="button" onClick={loadAdminData} className="text-slate-400 hover:text-slate-600">
                       <RefreshCw className="w-4 h-4" />
                     </button>
                   </div>
 
-                  <div className="flex items-center justify-around pt-2">
+                  <div className="flex items-center justify-around pt-1">
                     {/* Donut SVG */}
-                    <div className="relative w-32 h-32 flex items-center justify-center">
+                    <div className="relative w-24 h-24 sm:w-32 sm:h-32 flex items-center justify-center shrink-0">
                       <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
                         <path
                           d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
@@ -863,25 +886,25 @@ export default function AdminDashboard({ activeState, onStateChange }) {
                         />
                       </svg>
                       <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                        <span className="text-sm font-black text-slate-900 leading-tight">12.6K</span>
-                        <span className="text-[10px] text-slate-400 font-semibold">Users</span>
+                        <span className="text-xs sm:text-sm font-black text-slate-900 leading-tight">12.6K</span>
+                        <span className="text-[9px] sm:text-[10px] text-slate-400 font-semibold">Users</span>
                       </div>
                     </div>
 
                     {/* Donut Legend */}
-                    <div className="space-y-2 text-xs font-semibold">
+                    <div className="space-y-1.5 sm:space-y-2 text-[11px] sm:text-xs font-semibold">
                       <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-[#FF2E79]" />
+                        <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-[#FF2E79]" />
                         <span className="text-slate-600">Verified</span>
                         <span className="text-slate-900 font-black ml-auto">68%</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-rose-300" />
+                        <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-rose-300" />
                         <span className="text-slate-600">Pending</span>
                         <span className="text-slate-900 font-black ml-auto">18%</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-slate-200" />
+                        <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-slate-200" />
                         <span className="text-slate-600">Unverified</span>
                         <span className="text-slate-900 font-black ml-auto">14%</span>
                       </div>
@@ -890,9 +913,9 @@ export default function AdminDashboard({ activeState, onStateChange }) {
                 </div>
 
                 {/* Recent Activity Timeline */}
-                <div className="bg-white p-5 rounded-2xl border border-[#FFE1EB] shadow-xs space-y-4">
+                <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-[#FFE1EB] shadow-xs space-y-3 sm:space-y-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-base font-black text-slate-900">Recent Activity</h3>
+                    <h3 className="text-sm sm:text-base font-black text-slate-900">Recent Activity</h3>
                     <button onClick={() => setActiveNav('users')} className="text-xs font-extrabold text-[#FF2E79] hover:underline">
                       View all →
                     </button>
@@ -928,26 +951,26 @@ export default function AdminDashboard({ activeState, onStateChange }) {
             </div>
 
             {/* Row 3: Recent Users Table + Live Rounds & Quick Actions */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
               
               {/* Recent Users Table (2 Cols) */}
-              <div className="lg:col-span-2 bg-white p-5 rounded-2xl border border-[#FFE1EB] shadow-xs space-y-4">
+              <div className="lg:col-span-2 bg-white p-3.5 sm:p-5 rounded-2xl border border-[#FFE1EB] shadow-xs space-y-3 sm:space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-base font-black text-slate-900">Recent Users</h3>
+                  <h3 className="text-sm sm:text-base font-black text-slate-900">Recent Users</h3>
                   <button onClick={() => setActiveNav('users')} className="text-xs font-extrabold text-[#FF2E79] hover:underline">
                     View all →
                   </button>
                 </div>
 
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs">
+                <div className="overflow-x-auto no-scrollbar">
+                  <table className="w-full text-left text-xs min-w-[500px]">
                     <thead>
                       <tr className="border-b border-slate-100 text-slate-400 font-bold uppercase text-[10px]">
-                        <th className="pb-3">User</th>
-                        <th className="pb-3">Details</th>
-                        <th className="pb-3">Status</th>
-                        <th className="pb-3">Joined</th>
-                        <th className="pb-3 text-right">Action</th>
+                        <th className="pb-2.5">User</th>
+                        <th className="pb-2.5">Details</th>
+                        <th className="pb-2.5">Status</th>
+                        <th className="pb-2.5">Joined</th>
+                        <th className="pb-2.5 text-right">Action</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
@@ -959,22 +982,22 @@ export default function AdminDashboard({ activeState, onStateChange }) {
                         { name: 'Karan M.', age: 22, uni: 'SRM', status: 'Unverified', statusColor: 'bg-rose-100 text-rose-800', time: '2 hours ago', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100' },
                       ].map((u, idx) => (
                         <tr key={idx} className="hover:bg-rose-50/30 transition-colors">
-                          <td className="py-3 pr-2">
-                            <div className="flex items-center gap-2.5">
-                              <img src={u.avatar} alt="" className="w-8 h-8 rounded-full object-cover shrink-0" />
+                          <td className="py-2.5 pr-2">
+                            <div className="flex items-center gap-2">
+                              <img src={u.avatar} alt="" className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover shrink-0" />
                               <span className="font-bold text-slate-900">{u.name}</span>
                             </div>
                           </td>
-                          <td className="py-3 text-slate-500 font-medium">
+                          <td className="py-2.5 text-slate-500 font-medium">
                             {u.age} • {u.uni}
                           </td>
-                          <td className="py-3">
+                          <td className="py-2.5">
                             <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase ${u.statusColor}`}>
                               {u.status}
                             </span>
                           </td>
-                          <td className="py-3 text-slate-400 font-medium">{u.time}</td>
-                          <td className="py-3 text-right">
+                          <td className="py-2.5 text-slate-400 font-medium">{u.time}</td>
+                          <td className="py-2.5 text-right">
                             <button className="text-slate-400 hover:text-slate-600 p-1">
                               <MoreHorizontal className="w-4 h-4" />
                             </button>
@@ -987,32 +1010,32 @@ export default function AdminDashboard({ activeState, onStateChange }) {
               </div>
 
               {/* Live Rounds Card & Quick Actions (1 Col) */}
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 
                 {/* Live Rounds Card */}
-                <div className="bg-white p-5 rounded-2xl border border-[#FFE1EB] shadow-xs space-y-4">
+                <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-[#FFE1EB] shadow-xs space-y-3 sm:space-y-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-base font-black text-slate-900">Live Rounds</h3>
+                    <h3 className="text-sm sm:text-base font-black text-slate-900">Live Rounds</h3>
                     <button onClick={() => setActiveNav('rounds')} className="text-xs font-extrabold text-[#FF2E79] hover:underline">
                       View all →
                     </button>
                   </div>
 
                   {/* Active Round Card */}
-                  <div className="p-4 rounded-xl bg-gradient-to-r from-rose-50 to-pink-50 border border-rose-100 relative space-y-3">
+                  <div className="p-3.5 sm:p-4 rounded-xl bg-gradient-to-r from-rose-50 to-pink-50 border border-rose-100 relative space-y-2.5">
                     <div className="flex items-center justify-between">
-                      <span className="font-black text-slate-900 text-sm">Cupid Round #1</span>
-                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-black uppercase">Active</span>
+                      <span className="font-black text-slate-900 text-xs sm:text-sm">Cupid Round #1</span>
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-black uppercase">Active</span>
                     </div>
 
-                    <div className="text-xs text-slate-600 space-y-1">
+                    <div className="text-xs text-slate-600 space-y-0.5">
                       <p className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5 text-[#FF2E79]" /> Ends in 2 days</p>
                       <p className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5 text-[#FF2E79]" /> 842 entries</p>
                     </div>
 
                     <button
                       onClick={() => setActiveNav('rounds')}
-                      className="px-4 py-2 rounded-xl bg-[#FF2E79] hover:bg-rose-600 text-white text-xs font-extrabold shadow-sm flex items-center gap-1 cursor-pointer transition-all active:scale-95"
+                      className="px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-[#FF2E79] hover:bg-rose-600 text-white text-[11px] sm:text-xs font-extrabold shadow-sm flex items-center gap-1 cursor-pointer transition-all active:scale-95"
                     >
                       <span>View Entries</span>
                       <ChevronRight className="w-3.5 h-3.5" />
@@ -1020,54 +1043,54 @@ export default function AdminDashboard({ activeState, onStateChange }) {
                   </div>
 
                   {/* Upcoming Round */}
-                  <div className="flex items-center justify-between pt-1">
+                  <div className="flex items-center justify-between pt-0.5">
                     <div className="text-xs">
                       <p className="font-bold text-slate-800">Valentine Special</p>
                       <p className="text-[10px] text-slate-400">Starts Feb 10, 2026</p>
                     </div>
-                    <button onClick={() => setActiveNav('settings')} className="px-3 py-1 bg-slate-100 hover:bg-slate-200 rounded-lg text-xs font-bold text-slate-600 cursor-pointer">
+                    <button onClick={() => setActiveNav('settings')} className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded-lg text-xs font-bold text-slate-600 cursor-pointer">
                       Schedule
                     </button>
                   </div>
                 </div>
 
-                {/* Quick Actions */}
-                <div className="bg-white p-5 rounded-2xl border border-[#FFE1EB] shadow-xs space-y-3">
-                  <h3 className="text-base font-black text-slate-900 flex items-center gap-1.5">
+                {/* Quick Actions (2x2 grid on mobile) */}
+                <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-[#FFE1EB] shadow-xs space-y-2.5 sm:space-y-3">
+                  <h3 className="text-sm sm:text-base font-black text-slate-900 flex items-center gap-1.5">
                     <span className="text-[#FF2E79]">⚡</span> Quick Actions
                   </h3>
 
-                  <div className="space-y-2 text-xs font-bold text-slate-700">
-                    <button onClick={() => setActiveNav('users')} className="w-full p-2.5 rounded-xl border border-slate-200 hover:border-[#FF2E79] hover:bg-rose-50/40 flex items-center justify-between transition-colors cursor-pointer">
-                      <div className="flex items-center gap-2">
-                        <UserPlus className="w-4 h-4 text-[#FF2E79]" />
-                        <span>Add User</span>
+                  <div className="grid grid-cols-2 sm:grid-cols-1 gap-2 text-xs font-bold text-slate-700">
+                    <button onClick={() => setActiveNav('users')} className="p-2.5 rounded-xl border border-slate-200 hover:border-[#FF2E79] hover:bg-rose-50/40 flex items-center justify-between transition-colors cursor-pointer">
+                      <div className="flex items-center gap-1.5 truncate">
+                        <UserPlus className="w-3.5 h-3.5 text-[#FF2E79] shrink-0" />
+                        <span className="truncate">Add User</span>
                       </div>
-                      <ChevronRight className="w-4 h-4 text-slate-400" />
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                     </button>
 
-                    <button onClick={() => setActiveNav('notifications')} className="w-full p-2.5 rounded-xl border border-slate-200 hover:border-[#FF2E79] hover:bg-rose-50/40 flex items-center justify-between transition-colors cursor-pointer">
-                      <div className="flex items-center gap-2">
-                        <Send className="w-4 h-4 text-[#FF2E79]" />
-                        <span>Send Notification</span>
+                    <button onClick={() => setActiveNav('notifications')} className="p-2.5 rounded-xl border border-slate-200 hover:border-[#FF2E79] hover:bg-rose-50/40 flex items-center justify-between transition-colors cursor-pointer">
+                      <div className="flex items-center gap-1.5 truncate">
+                        <Send className="w-3.5 h-3.5 text-[#FF2E79] shrink-0" />
+                        <span className="truncate">Notification</span>
                       </div>
-                      <ChevronRight className="w-4 h-4 text-slate-400" />
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                     </button>
 
-                    <button onClick={() => setActiveNav('rounds')} className="w-full p-2.5 rounded-xl border border-slate-200 hover:border-[#FF2E79] hover:bg-rose-50/40 flex items-center justify-between transition-colors cursor-pointer">
-                      <div className="flex items-center gap-2">
-                        <Flame className="w-4 h-4 text-[#FF2E79]" />
-                        <span>Manage Live Round</span>
+                    <button onClick={() => setActiveNav('rounds')} className="p-2.5 rounded-xl border border-slate-200 hover:border-[#FF2E79] hover:bg-rose-50/40 flex items-center justify-between transition-colors cursor-pointer">
+                      <div className="flex items-center gap-1.5 truncate">
+                        <Flame className="w-3.5 h-3.5 text-[#FF2E79] shrink-0" />
+                        <span className="truncate">Live Round</span>
                       </div>
-                      <ChevronRight className="w-4 h-4 text-slate-400" />
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                     </button>
 
-                    <button onClick={() => setActiveNav('reports')} className="w-full p-2.5 rounded-xl border border-slate-200 hover:border-[#FF2E79] hover:bg-rose-50/40 flex items-center justify-between transition-colors cursor-pointer">
-                      <div className="flex items-center gap-2">
-                        <BarChart3 className="w-4 h-4 text-[#FF2E79]" />
-                        <span>View Reports</span>
+                    <button onClick={() => setActiveNav('reports')} className="p-2.5 rounded-xl border border-slate-200 hover:border-[#FF2E79] hover:bg-rose-50/40 flex items-center justify-between transition-colors cursor-pointer">
+                      <div className="flex items-center gap-1.5 truncate">
+                        <BarChart3 className="w-3.5 h-3.5 text-[#FF2E79] shrink-0" />
+                        <span className="truncate">View Reports</span>
                       </div>
-                      <ChevronRight className="w-4 h-4 text-slate-400" />
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                     </button>
                   </div>
                 </div>
