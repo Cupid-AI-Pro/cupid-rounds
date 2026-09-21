@@ -147,77 +147,26 @@ export const getAllStateSchedules = () => {
 /**
  * PHASE TRANSITION LOGIC: Advance round to next phase
  */
+import { calculateCompatibilityScore } from './compatibility';
+
 export const advanceRoundPhase = () => {
   const current = getRoundState();
-  const allUsers = getUsers();
-  const stateUsers = allUsers.filter(u => u.state === current.activeState);
-
   let nextPhase = current.currentPhase;
 
   if (current.currentPhase === ROUND_PHASES.REGISTRATION) {
-    // Transition from Registration -> Elite Window (16h)
+    // Transition from Registration (24h) -> Elite Window (16h)
     nextPhase = ROUND_PHASES.ELITE_WINDOW;
-    // Push Elite male profiles into the receivedLikes/suggestions of all females in the state
-    const eliteMales = stateUsers.filter(u => u.gender === 'male' && u.plan === 'elite' && u.status === 'active');
-    const females = stateUsers.filter(u => u.gender === 'female' && u.status === 'active');
-
-    eliteMales.forEach(elite => {
-      females.forEach(female => {
-        if (!female.eliteSpotlight) female.eliteSpotlight = [];
-        if (!female.eliteSpotlight.includes(elite.id)) {
-          female.eliteSpotlight.push(elite.id);
-        }
-      });
-    });
-    saveUsers(allUsers);
+    runAlgorithmicMatchEngine(current.activeState);
 
   } else if (current.currentPhase === ROUND_PHASES.ELITE_WINDOW) {
     // Transition from Elite -> Premium Window (8h)
     nextPhase = ROUND_PHASES.PREMIUM_WINDOW;
-
-    // Check Elite males who got NO matches in Phase 1 -> Mark Refund Eligible
-    const eliteMales = stateUsers.filter(u => u.gender === 'male' && u.plan === 'elite' && u.status === 'active');
-    eliteMales.forEach(elite => {
-      const hasMatch = elite.matches && elite.matches.length > 0;
-      if (!hasMatch) {
-        elite.refundEligible = true;
-        elite.refundAmount = 450;
-        elite.refundReason = 'No mutual match selected during 16h Elite Spotlight';
-        elite.status = 'refund_requested';
-      }
-    });
-    saveUsers(allUsers);
+    runAlgorithmicMatchEngine(current.activeState);
 
   } else if (current.currentPhase === ROUND_PHASES.PREMIUM_WINDOW) {
     // Transition from Premium -> Basic Settlement
     nextPhase = ROUND_PHASES.BASIC_SETTLEMENT;
-
-    // Check Premium males who got NO matches in Phase 2 -> Mark Refund Eligible
-    const premiumMales = stateUsers.filter(u => u.gender === 'male' && u.plan === 'premium' && u.status === 'active');
-    premiumMales.forEach(prem => {
-      const hasMatch = prem.matches && prem.matches.length > 0;
-      if (!hasMatch) {
-        prem.refundEligible = true;
-        prem.refundAmount = 250;
-        prem.refundReason = 'No suitable match found in Premium browsing window';
-        prem.status = 'refund_requested';
-      }
-    });
-
-    // Auto-match Basic males (₹100) with remaining females having open slots (< 2 matches)
-    const basicMales = stateUsers.filter(u => u.gender === 'male' && u.plan === 'basic' && u.status === 'active' && (!u.matches || u.matches.length === 0));
-    const availableFemales = stateUsers.filter(u => u.gender === 'female' && u.status === 'active' && (!u.matches || u.matches.length < 2));
-
-    let basicMatchCount = 0;
-    basicMales.forEach((male) => {
-      const targetFemale = availableFemales.find(f => (!f.matches || f.matches.length < 2) && !f.matches?.includes(male.id));
-      if (targetFemale) {
-        createMatch(male.id, targetFemale.id);
-        basicMatchCount++;
-      }
-    });
-
-    saveUsers(allUsers);
+    runAlgorithmicMatchEngine(current.activeState);
 
   } else if (current.currentPhase === ROUND_PHASES.BASIC_SETTLEMENT) {
     // Transition to Completed
@@ -232,6 +181,146 @@ export const advanceRoundPhase = () => {
 
   saveRoundState(updatedState);
   return updatedState;
+};
+
+/**
+ * 3-Tier Algorithmic Matching Engine for Cupid Rounds
+ * 1. Elite (₹449) Spotlight Window -> Highest compatibility Elite Boys shown to Females first.
+ * 2. Premium (₹250) Window -> High compatibility Premium Boys shown to remaining available Females (< 2 matches).
+ * 3. Basic (₹100) Allocation -> Mutual compatibility scoring across remaining pairs.
+ * Enforces female max 2 matches and male max 1 match per round.
+ */
+export const runAlgorithmicMatchEngine = (targetStateName) => {
+  const stateName = targetStateName || getRoundState().activeState || 'Delhi NCR';
+  const allUsers = getUsers();
+  const stateUsers = allUsers.filter(u => u.state === stateName && u.status === 'active');
+
+  const males = stateUsers.filter(u => u.gender === 'male');
+  const females = stateUsers.filter(u => u.gender === 'female');
+
+  let eliteMatchCount = 0;
+  let premiumMatchCount = 0;
+  let basicMatchCount = 0;
+
+  // --------------------------------------------------------------------------
+  // TIER 1: ELITE PLAN (₹449) SPOTLIGHT MATCHING
+  // --------------------------------------------------------------------------
+  const eliteMales = males.filter(m => m.plan === 'elite');
+
+  eliteMales.forEach((male) => {
+    if (male.matches && male.matches.length >= 1) return;
+
+    const availableFemales = females.filter(f => !f.matches || f.matches.length < 2);
+
+    const scoredFemales = availableFemales.map(female => ({
+      female,
+      score: calculateCompatibilityScore(male, female)
+    })).sort((a, b) => b.score - a.score);
+
+    for (const item of scoredFemales) {
+      const f = item.female;
+      if (!f.matches) f.matches = [];
+      if (f.matches.length < 2 && !f.matches.includes(male.id)) {
+        createMatch(male.id, f.id);
+        male.matchScore = item.score;
+        f.matchScore = item.score;
+        eliteMatchCount++;
+        break; // Male gets max 1 match
+      }
+    }
+  });
+
+  // --------------------------------------------------------------------------
+  // TIER 2: PREMIUM PLAN (₹250) BROWSING MATCHING
+  // --------------------------------------------------------------------------
+  const freshUsers1 = getUsers();
+  const premiumMales = freshUsers1.filter(u => u.state === stateName && u.status === 'active' && u.gender === 'male' && u.plan === 'premium');
+
+  premiumMales.forEach((male) => {
+    if (male.matches && male.matches.length >= 1) return;
+
+    const availableFemales = freshUsers1.filter(u => u.state === stateName && u.status === 'active' && u.gender === 'female' && (!u.matches || u.matches.length < 2));
+
+    const scoredFemales = availableFemales.map(female => ({
+      female,
+      score: calculateCompatibilityScore(male, female)
+    })).sort((a, b) => b.score - a.score);
+
+    for (const item of scoredFemales) {
+      const f = item.female;
+      if (!f.matches) f.matches = [];
+      if (f.matches.length < 2 && !f.matches.includes(male.id)) {
+        createMatch(male.id, f.id);
+        male.matchScore = item.score;
+        f.matchScore = item.score;
+        premiumMatchCount++;
+        break;
+      }
+    }
+  });
+
+  // --------------------------------------------------------------------------
+  // TIER 3: BASIC PLAN (₹100) & REMAINING PAIRS AUTO-SETTLEMENT
+  // --------------------------------------------------------------------------
+  const freshUsers2 = getUsers();
+  const remainingMales = freshUsers2.filter(u => u.state === stateName && u.status === 'active' && u.gender === 'male' && (!u.matches || u.matches.length < 1));
+  const remainingFemales = freshUsers2.filter(u => u.state === stateName && u.status === 'active' && u.gender === 'female' && (!u.matches || u.matches.length < 2));
+
+  const candidatePairs = [];
+  remainingMales.forEach(m => {
+    remainingFemales.forEach(f => {
+      const score = calculateCompatibilityScore(m, f);
+      candidatePairs.push({ male: m, female: f, score });
+    });
+  });
+
+  candidatePairs.sort((a, b) => b.score - a.score);
+
+  candidatePairs.forEach(pair => {
+    const freshM = freshUsers2.find(u => u.id === pair.male.id);
+    const freshF = freshUsers2.find(u => u.id === pair.female.id);
+
+    if (freshM && freshF) {
+      const maleHasMatch = freshM.matches && freshM.matches.length >= 1;
+      const femaleHasMatches = freshF.matches && freshF.matches.length >= 2;
+      const alreadyMatched = freshM.matches && freshM.matches.includes(freshF.id);
+
+      if (!maleHasMatch && !femaleHasMatches && !alreadyMatched) {
+        createMatch(freshM.id, freshF.id);
+        freshM.matchScore = pair.score;
+        freshF.matchScore = pair.score;
+        basicMatchCount++;
+      }
+    }
+  });
+
+  // Check refund eligibility for Elite/Premium males who got no matches
+  const finalUsers = getUsers();
+  finalUsers.forEach(u => {
+    if (u.state === stateName && u.status === 'active' && u.gender === 'male') {
+      const hasMatch = u.matches && u.matches.length > 0;
+      if (!hasMatch) {
+        if (u.plan === 'elite') {
+          u.refundEligible = true;
+          u.refundAmount = 450;
+          u.refundReason = 'No mutual match found in Elite Spotlight';
+        } else if (u.plan === 'premium') {
+          u.refundEligible = true;
+          u.refundAmount = 250;
+          u.refundReason = 'No mutual match found in Premium window';
+        }
+      }
+    }
+  });
+  saveUsers(finalUsers);
+
+  return {
+    stateName,
+    eliteMatches: eliteMatchCount,
+    premiumMatches: premiumMatchCount,
+    basicMatches: basicMatchCount,
+    totalMatchedPairs: eliteMatchCount + premiumMatchCount + basicMatchCount
+  };
 };
 
 /**

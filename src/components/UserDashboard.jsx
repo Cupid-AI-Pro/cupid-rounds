@@ -24,6 +24,7 @@ import ProfileView from './ProfileView';
 import PermissionModal from './PermissionModal';
 import InteractiveTourGuide from './InteractiveTourGuide';
 import { getRoundState, ROUND_PHASES, joinRound } from '../utils/roundManager';
+import { calculateCompatibilityScore } from '../utils/compatibility';
 
 export default function UserDashboard({ user, onUpdateUser, onLogout }) {
   const [candidates, setCandidates] = useState([]);
@@ -73,6 +74,12 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
       stateCandidates = stateCandidates.filter(u => u.gender !== user.gender);
     }
 
+    // Attach real mutual compatibility scores based on Q1-15 details & Q16+ preferences
+    stateCandidates = stateCandidates.map(c => ({
+      ...c,
+      matchScore: calculateCompatibilityScore(user, c)
+    }));
+
     if (isFemale) {
       if (roundState.currentPhase === ROUND_PHASES.ELITE_WINDOW) {
         const eliteMales = stateCandidates.filter(u => u.plan === 'elite');
@@ -90,7 +97,7 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
     if (activeFilter === 'nearby') {
       stateCandidates = stateCandidates.sort((a, b) => (a.distanceKm || 2) - (b.distanceKm || 2));
     } else {
-      stateCandidates = stateCandidates.sort((a, b) => (b.matchScore || 80) - (a.matchScore || 80));
+      stateCandidates = stateCandidates.sort((a, b) => b.matchScore - a.matchScore);
     }
 
     setCandidates(stateCandidates);

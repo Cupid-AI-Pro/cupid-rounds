@@ -27,6 +27,7 @@ import {
   startNextRoundForState, 
   getAllStateSchedules, 
   updateStateScheduleDate,
+  runAlgorithmicMatchEngine,
   ROUND_PHASES, 
   PHASE_LABELS 
 } from '../utils/roundManager';
@@ -325,6 +326,13 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
       loadAdminData();
       confetti({ particleCount: 100, spread: 80, origin: { y: 0.5 } });
     }
+  };
+
+  const handleRunMatchEngine = () => {
+    const res = runAlgorithmicMatchEngine(activeState);
+    loadAdminData();
+    confetti({ particleCount: 120, spread: 80, origin: { y: 0.5 } });
+    alert(`3-Tier Compatibility Matching Engine Executed for ${res.stateName}!\n\n• Elite Matches (₹449): ${res.eliteMatches}\n• Premium Matches (₹250): ${res.premiumMatches}\n• Basic Settlement Matches (₹100): ${res.basicMatches}\n\nTotal Matched Pairs Created: ${res.totalMatchedPairs}`);
   };
 
   // Payment approval / rejection
@@ -1333,6 +1341,15 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                 </div>
 
                 <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleRunMatchEngine}
+                    className="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl text-xs font-black flex items-center gap-1.5 transition-all shadow-md cursor-pointer"
+                  >
+                    <Flame className="w-3.5 h-3.5 text-amber-300 fill-amber-300" />
+                    <span>Run 3-Tier Match Engine</span>
+                  </button>
+
                   {roundState.currentPhase !== ROUND_PHASES.COMPLETED ? (
                     <button
                       type="button"
