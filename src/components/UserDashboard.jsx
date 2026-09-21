@@ -219,17 +219,17 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
                 onClick={() => setCurrentTab('profile')}
                 className="w-12 h-12 rounded-full p-[2px] bg-gradient-to-tr from-[#FF2E79] via-pink-400 to-rose-300 shadow-md ring-2 ring-pink-100/60 cursor-pointer hover:scale-105 transition-transform shrink-0"
               >
-                <img src={user.avatar} alt={user.name} className="w-full h-full object-cover rounded-full bg-white" />
+                <img src={user?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400'} alt={user?.name || 'User'} className="w-full h-full object-cover rounded-full bg-white" />
               </div>
 
               <div className="flex flex-col">
                 <h1 className="text-lg font-black text-slate-900 leading-tight flex items-center">
                   <span className="font-cursive text-[#FF2E79] text-2xl font-normal tracking-wide mr-1.5">Hello,</span>
-                  <span>{user.name.split(' ')[0]}</span>
+                  <span>{(user?.name || 'User').split(' ')[0]}</span>
                 </h1>
                 <div className="flex items-center gap-1 text-[11px] text-slate-500 font-bold mt-0.5">
                   <MapPin className="w-3 h-3 text-[#FF2E79]" />
-                  <span>{user.university ? user.university.split(' ')[0] : 'NIET'}</span>
+                  <span>{user?.university ? user.university.split(' ')[0] : 'Bennett'}</span>
                 </div>
               </div>
             </div>

@@ -78,7 +78,7 @@ import confetti from 'canvas-confetti';
 import CupidLogo from './CupidLogo';
 import CustomSelect from './CustomSelect';
 
-export default function AdminDashboard({ activeState, onStateChange }) {
+export default function AdminDashboard({ activeState, onStateChange, onOpenApp, onOpenLanding }) {
   // Authentication State
   const [isAuthenticated, setIsAuthenticated] = useState(() => isAdminAuthenticated());
   const [loginEmail, setLoginEmail] = useState('');
@@ -235,6 +235,7 @@ export default function AdminDashboard({ activeState, onStateChange }) {
     setIsAuthenticated(false);
     setLoginEmail('');
     setLoginPassword('');
+    if (onOpenLanding) onOpenLanding();
   };
 
   const handleActiveStateChange = (newState) => {

@@ -118,32 +118,12 @@ export default function App() {
   // 2. ADMIN DASHBOARD VIEW
   if (currentView === 'admin') {
     return (
-      <div className="min-h-screen bg-slate-100 text-slate-900 p-4 md:p-8">
-        <div className="max-w-6xl mx-auto space-y-6">
-          <div className="flex items-center justify-between">
-            <button
-              onClick={() => setCurrentView('landing')}
-              className="flex items-center gap-2 px-4 py-2 rounded-full bg-white hover:bg-slate-50 border border-slate-200 text-xs font-bold text-slate-700 shadow-sm transition-colors cursor-pointer"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Back to Landing Page</span>
-            </button>
-
-            <button
-              onClick={() => setCurrentView('app')}
-              className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#FF2E79] hover:bg-rose-600 text-xs font-bold text-white shadow-sm transition-colors cursor-pointer"
-            >
-              <Phone className="w-4 h-4" />
-              <span>Open User App</span>
-            </button>
-          </div>
-
-          <AdminDashboard 
-            activeState={activeState} 
-            onStateChange={handleStateChange}
-          />
-        </div>
-      </div>
+      <AdminDashboard 
+        activeState={activeState} 
+        onStateChange={handleStateChange}
+        onOpenApp={() => setCurrentView('app')}
+        onOpenLanding={() => setCurrentView('landing')}
+      />
     );
   }
 
