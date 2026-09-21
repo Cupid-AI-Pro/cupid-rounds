@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { getUsers, saveUsers, setCurrentUser, updateUser, setAdminAuthenticated } from '../utils/storage';
+import { getRoundState } from '../utils/roundManager';
 import { STATES_LIST } from '../data/mockData';
 import { 
   Heart, 
@@ -26,6 +27,19 @@ import CustomSelect from './CustomSelect';
 export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone, setShowLoginInPhone }) {
   const [isLogin, setIsLogin] = useState(false);
   const [error, setError] = useState('');
+  const [roundState, setRoundState] = useState(getRoundState());
+
+  useEffect(() => {
+    const handleRoundStateChange = () => {
+      setRoundState(getRoundState());
+    };
+    window.addEventListener('cupid_round_state_changed', handleRoundStateChange);
+    window.addEventListener('cupid_data_changed', handleRoundStateChange);
+    return () => {
+      window.removeEventListener('cupid_round_state_changed', handleRoundStateChange);
+      window.removeEventListener('cupid_data_changed', handleRoundStateChange);
+    };
+  }, []);
   
   // Intro Splash screen state (can be triggered anytime via Replay Intro)
   const [showSplash, setShowSplash] = useState(true);
@@ -339,7 +353,7 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
         {/* Top Header Row */}
         <div className="pt-1 text-left">
           <div className="flex items-center justify-between mb-2">
-            <CupidLogo size="sm" showText={true} textColor="dark" textSubtitle={`${activeState} • Round 1`} />
+            <CupidLogo size="sm" showText={true} textColor="dark" textSubtitle={`${activeState} • Round ${roundState?.roundNumber || 1}`} />
             <button
               onClick={() => setShowSplash(true)}
               className="text-[11px] font-semibold text-slate-400 hover:text-slate-700 transition-colors"
@@ -522,7 +536,7 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
 
         {/* Center Logo */}
         <div className="shrink-0 flex flex-col items-center justify-center text-center">
-          <CupidLogo size="sm" showText={true} textColor="dark" textSubtitle={`${activeState}  •  ROUND 1`} />
+          <CupidLogo size="sm" showText={true} textColor="dark" textSubtitle={`${activeState}  •  ROUND ${roundState?.roundNumber || 1}`} />
         </div>
 
         {/* Decorative Top-Right Cursive Handwriting */}

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { getRoundState } from '../utils/roundManager';
 import { 
   User, 
   ShieldCheck, 
@@ -24,6 +25,19 @@ import EditProfileModal from './EditProfileModal';
 export default function ProfileView({ user, onLogout, onRequestRefund, onOpenPermissions, onUpdateUser, onReplayTour }) {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showLockNotice, setShowLockNotice] = useState(false);
+  const [roundState, setRoundState] = useState(getRoundState());
+
+  useEffect(() => {
+    const handleRoundStateChange = () => {
+      setRoundState(getRoundState());
+    };
+    window.addEventListener('cupid_round_state_changed', handleRoundStateChange);
+    window.addEventListener('cupid_data_changed', handleRoundStateChange);
+    return () => {
+      window.removeEventListener('cupid_round_state_changed', handleRoundStateChange);
+      window.removeEventListener('cupid_data_changed', handleRoundStateChange);
+    };
+  }, []);
 
   const planName = user.plan === 'basic' ? 'Basic (₹100)' : user.plan === 'premium' ? 'Premium (₹250)' : 'VIP Elite (₹449)';
 
@@ -118,7 +132,7 @@ export default function ProfileView({ user, onLogout, onRequestRefund, onOpenPer
           {isRoundActive ? (
             <span className="flex items-center gap-1 text-[10px] font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200/60">
               <Lock className="w-3 h-3 text-amber-600" />
-              <span>Locked for Round 1</span>
+              <span>Locked for Round {roundState?.roundNumber || 1}</span>
             </span>
           ) : (
             <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200/60">
@@ -135,7 +149,7 @@ export default function ProfileView({ user, onLogout, onRequestRefund, onOpenPer
               <span>Preferences Locked during Live Round</span>
             </div>
             <p className="text-[10px] text-amber-700 leading-relaxed">
-              Matchmaking Round 1 is currently in progress. To guarantee algorithmic fairness, questionnaire details cannot be modified during a live round. You can edit them before entering Round 2.
+              Matchmaking Round {roundState?.roundNumber || 1} is currently in progress. To guarantee algorithmic fairness, questionnaire details cannot be modified during a live round. You can edit them before entering Round {(roundState?.roundNumber || 1) + 1}.
             </p>
             <div className="pt-1 flex justify-end">
               <button

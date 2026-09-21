@@ -46,7 +46,7 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
     return !localStorage.getItem(`tour_shown_${user?.id}`);
   });
 
-  const roundState = getRoundState();
+  const [roundState, setRoundState] = useState(getRoundState());
   const isFemale = user.gender === 'female';
   const isEliteMale = user.gender === 'male' && user.plan === 'elite';
   const isPremiumMale = user.gender === 'male' && user.plan === 'premium';
@@ -55,6 +55,20 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
 
   const [showReEntryModal, setShowReEntryModal] = useState(false);
   const [reEntryPlan, setReEntryPlan] = useState('elite');
+
+  useEffect(() => {
+    const handleSync = () => {
+      setRoundState(getRoundState());
+      loadCandidates();
+      if (user?.id) setNotifications(getNotifications(user.id));
+    };
+    window.addEventListener('cupid_round_state_changed', handleSync);
+    window.addEventListener('cupid_data_changed', handleSync);
+    return () => {
+      window.removeEventListener('cupid_round_state_changed', handleSync);
+      window.removeEventListener('cupid_data_changed', handleSync);
+    };
+  }, [user]);
 
   useEffect(() => {
     loadCandidates();

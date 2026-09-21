@@ -51,6 +51,12 @@ export const getStatesList = () => {
   }
 };
 
+export const notifyDataChanged = () => {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('cupid_data_changed'));
+  }
+};
+
 export const addState = (newStateName) => {
   const trimmed = newStateName?.trim();
   if (!trimmed) return false;
@@ -58,6 +64,7 @@ export const addState = (newStateName) => {
   if (!list.includes(trimmed)) {
     list.push(trimmed);
     localStorage.setItem(KEYS.STATES_LIST, JSON.stringify(list));
+    notifyDataChanged();
     return true;
   }
   return false;
@@ -76,6 +83,7 @@ export const updateState = (oldName, newName) => {
     if (getActiveState() === oldName) {
       setActiveState(trimmed);
     }
+    notifyDataChanged();
     return true;
   }
   return false;
@@ -89,6 +97,7 @@ export const deleteState = (stateName) => {
   if (getActiveState() === stateName) {
     setActiveState(filtered[0]);
   }
+  notifyDataChanged();
   return true;
 };
 
@@ -146,6 +155,7 @@ export const addCollege = (stateName, collegeName) => {
   if (!map[stateName].includes(trimmed)) {
     map[stateName].push(trimmed);
     localStorage.setItem(KEYS.COLLEGES_MAP, JSON.stringify(map));
+    notifyDataChanged();
     return true;
   }
   return false;
@@ -160,6 +170,7 @@ export const updateCollege = (stateName, oldCollegeName, newCollegeName) => {
     if (idx !== -1) {
       map[stateName][idx] = trimmed;
       localStorage.setItem(KEYS.COLLEGES_MAP, JSON.stringify(map));
+      notifyDataChanged();
       return true;
     }
   }
@@ -171,6 +182,7 @@ export const deleteCollege = (stateName, collegeName) => {
   if (map[stateName]) {
     map[stateName] = map[stateName].filter(c => c !== collegeName);
     localStorage.setItem(KEYS.COLLEGES_MAP, JSON.stringify(map));
+    notifyDataChanged();
     return true;
   }
   return false;
@@ -189,6 +201,7 @@ export const savePaymentSubmission = (submission) => {
   const entry = { ...submission, submittedAt: submission.submittedAt || new Date().toISOString(), status: 'pending' };
   if (idx !== -1) { list[idx] = { ...list[idx], ...entry }; } else { list.push(entry); }
   localStorage.setItem(KEYS.PAYMENT_SUBMISSIONS, JSON.stringify(list));
+  notifyDataChanged();
 };
 
 export const updatePaymentStatus = (userId, status) => {
@@ -198,6 +211,7 @@ export const updatePaymentStatus = (userId, status) => {
     list[idx].status = status;
     list[idx].resolvedAt = new Date().toISOString();
     localStorage.setItem(KEYS.PAYMENT_SUBMISSIONS, JSON.stringify(list));
+    notifyDataChanged();
     return list[idx];
   }
   return null;
@@ -237,6 +251,7 @@ export const initializeStorage = () => {
 export const clearAllData = () => {
   localStorage.setItem(KEYS.USERS, JSON.stringify([]));
   localStorage.removeItem(KEYS.CURRENT_USER);
+  notifyDataChanged();
 };
 
 export const getUsers = () => {
@@ -247,6 +262,7 @@ export const getUsers = () => {
 
 export const saveUsers = (users) => {
   localStorage.setItem(KEYS.USERS, JSON.stringify(users));
+  notifyDataChanged();
 };
 
 export const getActiveState = () => {
@@ -256,6 +272,7 @@ export const getActiveState = () => {
 
 export const setActiveState = (state) => {
   localStorage.setItem(KEYS.ACTIVE_STATE, state);
+  notifyDataChanged();
 };
 
 export const getCurrentUser = () => {

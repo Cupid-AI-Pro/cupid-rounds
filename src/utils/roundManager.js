@@ -64,6 +64,9 @@ export const saveRoundState = (state) => {
   if (state.activeState) {
     setActiveState(state.activeState);
   }
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('cupid_round_state_changed'));
+  }
 };
 
 /**

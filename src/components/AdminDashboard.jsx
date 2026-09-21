@@ -141,6 +141,18 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
     if (isAuthenticated) {
       loadAdminData();
     }
+
+    const handleSync = () => {
+      if (isAuthenticated) {
+        loadAdminData();
+      }
+    };
+    window.addEventListener('cupid_round_state_changed', handleSync);
+    window.addEventListener('cupid_data_changed', handleSync);
+    return () => {
+      window.removeEventListener('cupid_round_state_changed', handleSync);
+      window.removeEventListener('cupid_data_changed', handleSync);
+    };
   }, [isAuthenticated, activeState]);
 
   useEffect(() => {

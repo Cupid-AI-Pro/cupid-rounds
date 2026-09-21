@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { updateUser, savePaymentSubmission } from '../utils/storage';
+import { getRoundState } from '../utils/roundManager';
 import { 
   Check, 
   ChevronRight, 
@@ -141,6 +142,19 @@ export default function OnboardingForm({ user, onComplete, onCancel }) {
   });
   const totalSteps = 25;
   const fileInputRef = useRef(null);
+  const [roundState, setRoundState] = useState(getRoundState());
+
+  useEffect(() => {
+    const handleRoundStateChange = () => {
+      setRoundState(getRoundState());
+    };
+    window.addEventListener('cupid_round_state_changed', handleRoundStateChange);
+    window.addEventListener('cupid_data_changed', handleRoundStateChange);
+    return () => {
+      window.removeEventListener('cupid_round_state_changed', handleRoundStateChange);
+      window.removeEventListener('cupid_data_changed', handleRoundStateChange);
+    };
+  }, []);
 
   // Smooth floating milestone splash overlay state (shown when moving from Step 15 to Step 16)
   const [showMilestoneOverlay, setShowMilestoneOverlay] = useState(false);
@@ -476,7 +490,7 @@ export default function OnboardingForm({ user, onComplete, onCancel }) {
                   Active Round
                 </span>
                 <span className="text-sm font-black block">
-                  {user.state || 'Delhi NCR'} • Round 1
+                  {user.state || 'Delhi NCR'} • Round {roundState?.roundNumber || 1}
                 </span>
               </div>
               <div className="text-right">
@@ -522,7 +536,7 @@ export default function OnboardingForm({ user, onComplete, onCancel }) {
             <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
           </button>
 
-          <CupidLogo size="xs" showText={true} textColor="dark" textSubtitle={`${user.state || 'DELHI NCR'} • ROUND 1`} />
+          <CupidLogo size="xs" showText={true} textColor="dark" textSubtitle={`${user.state || 'DELHI NCR'} • ROUND ${roundState?.roundNumber || 1}`} />
 
           <div className="text-right pointer-events-none select-none">
             <span className="font-cursive text-[#FF2E79] font-bold text-sm sm:text-base leading-tight block rotate-[-3deg]">
