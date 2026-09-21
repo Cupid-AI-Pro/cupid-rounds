@@ -284,6 +284,7 @@ export const setCurrentUser = (user) => {
 
 export const logout = () => {
   localStorage.removeItem(KEYS.CURRENT_USER);
+  localStorage.removeItem(KEYS.ADMIN_AUTH);
 };
 
 export const updateUser = (updatedUser) => {

@@ -37,7 +37,7 @@ export default function App() {
     if (params.get('view') === 'landing') return 'landing';
 
     const savedUser = getCurrentUser();
-    if (savedUser?.role === 'admin' || isAdminAuthenticated()) {
+    if (savedUser?.role === 'admin') {
       return 'admin';
     }
 
@@ -79,7 +79,7 @@ export default function App() {
     const user = getCurrentUser();
     if (user) {
       setLocalCurrentUser(user);
-      if (user.role === 'admin' || isAdminAuthenticated()) {
+      if (user.role === 'admin') {
         setCurrentView('admin');
       }
     }
@@ -91,7 +91,7 @@ export default function App() {
   const handleLoginSuccess = (user, targetView = 'app') => {
     setLocalCurrentUser(user);
     setShowLoginInPhone(true);
-    if (user?.role === 'admin' || targetView === 'admin' || isAdminAuthenticated()) {
+    if (user?.role === 'admin' || targetView === 'admin') {
       setCurrentView('admin');
     } else {
       setCurrentView(targetView || 'app');
@@ -101,7 +101,7 @@ export default function App() {
   const handleLogout = () => {
     logout();
     setLocalCurrentUser(null);
-    setShowLoginInPhone(true);
+    setShowLoginInPhone(false);
     setCurrentView('app');
   };
 
