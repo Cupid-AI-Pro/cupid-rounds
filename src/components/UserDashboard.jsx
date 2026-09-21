@@ -23,8 +23,15 @@ import ChatView from './ChatView';
 import ProfileView from './ProfileView';
 import PermissionModal from './PermissionModal';
 import InteractiveTourGuide from './InteractiveTourGuide';
+import NotificationsModal from './NotificationsModal';
 import { getRoundState, ROUND_PHASES, joinRound } from '../utils/roundManager';
 import { calculateCompatibilityScore } from '../utils/compatibility';
+import { 
+  getNotifications, 
+  addNotification, 
+  getUnreadCount, 
+  checkAndTriggerRoundNotifications 
+} from '../services/notificationManager';
 
 export default function UserDashboard({ user, onUpdateUser, onLogout }) {
   const [candidates, setCandidates] = useState([]);
@@ -33,8 +40,10 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
   const [activeFilter, setActiveFilter] = useState('forYou'); // 'nearby' | 'forYou'
   const [currentTab, setCurrentTab] = useState('explore'); // 'explore' | 'radar' | 'chat' | 'profile'
   const [showPermissionPrompt, setShowPermissionPrompt] = useState(false);
+  const [showNotificationsModal, setShowNotificationsModal] = useState(false);
+  const [notifications, setNotifications] = useState(() => getNotifications(user?.id));
   const [showTour, setShowTour] = useState(() => {
-    return !localStorage.getItem(`tour_shown_${user.id}`);
+    return !localStorage.getItem(`tour_shown_${user?.id}`);
   });
 
   const roundState = getRoundState();
@@ -49,11 +58,21 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
 
   useEffect(() => {
     loadCandidates();
-    const hasPrompted = localStorage.getItem(`perm_prompted_${user.id}`);
+    if (user && user.id) {
+      checkAndTriggerRoundNotifications(user);
+      setNotifications(getNotifications(user.id));
+    }
+    const hasPrompted = localStorage.getItem(`perm_prompted_${user?.id}`);
     if (!hasPrompted) {
       setShowPermissionPrompt(true);
     }
-  }, [user.gender, user.interestedIn, user.university, activeFilter, roundState.currentPhase]);
+  }, [user.id, user.gender, user.interestedIn, user.university, activeFilter, roundState.currentPhase]);
+
+  const refreshNotifications = () => {
+    if (user?.id) {
+      setNotifications(getNotifications(user.id));
+    }
+  };
 
   const loadCandidates = () => {
     const allUsers = getUsers();
@@ -108,10 +127,33 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
     let isMutualMatch = false;
     let updatedMatches = [...(user.matches || [])];
 
+    // Trigger Like Notification for Candidate
+    addNotification(candidate.id, {
+      type: 'like',
+      title: 'Someone Liked Your Profile! 💕',
+      message: `${user.name} from ${user.university || user.state || 'your region'} liked your profile. Check your match radar!`,
+      actionUrl: 'radar'
+    });
+
     if (candidate.likes && candidate.likes.includes(user.id)) {
       isMutualMatch = true;
       updatedMatches.push(candidate.id);
       createMatch(user.id, candidate.id);
+
+      // Trigger Mutual Match Notifications for Both Users
+      addNotification(user.id, {
+        type: 'match',
+        title: "It's a Mutual Match! 🎉",
+        message: `You and ${candidate.name} liked each other! Tap to start chatting now.`,
+        actionUrl: 'chat'
+      });
+
+      addNotification(candidate.id, {
+        type: 'match',
+        title: "It's a Mutual Match! 🎉",
+        message: `You and ${user.name} liked each other! Tap to start chatting now.`,
+        actionUrl: 'chat'
+      });
       
       confetti({
         particleCount: 80,
@@ -131,6 +173,7 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
 
     updateUser(updatedUser);
     onUpdateUser(updatedUser);
+    refreshNotifications();
     setCandidates(prev => prev.filter(c => c.id !== candidate.id));
   };
 
@@ -252,12 +295,14 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
                   <Search className="w-4.5 h-4.5 text-slate-800 stroke-[2.2]" />
                 </button>
                 <button 
-                  onClick={() => setCurrentTab('chat')}
+                  onClick={() => setShowNotificationsModal(true)}
                   className="w-10 h-10 rounded-full bg-white/95 backdrop-blur-md flex items-center justify-center cursor-pointer shadow-[0_4px_14px_rgba(255,182,193,0.35)] border border-white hover:bg-slate-50 transition-all active:scale-95 relative"
                   title="Notifications"
                 >
                   <Bell className="w-4.5 h-4.5 text-slate-800 stroke-[2.2]" />
-                  <span className="w-2.5 h-2.5 bg-[#FF2E79] rounded-full absolute top-1.5 right-1.5 border border-white" />
+                  {getUnreadCount(user?.id) > 0 && (
+                    <span className="w-2.5 h-2.5 bg-[#FF2E79] rounded-full absolute top-1.5 right-1.5 border border-white" />
+                  )}
                 </button>
               </div>
               <span className="font-cursive text-pink-400 text-xs sm:text-sm rotate-[-2deg] tracking-wide select-none pointer-events-none mt-1">
@@ -545,6 +590,17 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
             </div>
           </div>
         </div>
+      )}
+
+      {/* NOTIFICATIONS MODAL */}
+      {showNotificationsModal && (
+        <NotificationsModal
+          user={user}
+          notifications={notifications}
+          onClose={() => setShowNotificationsModal(false)}
+          onRefresh={refreshNotifications}
+          onNavigateTab={(tab) => setCurrentTab(tab)}
+        />
       )}
 
     </div>
