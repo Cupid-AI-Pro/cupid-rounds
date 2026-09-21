@@ -1112,7 +1112,7 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
               <div>
                 <h1 className="text-2xl font-black text-slate-900 tracking-tight">Payment Verifications</h1>
                 <p className="text-xs text-slate-500 font-medium">
-                  Review payment screenshots and UTR numbers to activate user accounts.
+                  Review payment screenshots to activate user accounts.
                 </p>
               </div>
               <button
@@ -1155,7 +1155,9 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                       <p className="font-black text-slate-900 text-sm">{sub.userName}</p>
                       <p className="text-slate-500">{sub.userEmail} {sub.userPhone ? `| ${sub.userPhone}` : ''}</p>
                       <p className="text-slate-500">State: <strong className="text-slate-800">{sub.userState}</strong></p>
-                      <p className="text-slate-800 font-bold mt-1">UTR: <span className="font-mono text-[#FF2E79] font-extrabold">{sub.utr}</span></p>
+                      {sub.utr && (
+                        <p className="text-slate-800 font-bold mt-1">Ref ID: <span className="font-mono text-[#FF2E79] font-extrabold">{sub.utr}</span></p>
+                      )}
                     </div>
 
                     {sub.screenshotBase64 ? (

@@ -28,7 +28,7 @@ export default function App() {
   const [showLoginInPhone, setShowLoginInPhone] = useState(false);
   const [isPlayingIntro, setIsPlayingIntro] = useState(false);
   
-  // Default to landing page for web visitors, but open matchmaking app directly for APK, PWA or saved users!
+  // Default to landing page for web visitors on desktop, but open matchmaking app directly on phone, APK, PWA or on logout!
   const [currentView, setCurrentView] = useState(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('step') || params.get('reset')) return 'app';
@@ -41,7 +41,15 @@ export default function App() {
       return 'admin';
     }
 
-    // 1. Native Android APK detection (Capacitor / Android WebView)
+    // 1. Mobile phone browser detection
+    const isMobileDevice = Boolean(
+      typeof window !== 'undefined' && (
+        window.innerWidth <= 768 ||
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(window.navigator.userAgent)
+      )
+    );
+
+    // 2. Native Android APK detection (Capacitor / Android WebView)
     const isCapacitorNative = Boolean(
       (typeof window !== 'undefined' && window.Capacitor) ||
       window.location.protocol === 'capacitor:' ||
@@ -49,7 +57,7 @@ export default function App() {
       /wv|Capacitor/i.test(window.navigator.userAgent)
     );
 
-    // 2. Standalone / Installed WebAPK detection
+    // 3. Standalone / Installed WebAPK detection
     const isInstalledApp = Boolean(
       window.matchMedia('(display-mode: standalone)').matches || 
       window.navigator.standalone === true ||
@@ -57,13 +65,11 @@ export default function App() {
       params.get('source') === 'pwa'
     );
 
-    if (isCapacitorNative || isInstalledApp) {
-      return 'app'; // Directly open app for APK / PWA users
+    if (isMobileDevice || isCapacitorNative || isInstalledApp || savedUser) {
+      return 'app'; // Directly open app for phone, APK, or PWA users
     }
 
-    if (savedUser) return 'app';
-
-    // Default for web visitors is LANDING PAGE
+    // Default for desktop web visitors is LANDING PAGE
     return 'landing';
   });
 
@@ -95,8 +101,8 @@ export default function App() {
   const handleLogout = () => {
     logout();
     setLocalCurrentUser(null);
-    setShowLoginInPhone(false);
-    setCurrentView('landing');
+    setShowLoginInPhone(true);
+    setCurrentView('app');
   };
 
   const handleOnboardingComplete = (updatedUser) => {
