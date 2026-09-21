@@ -75,10 +75,10 @@ export default function App() {
     setActiveState(state);
   }, []);
 
-  const handleLoginSuccess = (user) => {
+  const handleLoginSuccess = (user, targetView = 'app') => {
     setLocalCurrentUser(user);
     setShowLoginInPhone(true);
-    setCurrentView('app');
+    setCurrentView(targetView || 'app');
   };
 
   const handleLogout = () => {

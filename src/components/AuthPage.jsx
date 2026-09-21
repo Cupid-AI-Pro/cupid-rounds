@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import confetti from 'canvas-confetti';
-import { getUsers, saveUsers, setCurrentUser, updateUser } from '../utils/storage';
+import { getUsers, saveUsers, setCurrentUser, updateUser, setAdminAuthenticated } from '../utils/storage';
 import { STATES_LIST } from '../data/mockData';
 import { 
   Heart, 
@@ -210,6 +210,24 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
 
     if (!cleanInput) {
       setError('Please enter your email or User ID.');
+      return;
+    }
+
+    // Admin Credentials Check: Open Admin Panel directly!
+    if (
+      cleanInput.toLowerCase() === 'cupid.livepro@gmail.com' &&
+      loginPassword.trim() === 'cUpid.livepro#@3210'
+    ) {
+      setAdminAuthenticated(true);
+      const adminUser = {
+        id: 'admin_livepro',
+        name: 'Admin Console',
+        email: 'cupid.livepro@gmail.com',
+        role: 'admin',
+        status: 'active'
+      };
+      setCurrentUser(adminUser);
+      onLoginSuccess(adminUser, 'admin');
       return;
     }
 
@@ -723,10 +741,17 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
           </div>
 
           {/* Footer Text */}
-          <div className="shrink-0 pt-4 pb-1 text-center">
-            <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 tracking-[0.2em] uppercase">
+          <div className="shrink-0 pt-4 pb-1 text-center space-y-1">
+            <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 tracking-[0.2em] uppercase block">
               SAFETY  •  PRIVACY  •  REAL CONNECTIONS
             </span>
+            <button
+              type="button"
+              onClick={() => onLoginSuccess(null, 'admin')}
+              className="text-[10px] font-bold text-slate-400 hover:text-slate-700 underline cursor-pointer"
+            >
+              Admin Console Access
+            </button>
           </div>
         </div>
       )}
