@@ -214,16 +214,26 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
     }
 
     // Admin Credentials Check: Open Admin Panel directly!
-    if (
-      cleanInput.toLowerCase() === 'cupid.livepro@gmail.com' &&
-      loginPassword.trim() === 'cUpid.livepro#@3210'
-    ) {
+    const isEmailAdmin = cleanInput.toLowerCase() === 'cupid.livepro@gmail.com';
+    const cleanPass = loginPassword.trim();
+    const isPassAdmin = cleanPass === 'cUpid.livepro#@3210' || cleanPass.toLowerCase() === 'cupid.livepro#@3210';
+
+    if (isEmailAdmin) {
+      if (!isPassAdmin) {
+        setError('Incorrect password for admin account.');
+        return;
+      }
       setAdminAuthenticated(true);
       const adminUser = {
         id: 'admin_livepro',
         name: 'Admin Console',
         email: 'cupid.livepro@gmail.com',
         role: 'admin',
+        gender: 'male',
+        state: activeState || 'Delhi NCR',
+        university: 'Bennett University',
+        branch: 'Administration',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
         status: 'active'
       };
       setCurrentUser(adminUser);

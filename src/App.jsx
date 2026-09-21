@@ -6,7 +6,7 @@ import OnboardingForm from './components/OnboardingForm';
 import UserDashboard from './components/UserDashboard';
 import AdminDashboard from './components/AdminDashboard';
 import CinematicLoadingScreen from './components/CinematicLoadingScreen';
-import { initializeStorage, getCurrentUser, getActiveState, logout, setCurrentUser } from './utils/storage';
+import { initializeStorage, getCurrentUser, getActiveState, logout, setCurrentUser, isAdminAuthenticated } from './utils/storage';
 import { Sparkles, Phone, ShieldCheck, ArrowLeft, Globe } from 'lucide-react';
 
 export default function App() {
@@ -36,6 +36,11 @@ export default function App() {
     if (params.get('view') === 'app') return 'app';
     if (params.get('view') === 'landing') return 'landing';
 
+    const savedUser = getCurrentUser();
+    if (savedUser?.role === 'admin' || isAdminAuthenticated()) {
+      return 'admin';
+    }
+
     // 1. Native Android APK detection (Capacitor / Android WebView)
     const isCapacitorNative = Boolean(
       (typeof window !== 'undefined' && window.Capacitor) ||
@@ -56,7 +61,6 @@ export default function App() {
       return 'app'; // Directly open app for APK / PWA users
     }
 
-    const savedUser = getCurrentUser();
     if (savedUser) return 'app';
 
     // Default for web visitors is LANDING PAGE
@@ -69,6 +73,9 @@ export default function App() {
     const user = getCurrentUser();
     if (user) {
       setLocalCurrentUser(user);
+      if (user.role === 'admin' || isAdminAuthenticated()) {
+        setCurrentView('admin');
+      }
     }
     
     const state = getActiveState();
@@ -78,7 +85,11 @@ export default function App() {
   const handleLoginSuccess = (user, targetView = 'app') => {
     setLocalCurrentUser(user);
     setShowLoginInPhone(true);
-    setCurrentView(targetView || 'app');
+    if (user?.role === 'admin' || targetView === 'admin' || isAdminAuthenticated()) {
+      setCurrentView('admin');
+    } else {
+      setCurrentView(targetView || 'app');
+    }
   };
 
   const handleLogout = () => {
