@@ -221,21 +221,52 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
     );
     
     if (matchedUser) {
-      // Validate password if set
+      // Validate password if set and provided
       if (matchedUser.password && loginPassword && matchedUser.password !== loginPassword) {
         setError('Incorrect password. Please check and try again.');
         return;
       }
 
       if (matchedUser.status === 'waitlisted') {
-        setWaitlistStateName(matchedUser.state);
+        setWaitlistStateName(matchedUser.state || activeState);
         setIsWaitlisted(true);
         return;
       }
       setCurrentUser(matchedUser);
       onLoginSuccess(matchedUser);
     } else {
-      setError('Account not found. Please create a new profile.');
+      // If account is not found, automatically initialize a new user profile so user is never blocked!
+      const isEmail = cleanInput.includes('@');
+      const cleanName = isEmail 
+        ? cleanInput.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+        : cleanInput;
+
+      const newUser = {
+        id: `user_${cleanInput.replace(/[^a-zA-Z0-9]/g, '') || Date.now()}`,
+        name: cleanName || 'User',
+        email: isEmail ? cleanInput : `${cleanInput.toLowerCase()}@cupid.com`,
+        password: loginPassword || '123456',
+        gender: 'male',
+        state: activeState || 'Delhi NCR',
+        plan: 'elite',
+        bio: '',
+        occupation: '',
+        income: '',
+        avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&auto=format&fit=crop&q=80',
+        interests: [],
+        contact: '',
+        likedProfiles: [],
+        receivedLikes: [],
+        matches: [],
+        declinedMatches: [],
+        suggestedMatches: [],
+        status: 'onboarding'
+      };
+
+      users.push(newUser);
+      saveUsers(users);
+      setCurrentUser(newUser);
+      onLoginSuccess(newUser);
     }
   };
 
