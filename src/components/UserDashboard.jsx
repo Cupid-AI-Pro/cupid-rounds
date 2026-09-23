@@ -24,6 +24,7 @@ import ProfileView from './ProfileView';
 import PermissionModal from './PermissionModal';
 import InteractiveTourGuide from './InteractiveTourGuide';
 import NotificationsModal from './NotificationsModal';
+import ReEntryModal from './ReEntryModal';
 import { getRoundState, ROUND_PHASES, joinRound } from '../utils/roundManager';
 import { calculateCompatibilityScore } from '../utils/compatibility';
 import { 
@@ -319,11 +320,28 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
                   )}
                 </button>
               </div>
-              <span className="font-cursive text-pink-400 text-xs sm:text-sm rotate-[-2deg] tracking-wide select-none pointer-events-none mt-1">
-                Good People Brighter Stories ♡
-              </span>
             </div>
           </div>
+
+          {/* Re-Entry / Round Participation Prompt Banner */}
+          {(user.status === 'round_pending' || user.roundCompleted || !user.roundParticipating) && (
+            <div className="mb-3 p-3.5 rounded-2xl bg-gradient-to-r from-[#FF2E79] via-pink-600 to-rose-500 text-white shadow-lg flex items-center justify-between border border-pink-300/40">
+              <div className="space-y-0.5 pr-2 text-left">
+                <span className="text-[10px] font-black uppercase tracking-widest text-pink-200 block">
+                  🚀 Round #{roundState.roundNumber || 1} Live ({roundState.activeState})
+                </span>
+                <p className="text-xs font-black leading-tight">
+                  Would you like to enter today's live round?
+                </p>
+              </div>
+              <button
+                onClick={() => setShowReEntryModal(true)}
+                className="px-3.5 py-2 bg-white text-[#FF2E79] font-black text-xs rounded-xl shrink-0 shadow-md cursor-pointer hover:bg-rose-50 transition-all active:scale-95"
+              >
+                Re-Enter Round
+              </button>
+            </div>
+          )}
 
           {/* Segmented Filter Pills Bar (Exact Match to Image 1) */}
           <div className="flex items-center justify-between gap-2 mb-2.5 select-none">
@@ -614,6 +632,29 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
           onClose={() => setShowNotificationsModal(false)}
           onRefresh={refreshNotifications}
           onNavigateTab={(tab) => setCurrentTab(tab)}
+        />
+      )}
+
+      {/* RE-ENTRY PARTICIPATION MODAL */}
+      {showReEntryModal && (
+        <ReEntryModal
+          user={user}
+          roundState={roundState}
+          onClose={() => setShowReEntryModal(false)}
+          onEditQuestionnaire={() => {
+            setShowReEntryModal(false);
+            const allUsers = getUsers();
+            const idx = allUsers.findIndex(u => u.id === user.id);
+            if (idx !== -1) {
+              allUsers[idx].status = 'onboarding';
+              saveUsers(allUsers);
+              onUpdateUser(allUsers[idx]);
+            }
+          }}
+          onCompleteReEntry={() => {
+            setShowReEntryModal(false);
+            loadCandidates();
+          }}
         />
       )}
 

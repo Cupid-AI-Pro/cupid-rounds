@@ -395,3 +395,54 @@ export const joinRound = (userId, planName = 'basic') => {
   }
   return null;
 };
+
+/**
+ * Automated 24h Round Timer & State Rotation Engine
+ * Automatically advances round phases & rotates state after duration elapses.
+ * Triggers matching algorithm and dispatches notifications automatically.
+ */
+export const checkAndRotateRoundAutomated = () => {
+  const current = getRoundState();
+  if (!current || !current.phaseStartedAt) return;
+
+  const now = new Date();
+  const started = new Date(current.phaseStartedAt);
+  const elapsedHours = (now.getTime() - started.getTime()) / (1000 * 60 * 60);
+
+  let phaseDurationHours = 24; // Registration Phase = 24h
+  if (current.currentPhase === ROUND_PHASES.ELITE_WINDOW) {
+    phaseDurationHours = 16;
+  } else if (current.currentPhase === ROUND_PHASES.PREMIUM_WINDOW) {
+    phaseDurationHours = 8;
+  }
+
+  if (elapsedHours >= phaseDurationHours) {
+    if (current.currentPhase === ROUND_PHASES.COMPLETED) {
+      // Rotate state to next state in rotation list
+      const states = getStatesList();
+      const currentIdx = states.findIndex(s => s.toLowerCase() === (current.activeState || '').toLowerCase());
+      const nextIdx = (currentIdx + 1) % states.length;
+      const nextState = states[nextIdx];
+
+      startNextRoundForState(nextState);
+
+      // Trigger In-App Notifications for new active state candidates
+      const allUsers = getUsers();
+      allUsers.forEach(u => {
+        if (u.state && u.state.toLowerCase() === nextState.toLowerCase()) {
+          import('../services/notificationManager').then(({ addNotification }) => {
+            addNotification(u.id, {
+              type: 'round_live',
+              title: `🚀 Live Round Start!`,
+              message: `Round ${current.roundNumber + 1} for ${nextState} is now LIVE! Join now to view matches.`,
+              linkTab: 'explore'
+            });
+          });
+        }
+      });
+    } else {
+      // Auto-advance phase & run matching algorithm automatically!
+      advanceRoundPhase();
+    }
+  }
+};

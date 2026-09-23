@@ -7,6 +7,7 @@ import UserDashboard from './components/UserDashboard';
 import AdminDashboard from './components/AdminDashboard';
 import CinematicLoadingScreen from './components/CinematicLoadingScreen';
 import { initializeStorage, getCurrentUser, getActiveState, logout, setCurrentUser, isAdminAuthenticated } from './utils/storage';
+import { checkAndRotateRoundAutomated } from './utils/roundManager';
 import { Sparkles, Phone, ShieldCheck, ArrowLeft, Globe } from 'lucide-react';
 
 export default function App() {
@@ -75,7 +76,12 @@ export default function App() {
 
   useEffect(() => {
     initializeStorage();
-    
+    checkAndRotateRoundAutomated();
+
+    const interval = setInterval(() => {
+      checkAndRotateRoundAutomated();
+    }, 10000);
+
     const user = getCurrentUser();
     if (user) {
       setLocalCurrentUser(user);
@@ -86,6 +92,8 @@ export default function App() {
     
     const state = getActiveState();
     setActiveState(state);
+
+    return () => clearInterval(interval);
   }, []);
 
   const handleLoginSuccess = (user, targetView = 'app') => {

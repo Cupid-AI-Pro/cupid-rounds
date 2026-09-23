@@ -1334,13 +1334,23 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                           </span>
                         </td>
                         <td className="py-3 text-right">
-                          <button
-                            onClick={() => handleDeleteUser(u.id)}
-                            className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg"
-                            title="Delete User"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          <div className="flex items-center justify-end gap-1">
+                            <button
+                              onClick={() => setSelectedUser(u)}
+                              className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg flex items-center gap-1 text-[11px] font-bold cursor-pointer"
+                              title="Inspect Full A-Z Profile & Choices"
+                            >
+                              <Eye className="w-4 h-4" />
+                              <span className="hidden sm:inline">Inspect A-Z</span>
+                            </button>
+                            <button
+                              onClick={() => handleDeleteUser(u.id)}
+                              className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg cursor-pointer"
+                              title="Delete User"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -1755,6 +1765,158 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
         )}
 
       </main>
+
+      {/* FULL A-Z USER INSPECTION MODAL */}
+      {selectedUser && (
+        <div className="fixed inset-0 z-[9990] bg-black/70 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+          <div className="bg-white max-w-2xl w-full rounded-3xl p-5 sm:p-7 relative shadow-2xl border border-rose-100 max-h-[90vh] overflow-y-auto space-y-5">
+            {/* Close Modal */}
+            <button
+              onClick={() => setSelectedUser(null)}
+              className="absolute top-4 right-4 w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* User Header */}
+            <div className="flex items-center gap-4 border-b border-slate-100 pb-4">
+              <img
+                src={selectedUser.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400'}
+                alt=""
+                className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-4 border-[#FF2E79] shadow-md shrink-0"
+              />
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h2 className="text-xl font-black text-slate-900">{selectedUser.name}</h2>
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-[#FF2E79] text-white">
+                    {selectedUser.plan || 'basic'} Plan
+                  </span>
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-100 text-emerald-800">
+                    {selectedUser.status || 'Active'}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 font-semibold">{selectedUser.email} {selectedUser.phone ? `• ${selectedUser.phone}` : ''}</p>
+                <p className="text-xs font-bold text-slate-700">{selectedUser.university} ({selectedUser.state || 'Delhi NCR'}) • {selectedUser.branch || 'CSE'}</p>
+              </div>
+            </div>
+
+            {/* Payment & Verification Log */}
+            <div className="bg-rose-50/60 p-4 rounded-2xl border border-rose-100 space-y-2">
+              <h3 className="text-xs font-black uppercase text-[#FF2E79] tracking-wider flex items-center gap-1.5">
+                <CreditCard className="w-4 h-4" />
+                <span>Payment & Verification Status (A-Z)</span>
+              </h3>
+              {(() => {
+                const pSub = paymentSubmissions.find(s => s.userId === selectedUser.id);
+                return (
+                  <div className="text-xs space-y-1 text-slate-700">
+                    <p><strong>Payment Status:</strong> {pSub ? pSub.status.toUpperCase() : (selectedUser.paymentVerified ? 'VERIFIED' : 'NO SUBMISSION RECORDED')}</p>
+                    {pSub?.utr && <p><strong>UTR Ref ID:</strong> <span className="font-mono text-[#FF2E79] font-bold">{pSub.utr}</span></p>}
+                    {selectedUser.upiId && <p><strong>UPI Address for Refund:</strong> <span className="font-bold text-[#FF2E79]">{selectedUser.upiId}</span></p>}
+                    {pSub?.screenshotBase64 && (
+                      <div className="pt-1">
+                        <p className="text-[10px] font-bold text-slate-500 uppercase mb-1">Uploaded Screenshot Proof:</p>
+                        <img
+                          src={pSub.screenshotBase64}
+                          alt="Proof"
+                          className="w-32 h-32 object-cover rounded-xl border border-slate-300 cursor-pointer hover:opacity-90"
+                          onClick={() => setPreviewScreenshot(pSub.screenshotBase64)}
+                        />
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* Interactivity & Choice Log: Liked, Rejected, Matched */}
+            <div className="space-y-3">
+              <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider">Candidate Interactivity & Match Choices (A-Z)</h3>
+              
+              <div className="grid sm:grid-cols-3 gap-3 text-xs">
+                {/* Liked Profiles */}
+                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100 space-y-2">
+                  <div className="flex items-center gap-1.5 font-extrabold text-slate-800">
+                    <Heart className="w-3.5 h-3.5 fill-[#FF2E79] text-[#FF2E79]" />
+                    <span>Liked ({((selectedUser.likes || selectedUser.likedProfiles || []).length)})</span>
+                  </div>
+                  <div className="space-y-1 max-h-36 overflow-y-auto">
+                    {(selectedUser.likes || selectedUser.likedProfiles || []).map(id => {
+                      const candidate = users.find(u => u.id === id);
+                      return (
+                        <div key={id} className="flex items-center gap-1.5 text-[11px] font-bold text-slate-700">
+                          <img src={candidate?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80'} alt="" className="w-5 h-5 rounded-full object-cover" />
+                          <span className="truncate">{candidate?.name || id}</span>
+                        </div>
+                      );
+                    })}
+                    {(!selectedUser.likes && !selectedUser.likedProfiles?.length) && <p className="text-[10px] text-slate-400 font-medium">No likes recorded</p>}
+                  </div>
+                </div>
+
+                {/* Rejected / Declined Profiles */}
+                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100 space-y-2">
+                  <div className="flex items-center gap-1.5 font-extrabold text-slate-800">
+                    <X className="w-3.5 h-3.5 text-red-500" />
+                    <span>Rejected ({((selectedUser.dislikes || selectedUser.declinedMatches || []).length)})</span>
+                  </div>
+                  <div className="space-y-1 max-h-36 overflow-y-auto">
+                    {(selectedUser.dislikes || selectedUser.declinedMatches || []).map(id => {
+                      const candidate = users.find(u => u.id === id);
+                      return (
+                        <div key={id} className="flex items-center gap-1.5 text-[11px] font-bold text-slate-700">
+                          <img src={candidate?.avatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80'} alt="" className="w-5 h-5 rounded-full object-cover" />
+                          <span className="truncate">{candidate?.name || id}</span>
+                        </div>
+                      );
+                    })}
+                    {(!selectedUser.dislikes && !selectedUser.declinedMatches?.length) && <p className="text-[10px] text-slate-400 font-medium">No rejects recorded</p>}
+                  </div>
+                </div>
+
+                {/* Matched Pairs */}
+                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100 space-y-2">
+                  <div className="flex items-center gap-1.5 font-extrabold text-[#FF2E79]">
+                    <Award className="w-3.5 h-3.5" />
+                    <span>Matched ({(selectedUser.matches || []).length})</span>
+                  </div>
+                  <div className="space-y-1 max-h-36 overflow-y-auto">
+                    {(selectedUser.matches || []).map(id => {
+                      const candidate = users.find(u => u.id === id);
+                      return (
+                        <div key={id} className="flex items-center gap-1.5 text-[11px] font-bold text-[#FF2E79]">
+                          <img src={candidate?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80'} alt="" className="w-5 h-5 rounded-full object-cover" />
+                          <span className="truncate">{candidate?.name || id}</span>
+                        </div>
+                      );
+                    })}
+                    {(!selectedUser.matches || selectedUser.matches.length === 0) && <p className="text-[10px] text-slate-400 font-medium">No matches active</p>}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Questionnaire & Preferences Details */}
+            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-2 text-xs text-slate-700">
+              <h3 className="font-extrabold text-slate-900 uppercase text-[11px] tracking-wider">Questionnaire Answers & Preferences</h3>
+              <p><strong>Bio:</strong> {selectedUser.bio || 'Not filled'}</p>
+              <p><strong>Qualities:</strong> {(selectedUser.qualities || []).join(', ') || 'Ambitious, Caring, Humorous'}</p>
+              <p><strong>Non-Negotiables:</strong> {(selectedUser.nonNegotiables || []).join(', ') || 'Non-Smoker, College Student'}</p>
+              <p><strong>Dating Vibe & Personality:</strong> {selectedUser.datingVibe || 'Romantic'} • {selectedUser.personalityType || 'Ambivert'}</p>
+              <p><strong>Lifestyle:</strong> {selectedUser.drinkingSmoking || 'Social drinker'}</p>
+            </div>
+
+            <div className="pt-2 flex justify-end">
+              <button
+                onClick={() => setSelectedUser(null)}
+                className="px-5 py-2.5 bg-slate-900 text-white font-extrabold text-xs rounded-full cursor-pointer"
+              >
+                Close Inspection
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* LIGHTBOX FOR SCREENSHOT PREVIEW */}
       {previewScreenshot && (
