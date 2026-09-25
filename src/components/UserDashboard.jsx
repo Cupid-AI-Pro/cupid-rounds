@@ -593,7 +593,10 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
           onRequestRefund={handleRequestRefund}
           onOpenPermissions={() => setShowPermissionPrompt(true)}
           onUpdateUser={onUpdateUser}
-          onReplayTour={() => setShowTour(true)}
+          onReplayTour={() => {
+            setCurrentTab('explore');
+            setShowTour(true);
+          }}
         />
       )}
 
