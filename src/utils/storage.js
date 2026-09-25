@@ -196,12 +196,26 @@ export const getPaymentSubmissions = () => {
 };
 
 export const savePaymentSubmission = (submission) => {
-  const list = getPaymentSubmissions();
-  const idx = list.findIndex(s => s.userId === submission.userId);
-  const entry = { ...submission, submittedAt: submission.submittedAt || new Date().toISOString(), status: 'pending' };
-  if (idx !== -1) { list[idx] = { ...list[idx], ...entry }; } else { list.push(entry); }
-  localStorage.setItem(KEYS.PAYMENT_SUBMISSIONS, JSON.stringify(list));
-  notifyDataChanged();
+  try {
+    const list = getPaymentSubmissions();
+    const idx = list.findIndex(s => s.userId === submission.userId);
+    const entry = { ...submission, submittedAt: submission.submittedAt || new Date().toISOString(), status: 'pending' };
+    if (idx !== -1) { list[idx] = { ...list[idx], ...entry }; } else { list.push(entry); }
+    localStorage.setItem(KEYS.PAYMENT_SUBMISSIONS, JSON.stringify(list));
+    notifyDataChanged();
+  } catch (err) {
+    console.warn("Storage quota limit reached while saving payment submission:", err);
+    try {
+      const list = getPaymentSubmissions();
+      const idx = list.findIndex(s => s.userId === submission.userId);
+      const safeEntry = { ...submission, screenshotBase64: null, submittedAt: submission.submittedAt || new Date().toISOString(), status: 'pending' };
+      if (idx !== -1) { list[idx] = { ...list[idx], ...safeEntry }; } else { list.push(safeEntry); }
+      localStorage.setItem(KEYS.PAYMENT_SUBMISSIONS, JSON.stringify(list));
+      notifyDataChanged();
+    } catch (innerErr) {
+      console.error("Critical storage error:", innerErr);
+    }
+  }
 };
 
 export const updatePaymentStatus = (userId, status) => {

@@ -22,10 +22,10 @@ export const ROUND_PHASES = {
 };
 
 export const PHASE_LABELS = {
-  [ROUND_PHASES.REGISTRATION]: { title: 'Registration & Entry', duration: '24 Hours', step: 1 },
-  [ROUND_PHASES.ELITE_WINDOW]: { title: 'Elite Spotlight Window', duration: '16 Hours', step: 2 },
-  [ROUND_PHASES.PREMIUM_WINDOW]: { title: 'Premium Matching Window', duration: '8 Hours', step: 3 },
-  [ROUND_PHASES.BASIC_SETTLEMENT]: { title: 'Basic Allocation & Settlement', duration: 'Instant', step: 4 },
+  [ROUND_PHASES.REGISTRATION]: { title: 'Registration & Entry', duration: '30 Mins', step: 1 },
+  [ROUND_PHASES.ELITE_WINDOW]: { title: 'Elite Spotlight Window', duration: '15 Mins', step: 2 },
+  [ROUND_PHASES.PREMIUM_WINDOW]: { title: 'Premium Matching Window', duration: '10 Mins', step: 3 },
+  [ROUND_PHASES.BASIC_SETTLEMENT]: { title: 'Basic Allocation & Settlement', duration: '5 Mins', step: 4 },
   [ROUND_PHASES.COMPLETED]: { title: 'Round Completed', duration: 'Archived', step: 5 }
 };
 
@@ -48,6 +48,18 @@ export const getRoundState = () => {
     roundStartDate: new Date().toISOString(),
     phaseStartedAt: new Date().toISOString(),
     femaleMaxMatches: 2,
+    stateRoundMap: {
+      "Delhi NCR": 1,
+      "Uttar Pradesh": 1,
+      "Haryana": 1,
+      "Punjab": 1,
+      "Rajasthan": 1,
+      "Maharashtra": 1,
+      "Karnataka": 1,
+      "Gujarat": 1,
+      "West Bengal": 1,
+      "Madhya Pradesh": 1
+    },
     stats: {
       eliteMatches: 0,
       premiumMatches: 0,
@@ -141,6 +153,35 @@ export const getStateRoundSchedule = (stateName) => {
 };
 
 /**
+ * Calculate upcoming minutes until a specific state's round goes live in 1-hour testing rotation
+ */
+export const getStateUpcomingMins = (stateName) => {
+  const roundState = getRoundState();
+  if (!stateName || stateName.toLowerCase() === (roundState.activeState || '').toLowerCase()) {
+    return 0; // Currently live!
+  }
+
+  const states = getStatesList();
+  const currentIdx = states.findIndex(s => s.toLowerCase() === (roundState.activeState || '').toLowerCase());
+  const targetIdx = states.findIndex(s => s.toLowerCase() === stateName.toLowerCase());
+
+  const safeCurrentIdx = currentIdx !== -1 ? currentIdx : 0;
+  const safeTargetIdx = targetIdx !== -1 ? targetIdx : 0;
+
+  // Number of state steps ahead in rotation list
+  const stepsAhead = (safeTargetIdx - safeCurrentIdx + states.length) % states.length;
+
+  // Minutes remaining in current active state round (1-hour = 60 mins total)
+  const started = new Date(roundState.roundStartDate || roundState.phaseStartedAt || Date.now());
+  const elapsedMins = Math.max(0, (new Date().getTime() - started.getTime()) / (1000 * 60));
+  const minsRemainingInCurrent = Math.max(1, Math.ceil(60 - elapsedMins));
+
+  // Each step ahead adds 60 minutes
+  const totalMins = Math.ceil(minsRemainingInCurrent + ((stepsAhead - 1) * 60));
+  return Math.max(1, totalMins);
+};
+
+/**
  * Get all states' 10-day schedule overview
  */
 export const getAllStateSchedules = () => {
@@ -171,9 +212,16 @@ export const advanceRoundPhase = () => {
     nextPhase = ROUND_PHASES.BASIC_SETTLEMENT;
     runAlgorithmicMatchEngine(current.activeState);
 
-  } else if (current.currentPhase === ROUND_PHASES.BASIC_SETTLEMENT) {
-    // Transition to Completed
-    nextPhase = ROUND_PHASES.COMPLETED;
+  } else if (current.currentPhase === ROUND_PHASES.BASIC_SETTLEMENT || current.currentPhase === ROUND_PHASES.COMPLETED) {
+    // Current state round is completed! Run matching engine & rotate state to NEXT state in rotation list!
+    runAlgorithmicMatchEngine(current.activeState);
+
+    const states = getStatesList();
+    const currentIdx = states.findIndex(s => s.toLowerCase() === (current.activeState || '').toLowerCase());
+    const nextIdx = (currentIdx + 1) % states.length;
+    const nextState = states[nextIdx];
+
+    return startNextRoundForState(nextState);
   }
 
   const updatedState = {
@@ -184,6 +232,38 @@ export const advanceRoundPhase = () => {
 
   saveRoundState(updatedState);
   return updatedState;
+};
+
+/**
+ * Force rotate active round to the NEXT state immediately
+ */
+export const forceRotateToNextState = () => {
+  const current = getRoundState();
+  runAlgorithmicMatchEngine(current.activeState);
+
+  const states = getStatesList();
+  const currentIdx = states.findIndex(s => s.toLowerCase() === (current.activeState || '').toLowerCase());
+  const nextIdx = (currentIdx + 1) % states.length;
+  const nextState = states[nextIdx];
+
+  const updated = startNextRoundForState(nextState);
+
+  // Dispatch live round notification for candidates of the new state
+  const allUsers = getUsers();
+  allUsers.forEach(u => {
+    if (u.state && u.state.toLowerCase() === nextState.toLowerCase()) {
+      import('../services/notificationManager').then(({ addNotification }) => {
+        addNotification(u.id, {
+          type: 'round_live',
+          title: 'Live Round Start',
+          message: `Round ${updated.roundNumber || 1} for ${nextState} is now LIVE! Join now to view matches.`,
+          actionUrl: 'explore'
+        });
+      });
+    }
+  });
+
+  return updated;
 };
 
 /**
@@ -198,8 +278,8 @@ export const runAlgorithmicMatchEngine = (targetStateName) => {
   const allUsers = getUsers();
   const stateUsers = allUsers.filter(u => u.state === stateName && u.status === 'active');
 
-  const males = stateUsers.filter(u => u.gender === 'male');
-  const females = stateUsers.filter(u => u.gender === 'female');
+  const males = stateUsers.filter(u => (u.gender || '').toLowerCase() === 'male');
+  const females = stateUsers.filter(u => (u.gender || '').toLowerCase() === 'female');
 
   let eliteMatchCount = 0;
   let premiumMatchCount = 0;
@@ -237,12 +317,12 @@ export const runAlgorithmicMatchEngine = (targetStateName) => {
   // TIER 2: PREMIUM PLAN (₹250) BROWSING MATCHING
   // --------------------------------------------------------------------------
   const freshUsers1 = getUsers();
-  const premiumMales = freshUsers1.filter(u => u.state === stateName && u.status === 'active' && u.gender === 'male' && u.plan === 'premium');
+  const premiumMales = freshUsers1.filter(u => u.state === stateName && u.status === 'active' && (u.gender || '').toLowerCase() === 'male' && u.plan === 'premium');
 
   premiumMales.forEach((male) => {
     if (male.matches && male.matches.length >= 1) return;
 
-    const availableFemales = freshUsers1.filter(u => u.state === stateName && u.status === 'active' && u.gender === 'female' && (!u.matches || u.matches.length < 2));
+    const availableFemales = freshUsers1.filter(u => u.state === stateName && u.status === 'active' && (u.gender || '').toLowerCase() === 'female' && (!u.matches || u.matches.length < 2));
 
     const scoredFemales = availableFemales.map(female => ({
       female,
@@ -266,8 +346,8 @@ export const runAlgorithmicMatchEngine = (targetStateName) => {
   // TIER 3: BASIC PLAN (₹100) & REMAINING PAIRS AUTO-SETTLEMENT
   // --------------------------------------------------------------------------
   const freshUsers2 = getUsers();
-  const remainingMales = freshUsers2.filter(u => u.state === stateName && u.status === 'active' && u.gender === 'male' && (!u.matches || u.matches.length < 1));
-  const remainingFemales = freshUsers2.filter(u => u.state === stateName && u.status === 'active' && u.gender === 'female' && (!u.matches || u.matches.length < 2));
+  const remainingMales = freshUsers2.filter(u => u.state === stateName && u.status === 'active' && (u.gender || '').toLowerCase() === 'male' && (!u.matches || u.matches.length < 1));
+  const remainingFemales = freshUsers2.filter(u => u.state === stateName && u.status === 'active' && (u.gender || '').toLowerCase() === 'female' && (!u.matches || u.matches.length < 2));
 
   const candidatePairs = [];
   remainingMales.forEach(m => {
@@ -297,20 +377,27 @@ export const runAlgorithmicMatchEngine = (targetStateName) => {
     }
   });
 
-  // Check refund eligibility for Elite/Premium males who got no matches
+  // Check refund eligibility for Elite/Premium/Basic males who got no matches
   const finalUsers = getUsers();
   finalUsers.forEach(u => {
-    if (u.state === stateName && u.status === 'active' && u.gender === 'male') {
+    if (u.state === stateName && u.status === 'active' && (u.gender || '').toLowerCase() === 'male') {
       const hasMatch = u.matches && u.matches.length > 0;
       if (!hasMatch) {
-        if (u.plan === 'elite') {
+        if (u.plan === 'elite' || u.plan === 'premium' || u.plan === 'basic') {
+          const refundAmt = u.plan === 'elite' ? 449 : (u.plan === 'premium' ? 250 : 100);
           u.refundEligible = true;
-          u.refundAmount = 450;
-          u.refundReason = 'No mutual match found in Elite Spotlight';
-        } else if (u.plan === 'premium') {
-          u.refundEligible = true;
-          u.refundAmount = 250;
-          u.refundReason = 'No mutual match found in Premium window';
+          u.refundStatus = 'pending';
+          u.refundAmount = refundAmt;
+          u.refundReason = `No mutual match found for Round #${getRoundState().roundNumber || 1}`;
+
+          import('../services/notificationManager').then(({ addNotification }) => {
+            addNotification(u.id, {
+              type: 'refund',
+              title: 'Round Complete - Refund Eligible',
+              message: `No mutual match could be formed for this round. Your plan payment of ₹${refundAmt} is eligible for a full refund. Admin has been notified.`,
+              actionUrl: 'profile'
+            });
+          });
         }
       }
     }
@@ -333,7 +420,10 @@ export const startNextRoundForState = (stateName) => {
   const current = getRoundState();
   const allUsers = getUsers();
 
-  const newRoundNumber = (current.roundNumber || 1) + 1;
+  const stateRoundMap = current.stateRoundMap || {};
+  const currentRoundForState = stateRoundMap[stateName] || 1;
+  const newRoundNumber = currentRoundForState + 1;
+  stateRoundMap[stateName] = newRoundNumber;
 
   // Archive & prepare users for next round
   allUsers.forEach(u => {
@@ -355,8 +445,10 @@ export const startNextRoundForState = (stateName) => {
   saveUsers(allUsers);
 
   const updatedState = {
+    ...current,
     activeState: stateName,
     roundNumber: newRoundNumber,
+    stateRoundMap: stateRoundMap,
     currentPhase: ROUND_PHASES.REGISTRATION,
     roundStartDate: new Date().toISOString(),
     phaseStartedAt: new Date().toISOString(),
@@ -380,11 +472,12 @@ export const joinRound = (userId, planName = 'basic') => {
   const allUsers = getUsers();
   const user = allUsers.find(u => u.id === userId);
   if (user) {
-    user.plan = user.gender === 'female' ? 'free' : planName;
+    user.plan = (user.gender || '').toLowerCase() === 'female' ? 'free' : planName;
     user.status = 'active';
     user.roundParticipating = true;
     user.refundRequested = false;
     user.refundEligible = false;
+    user.refundStatus = null;
     saveUsers(allUsers);
     
     const current = getCurrentUser();
@@ -397,52 +490,71 @@ export const joinRound = (userId, planName = 'basic') => {
 };
 
 /**
- * Automated 24h Round Timer & State Rotation Engine
- * Automatically advances round phases & rotates state after duration elapses.
- * Triggers matching algorithm and dispatches notifications automatically.
+ * Automated 1-Hour Round Timer & State Rotation Engine (Testing Mode)
+ * Automatically advances round phases & rotates state every 60 minutes.
+ * - Registration Phase: 30 Mins
+ * - Elite Spotlight Window: 15 Mins
+ * - Premium Matching Window: 10 Mins
+ * - Basic Allocation & Settlement: 5 Mins
  */
 export const checkAndRotateRoundAutomated = () => {
   const current = getRoundState();
   if (!current || !current.phaseStartedAt) return;
 
+  const isFastDemo = typeof window !== 'undefined' && localStorage.getItem('cupid_demo_rotation_speed') === 'fast';
+
   const now = new Date();
   const started = new Date(current.phaseStartedAt);
-  const elapsedHours = (now.getTime() - started.getTime()) / (1000 * 60 * 60);
+  const elapsedMinutes = (now.getTime() - started.getTime()) / (1000 * 60);
 
-  let phaseDurationHours = 24; // Registration Phase = 24h
+  // 1-Hour testing cycle phase durations (in minutes)
+  let targetPhaseDurationMins = 30; // Registration = 30 mins
   if (current.currentPhase === ROUND_PHASES.ELITE_WINDOW) {
-    phaseDurationHours = 16;
+    targetPhaseDurationMins = 15; // Elite = 15 mins
   } else if (current.currentPhase === ROUND_PHASES.PREMIUM_WINDOW) {
-    phaseDurationHours = 8;
+    targetPhaseDurationMins = 10; // Premium = 10 mins
+  } else if (current.currentPhase === ROUND_PHASES.BASIC_SETTLEMENT) {
+    targetPhaseDurationMins = 5; // Basic Settlement = 5 mins
   }
 
-  if (elapsedHours >= phaseDurationHours) {
-    if (current.currentPhase === ROUND_PHASES.COMPLETED) {
-      // Rotate state to next state in rotation list
-      const states = getStatesList();
-      const currentIdx = states.findIndex(s => s.toLowerCase() === (current.activeState || '').toLowerCase());
-      const nextIdx = (currentIdx + 1) % states.length;
-      const nextState = states[nextIdx];
+  // Fast Demo mode elapses phases in 1 minute for instant UI testing
+  const isExpired = isFastDemo ? (elapsedMinutes >= 1) : (elapsedMinutes >= targetPhaseDurationMins);
 
-      startNextRoundForState(nextState);
+  if (isExpired) {
+    advanceRoundPhase();
+  }
 
-      // Trigger In-App Notifications for new active state candidates
-      const allUsers = getUsers();
-      allUsers.forEach(u => {
-        if (u.state && u.state.toLowerCase() === nextState.toLowerCase()) {
-          import('../services/notificationManager').then(({ addNotification }) => {
-            addNotification(u.id, {
-              type: 'round_live',
-              title: `🚀 Live Round Start!`,
-              message: `Round ${current.roundNumber + 1} for ${nextState} is now LIVE! Join now to view matches.`,
-              linkTab: 'explore'
+  // Pre-Round Alert Dispatcher: Check if upcoming state round starts in <= 10 mins
+  try {
+    const states = getStatesList();
+    const currentIdx = states.findIndex(s => s.toLowerCase() === (current.activeState || '').toLowerCase());
+    const nextIdx = (currentIdx + 1) % states.length;
+    const nextState = states[nextIdx];
+
+    const roundStart = new Date(current.roundStartDate || current.phaseStartedAt);
+    const totalElapsedMins = Math.max(0, (now.getTime() - roundStart.getTime()) / (1000 * 60));
+    const minsUntilNextState = Math.max(1, Math.ceil(60 - totalElapsedMins));
+
+    if (minsUntilNextState <= 10) {
+      const alertKey = `alert_10m_${nextState}_r${(current.stateRoundMap?.[nextState] || 1)}`;
+      if (!localStorage.getItem(alertKey)) {
+        localStorage.setItem(alertKey, 'true');
+        const allUsers = getUsers();
+        allUsers.forEach(u => {
+          if (u.state && u.state.toLowerCase() === nextState.toLowerCase()) {
+            import('../services/notificationManager').then(({ addNotification }) => {
+              addNotification(u.id, {
+                type: 'round_1day',
+                title: 'Upcoming Round Alert',
+                message: `Round #${(current.stateRoundMap?.[nextState] || 1)} for ${nextState} starts in ~${minsUntilNextState} minutes! Preferences & profile pre-locked.`,
+                actionUrl: 'explore'
+              });
             });
-          });
-        }
-      });
-    } else {
-      // Auto-advance phase & run matching algorithm automatically!
-      advanceRoundPhase();
+          }
+        });
+      }
     }
+  } catch (e) {
+    console.warn('Pre-round alert check error:', e);
   }
 };

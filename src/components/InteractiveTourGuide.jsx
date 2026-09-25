@@ -30,16 +30,16 @@ export default function InteractiveTourGuide({ user = {}, userId, onComplete }) 
   // DYNAMIC TIER-SPECIFIC STEP DEFINITIONS
   // ---------------------------------------------------------------------------
   const getTourSteps = () => {
-    // 👑 1. ELITE TIER MALE (₹450 VIP)
+    // 1. ELITE TIER MALE (₹450 VIP)
     if (isEliteMale) {
       return [
         {
           id: 'elite_spotlight',
           target: 'card_stack',
           dialogPosition: 'bottom', // 'top' | 'bottom'
-          icon: Sparkles,
-          iconColor: 'text-amber-500 bg-amber-50',
-          badgeText: '⭐ VIP Elite Plan (₹450)',
+          icon: ShieldCheck,
+          iconColor: 'text-[#FF2E79] bg-rose-50',
+          badgeText: 'VIP Elite Plan (₹450)',
           title: '16-Hour Spotlight Window',
           subtitle: 'Step 1 of 5 • Priority Spotlight',
           description: 'Aapne Elite (₹450) plan liya hai! Jaise hi round entries close hongi, agle 16 ghante ke liye aapki profile sabhi active ladkiyo ke dashboard par spotlight hogi. Jo-jo ladki aapko select karegi, vo sabhi aapke dashboard par priority se show hongi.',
@@ -51,7 +51,7 @@ export default function InteractiveTourGuide({ user = {}, userId, onComplete }) 
           dialogPosition: 'bottom',
           icon: Heart,
           iconColor: 'text-[#FF2E79] bg-rose-50',
-          badgeText: '💖 Mutual Match & Instant Chat',
+          badgeText: 'Mutual Match & Instant Chat',
           title: 'Swipe & Review Candidates',
           subtitle: 'Step 2 of 5 • Review Girls Who Liked You',
           description: 'Aap un sabhi ladkiyo ki profiles swipe karke scroll kar sakte hain. Agar koi ladki psnd aati hai to Right Swipe (Like) karein — instant mutual match ho jayega aur direct chat khul jayegi!',
@@ -63,7 +63,7 @@ export default function InteractiveTourGuide({ user = {}, userId, onComplete }) 
           dialogPosition: 'bottom',
           icon: Clock,
           iconColor: 'text-purple-500 bg-purple-50',
-          badgeText: '⏳ 16h Timer + 100% Refund',
+          badgeText: '16h Timer + 100% Refund',
           title: '100% Auto-Refund Guarantee',
           subtitle: 'Step 3 of 5 • Zero Risk Protection',
           description: 'Top-right par 16 ghante ka countdown timer chalega. Agar in 16 ghanto me aapko koi ladki psnd nahi aati, ya aap kisi ko select nahi karte, ya koi ladki match nahi hoti, to aap ₹450 ke 100% full refund ke liye automatically eligible ho jayenge.',
@@ -75,10 +75,10 @@ export default function InteractiveTourGuide({ user = {}, userId, onComplete }) 
           dialogPosition: 'top',
           icon: ShieldCheck,
           iconColor: 'text-emerald-500 bg-emerald-50',
-          badgeText: '🛡️ 1-Click Refund Desk',
+          badgeText: '1-Click Refund Desk',
           title: 'Profile Tab & UPI Refund',
           subtitle: 'Step 4 of 5 • Refund Submission',
-          description: 'Neeche right side par Profile tab (👤) par tap karke aap kabhi bhi "Claim Refund" button se apna UPI refund claim submit kar sakte hain ya auto-process status check kar sakte hain.',
+          description: 'Neeche right side par Profile tab par tap karke aap kabhi bhi "Claim Refund" button se apna UPI refund claim submit kar sakte hain ya auto-process status check kar sakte hain.',
           actionText: 'Next: Radar Map & Chat →'
         },
         {
@@ -87,16 +87,16 @@ export default function InteractiveTourGuide({ user = {}, userId, onComplete }) 
           dialogPosition: 'top',
           icon: MessageSquare,
           iconColor: 'text-rose-500 bg-rose-50',
-          badgeText: '🧭 Navigation & Chat',
+          badgeText: 'Navigation & Chat',
           title: 'Campus Radar & Direct Chat',
           subtitle: 'Step 5 of 5 • Navigation',
-          description: 'Neeche floating navbar me: 🏠 Home Feed, 🧭 Campus Radar Map (nearby campus singles scan), 💬 Direct Realtime Chat (mutual matches ke sath), aur 👤 Profile Management.',
-          actionText: 'Got It! Start Matching 🚀'
+          description: 'Neeche floating navbar me: Home Feed, Campus Radar Map (nearby campus singles scan), Direct Realtime Chat (mutual matches ke sath), aur Profile Management.',
+          actionText: 'Got It! Start Matching'
         }
       ];
     }
 
-    // 💖 2. PREMIUM TIER MALE (₹250)
+    // 2. PREMIUM TIER MALE (₹250)
     if (isPremiumMale) {
       return [
         {
@@ -105,7 +105,7 @@ export default function InteractiveTourGuide({ user = {}, userId, onComplete }) 
           dialogPosition: 'bottom',
           icon: Heart,
           iconColor: 'text-[#FF2E79] bg-rose-50',
-          badgeText: '💎 Premium Plan (₹250)',
+          badgeText: 'Premium Plan (₹250)',
           title: '8-Hour Browsing Window',
           subtitle: 'Step 1 of 4 • Remaining Girls Pool',
           description: 'Aapne Premium (₹250) plan liya hai! Elite phase (16h) ke baad, agle 8 ghante aapka Premium Browsing window open hoga. Isme jitni bhi available ladkiya hain (jinke match slots khali hain), un sabhi ki profiles aapko show hongi.',
@@ -115,9 +115,9 @@ export default function InteractiveTourGuide({ user = {}, userId, onComplete }) 
           id: 'premium_swipe',
           target: 'card_stack',
           dialogPosition: 'bottom',
-          icon: Sparkles,
-          iconColor: 'text-amber-500 bg-amber-50',
-          badgeText: '💖 Direct Selection',
+          icon: ShieldCheck,
+          iconColor: 'text-emerald-500 bg-emerald-50',
+          badgeText: 'Direct Selection',
           title: 'Swipe & Pick Your Match',
           subtitle: 'Step 2 of 4 • Select Partner',
           description: 'Aap swipe karke sabhi available girls ko browse kar sakte hain aur apni pasandeeda partner ko select karke mutual match lock kar sakte hain.',
@@ -129,7 +129,7 @@ export default function InteractiveTourGuide({ user = {}, userId, onComplete }) 
           dialogPosition: 'bottom',
           icon: ShieldCheck,
           iconColor: 'text-emerald-500 bg-emerald-50',
-          badgeText: '🛡️ 100% Money-Back',
+          badgeText: '100% Money-Back',
           title: '100% Full Refund Protected',
           subtitle: 'Step 3 of 4 • Zero Risk',
           description: 'Agar is 8 ghante ke window me aapko koi suitable match nahi milta ya aap kisi ko choose nahi karte, to aapka ₹250 ka 100% refund guaranteed hai. Profile tab se "Claim Refund" submit kar sakte hain.',
@@ -141,16 +141,16 @@ export default function InteractiveTourGuide({ user = {}, userId, onComplete }) 
           dialogPosition: 'top',
           icon: MessageSquare,
           iconColor: 'text-purple-500 bg-purple-50',
-          badgeText: '🧭 Explore & Chat',
+          badgeText: 'Explore & Chat',
           title: 'Radar Map & Realtime Chat',
           subtitle: 'Step 4 of 4 • Navigation',
-          description: 'Neeche floating navbar me: 🏠 Feed, 🧭 Campus Radar Map, 💬 Direct Realtime Chat with locked matches, aur 👤 Membership & Refund Desk.',
-          actionText: 'Got It! Start Matching 🚀'
+          description: 'Neeche floating navbar me: Feed, Campus Radar Map, Direct Realtime Chat with locked matches, aur Membership & Refund Desk.',
+          actionText: 'Got It! Start Matching'
         }
       ];
     }
 
-    // 🎖️ 3. BASIC TIER MALE (₹100)
+    // 3. BASIC TIER MALE (₹100)
     if (isBasicMale) {
       return [
         {
@@ -159,7 +159,7 @@ export default function InteractiveTourGuide({ user = {}, userId, onComplete }) 
           dialogPosition: 'bottom',
           icon: Award,
           iconColor: 'text-blue-500 bg-blue-50',
-          badgeText: '🎖️ Basic Plan (₹100)',
+          badgeText: 'Basic Plan (₹100)',
           title: 'AI Mutual Allocation',
           subtitle: 'Step 1 of 3 • Automated Settlement',
           description: 'Aapne Basic plan liya hai! Round entries close hone ke baad, hamara AI preference algorithm aapke college, branch, age aur non-negotiables ke basis par bachi hui available ladkiyo ke sath aapka mutual match calculate karega.',
@@ -171,10 +171,10 @@ export default function InteractiveTourGuide({ user = {}, userId, onComplete }) 
           dialogPosition: 'bottom',
           icon: Clock,
           iconColor: 'text-purple-500 bg-purple-50',
-          badgeText: '💬 Direct Chat Unlock',
+          badgeText: 'Direct Chat Unlock',
           title: 'Round Settlement & Chat',
           subtitle: 'Step 2 of 3 • Round End',
-          description: 'Round settle hote hi aapka match "💬 Chat" tab me unlock ho jayega jahan direct contact aur chat open hogi. (Note: Basic plan non-refundable hai).',
+          description: 'Round settle hote hi aapka match Chat tab me unlock ho jayega jahan direct contact aur chat open hogi. (Note: Basic plan non-refundable hai).',
           actionText: 'Next: Navigation →'
         },
         {
@@ -183,24 +183,24 @@ export default function InteractiveTourGuide({ user = {}, userId, onComplete }) 
           dialogPosition: 'top',
           icon: MessageSquare,
           iconColor: 'text-emerald-500 bg-emerald-50',
-          badgeText: '🧭 Navigation',
+          badgeText: 'Navigation',
           title: 'Radar Map & Profile Management',
           subtitle: 'Step 3 of 3 • Navigation',
-          description: 'Neeche floating navbar me: 🏠 Feed, 🧭 Campus Radar Map, 💬 Chat, aur 👤 Profile settings.',
-          actionText: 'Got It! Let\'s Go 🚀'
+          description: 'Neeche floating navbar me: Feed, Campus Radar Map, Chat, aur Profile settings.',
+          actionText: 'Got It! Let\'s Go'
         }
       ];
     }
 
-    // 🌸 4. FEMALE USERS (100% FREE ENTRY)
+    // 4. FEMALE USERS (100% FREE ENTRY)
     return [
       {
         id: 'female_free_spotlight',
         target: 'card_stack',
         dialogPosition: 'bottom',
-        icon: Sparkles,
-        iconColor: 'text-amber-500 bg-amber-50',
-        badgeText: '👑 100% Free VIP Access',
+        icon: Heart,
+        iconColor: 'text-[#FF2E79] bg-rose-50',
+        badgeText: '100% Free VIP Access',
         title: 'Elite Spotlight Window (16h)',
         subtitle: 'Step 1 of 4 • Verified Elite Boys',
         description: 'Aapke liye entry 100% FREE hai! Round shuru hote hi pehle 16 ghante aapko verified Elite Tier boys spotlight me dikhenge. Aap unme se apne pasandeeda candidates browse kar sakti hain.',
@@ -212,7 +212,7 @@ export default function InteractiveTourGuide({ user = {}, userId, onComplete }) 
         dialogPosition: 'bottom',
         icon: Heart,
         iconColor: 'text-[#FF2E79] bg-rose-50',
-        badgeText: '💖 Max 2 Matches per Round',
+        badgeText: 'Max 2 Matches per Round',
         title: 'Select Up to 2 Matches',
         subtitle: 'Step 2 of 4 • Select Partner',
         description: 'Aap ek round me maximum 2 matches choose kar sakti hain. Jaise hi aap kisi Elite boy ko like karengi, use instant alert jayega aur mutual like hote hi direct chat khul jayegi.',
@@ -224,7 +224,7 @@ export default function InteractiveTourGuide({ user = {}, userId, onComplete }) 
         dialogPosition: 'bottom',
         icon: Flame,
         iconColor: 'text-rose-500 bg-rose-50',
-        badgeText: '✨ Flexible Options',
+        badgeText: 'Flexible Options',
         title: 'Skip Option & Next Phases',
         subtitle: 'Step 3 of 4 • More Candidates',
         description: 'Agar aapko Elite boys me koi psnd nahi aata, to aap skip kar sakti hain. Agle phase me aapko Premium aur Basic profiles preferences ke hisaab se dikhenge.',
@@ -236,11 +236,11 @@ export default function InteractiveTourGuide({ user = {}, userId, onComplete }) 
         dialogPosition: 'top',
         icon: MessageSquare,
         iconColor: 'text-purple-500 bg-purple-50',
-        badgeText: '💬 Safe Realtime Chat',
+        badgeText: 'Safe Realtime Chat',
         title: 'Radar Map & Messaging Tabs',
         subtitle: 'Step 4 of 4 • Navigation',
-        description: 'Neeche floating navbar me: 🏠 Home Feed, 🧭 Campus Radar Map (campus radius scan), 💬 Direct Realtime Chat with locked matches, aur 👤 Profile settings.',
-        actionText: 'Got It! Start Matching 🚀'
+        description: 'Neeche floating navbar me: Home Feed, Campus Radar Map (campus radius scan), Direct Realtime Chat with locked matches, aur Profile settings.',
+        actionText: 'Got It! Start Matching'
       }
     ];
   };

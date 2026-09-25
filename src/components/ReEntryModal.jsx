@@ -109,7 +109,44 @@ export default function ReEntryModal({ user, roundState, onClose, onEditQuestion
           </p>
         </div>
 
-        {/* STEP 1: SELECT PLAN */}
+        {/* FEMALE USER 100% FREE DIRECT RE-ENTRY */}
+        {(user?.gender || '').toLowerCase() === 'female' ? (
+          <div className="space-y-4 text-center py-2">
+            <div className="w-14 h-14 bg-pink-100 text-[#FF2E79] rounded-2xl flex items-center justify-center mx-auto shadow-sm">
+              <Heart className="w-7 h-7 fill-current" />
+            </div>
+            <div className="space-y-1">
+              <span className="px-3 py-1 bg-[#FF2E79] text-white text-[10px] font-black uppercase rounded-full tracking-wider">
+                100% Free VIP Female Entry
+              </span>
+              <h3 className="text-lg font-black text-slate-900 pt-2 font-display">
+                Re-Enter Round #{roundState.roundNumber || 1}
+              </h3>
+              <p className="text-xs text-slate-500 font-medium max-w-xs mx-auto">
+                Round entry is 100% FREE for female members! No payment or subscription required.
+              </p>
+            </div>
+
+            <div className="space-y-2 pt-3">
+              <button
+                onClick={() => handleFinalize(true)}
+                className="w-full py-3 bg-[#FF2E79] hover:bg-rose-600 text-white font-extrabold text-xs rounded-full flex items-center justify-center gap-2 shadow-md cursor-pointer"
+              >
+                <Edit3 className="w-4 h-4" />
+                <span>Update Questionnaire & Join Round</span>
+              </button>
+
+              <button
+                onClick={() => handleFinalize(false)}
+                className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs rounded-full flex items-center justify-center gap-2 shadow-md cursor-pointer"
+              >
+                <span>Keep Profile & Join Round Now</span>
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* STEP 1: SELECT PLAN */}
         {step === 1 && (
           <div className="space-y-4">
             <p className="text-xs font-bold text-slate-700">Choose your participation tier for this round:</p>
@@ -247,6 +284,8 @@ export default function ReEntryModal({ user, roundState, onClose, onEditQuestion
             </div>
           </div>
         )}
+      </>
+    )}
 
       </div>
     </div>

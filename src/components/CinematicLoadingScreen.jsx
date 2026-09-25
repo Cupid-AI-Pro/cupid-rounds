@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import CupidLogo from './CupidLogo';
+import { getRoundState } from '../utils/roundManager';
 
 // Curated high-res authentic candid couple lifestyle photography
 const COUPLE_EDITORIAL_PHOTOS = [
@@ -17,13 +18,16 @@ const COUPLE_EDITORIAL_PHOTOS = [
   },
   {
     image: 'https://images.unsplash.com/photo-1522529599102-193c0d76b5b6?w=1080&auto=format&fit=crop&q=85',
-    tagline: 'Find your person in Delhi NCR'
+    tagline: 'Find your person in your state'
   }
 ];
 
-export default function CinematicLoadingScreen({ onComplete, activeState = 'Delhi NCR', duration = 3200 }) {
+export default function CinematicLoadingScreen({ onComplete, activeState, duration = 3200 }) {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [progress, setProgress] = useState(0);
+  const roundState = getRoundState();
+  const displayState = activeState || roundState?.activeState || 'Delhi NCR';
+  const roundNum = roundState?.roundNumber || 1;
 
   // 1. Smooth Progress Loader
   useEffect(() => {
@@ -92,7 +96,7 @@ export default function CinematicLoadingScreen({ onComplete, activeState = 'Delh
       {/* 3. Top Minimal Location Header */}
       <div className="relative z-10 flex justify-center pt-4">
         <span className="text-[10px] font-bold tracking-[0.25em] text-white/70 uppercase">
-          {activeState} • ROUND 01
+          {displayState} • ROUND {String(roundNum).padStart(2, '0')}
         </span>
       </div>
 
@@ -100,7 +104,7 @@ export default function CinematicLoadingScreen({ onComplete, activeState = 'Delh
       <div className="relative z-10 flex flex-col items-center justify-center text-center space-y-4 my-auto">
         <CupidLogo size="2xl" showText={true} textColor="white" />
         <p className="text-xs font-medium text-white/75 tracking-wide max-w-[240px]">
-          {COUPLE_EDITORIAL_PHOTOS[currentIdx].tagline}
+          {idx === 3 ? `Find your person in ${displayState}` : COUPLE_EDITORIAL_PHOTOS[currentIdx].tagline}
         </p>
       </div>
 

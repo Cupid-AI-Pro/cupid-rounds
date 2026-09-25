@@ -78,9 +78,26 @@ export default function App() {
     initializeStorage();
     checkAndRotateRoundAutomated();
 
+    const syncStateFromStorage = () => {
+      const rs = getRoundState();
+      if (rs && rs.activeState) {
+        setActiveState(rs.activeState);
+      }
+    };
+
+    syncStateFromStorage();
+
+    const handleStateChange = () => {
+      syncStateFromStorage();
+    };
+
+    window.addEventListener('cupid_round_state_changed', handleStateChange);
+    window.addEventListener('cupid_data_changed', handleStateChange);
+
     const interval = setInterval(() => {
       checkAndRotateRoundAutomated();
-    }, 10000);
+      syncStateFromStorage();
+    }, 5000);
 
     const user = getCurrentUser();
     if (user) {
@@ -89,11 +106,12 @@ export default function App() {
         setCurrentView('admin');
       }
     }
-    
-    const state = getActiveState();
-    setActiveState(state);
 
-    return () => clearInterval(interval);
+    return () => {
+      window.removeEventListener('cupid_round_state_changed', handleStateChange);
+      window.removeEventListener('cupid_data_changed', handleStateChange);
+      clearInterval(interval);
+    };
   }, []);
 
   const handleLoginSuccess = (user, targetView = 'app') => {

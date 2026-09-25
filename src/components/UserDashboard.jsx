@@ -13,7 +13,10 @@ import {
   Users,
   Award,
   Check,
-  ChevronRight
+  ChevronRight,
+  DollarSign,
+  Zap,
+  Clock
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import SwipeableDeck from './SwipeableDeck';
@@ -25,13 +28,14 @@ import PermissionModal from './PermissionModal';
 import InteractiveTourGuide from './InteractiveTourGuide';
 import NotificationsModal from './NotificationsModal';
 import ReEntryModal from './ReEntryModal';
-import { getRoundState, ROUND_PHASES, joinRound } from '../utils/roundManager';
+import { getRoundState, ROUND_PHASES, joinRound, getStateUpcomingMins } from '../utils/roundManager';
 import { calculateCompatibilityScore } from '../utils/compatibility';
 import { 
   getNotifications, 
   addNotification, 
   getUnreadCount, 
-  checkAndTriggerRoundNotifications 
+  checkAndTriggerRoundNotifications,
+  requestDeviceNotificationPermission 
 } from '../services/notificationManager';
 
 export default function UserDashboard({ user, onUpdateUser, onLogout }) {
@@ -48,11 +52,13 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
   });
 
   const [roundState, setRoundState] = useState(getRoundState());
-  const isFemale = user.gender === 'female';
-  const isEliteMale = user.gender === 'male' && user.plan === 'elite';
-  const isPremiumMale = user.gender === 'male' && user.plan === 'premium';
+  const isFemale = (user.gender || '').toLowerCase() === 'female';
+  const isEliteMale = (user.gender || '').toLowerCase() === 'male' && user.plan === 'elite';
+  const isPremiumMale = (user.gender || '').toLowerCase() === 'male' && user.plan === 'premium';
   const femaleMatchesCount = user.matches?.length || 0;
   const isFemaleLimitReached = isFemale && femaleMatchesCount >= (roundState.femaleMaxMatches || 2);
+  const isUserInActiveState = (user.state || '').toLowerCase() === (roundState.activeState || '').toLowerCase();
+  const upcomingMins = getStateUpcomingMins(user.state);
 
   const [showReEntryModal, setShowReEntryModal] = useState(false);
   const [reEntryPlan, setReEntryPlan] = useState('elite');
@@ -72,6 +78,7 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
   }, [user]);
 
   useEffect(() => {
+    requestDeviceNotificationPermission();
     loadCandidates();
     if (user && user.id) {
       checkAndTriggerRoundNotifications(user);
@@ -145,7 +152,7 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
     // Trigger Like Notification for Candidate
     addNotification(candidate.id, {
       type: 'like',
-      title: 'Someone Liked Your Profile! 💕',
+      title: 'Someone Liked Your Profile',
       message: `${user.name} from ${user.university || user.state || 'your region'} liked your profile. Check your match radar!`,
       actionUrl: 'radar'
     });
@@ -158,14 +165,14 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
       // Trigger Mutual Match Notifications for Both Users
       addNotification(user.id, {
         type: 'match',
-        title: "It's a Mutual Match! 🎉",
+        title: "Mutual Match Confirmed",
         message: `You and ${candidate.name} liked each other! Tap to start chatting now.`,
         actionUrl: 'chat'
       });
 
       addNotification(candidate.id, {
         type: 'match',
-        title: "It's a Mutual Match! 🎉",
+        title: "Mutual Match Confirmed",
         message: `You and ${user.name} liked each other! Tap to start chatting now.`,
         actionUrl: 'chat'
       });
@@ -323,12 +330,40 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
             </div>
           </div>
 
+          {/* Refund Alert Banner for Unmatched Paid Users */}
+          {(user.refundEligible || user.refundStatus === 'pending') && (
+            <div className="mb-3 p-4 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white shadow-md border border-amber-300/40 select-none">
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0">
+                  <DollarSign className="w-5 h-5 text-white" />
+                </div>
+                <div className="space-y-1 text-left flex-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-amber-100">
+                      Refund Status
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-white text-orange-600">
+                      Pending
+                    </span>
+                  </div>
+                  <p className="text-xs font-bold leading-snug">
+                    No mutual match could be formed for this round. Your plan payment of ₹{user.refundAmount || (user.plan === 'elite' ? 449 : (user.plan === 'premium' ? 250 : 100))} is eligible for a full refund.
+                  </p>
+                  <p className="text-[10px] text-amber-100 font-medium">
+                    Admin has been notified. The amount will be refunded to your UPI within 24 hours.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Re-Entry / Round Participation Prompt Banner */}
           {(user.status === 'round_pending' || user.roundCompleted || !user.roundParticipating) && (
             <div className="mb-3 p-3.5 rounded-2xl bg-gradient-to-r from-[#FF2E79] via-pink-600 to-rose-500 text-white shadow-lg flex items-center justify-between border border-pink-300/40">
               <div className="space-y-0.5 pr-2 text-left">
-                <span className="text-[10px] font-black uppercase tracking-widest text-pink-200 block">
-                  🚀 Round #{roundState.roundNumber || 1} Live ({roundState.activeState})
+                <span className="text-[10px] font-black uppercase tracking-widest text-pink-200 block flex items-center gap-1">
+                  <Zap className="w-3 h-3 text-pink-200 inline" />
+                  <span>Round #{roundState.roundNumber || 1} Live ({roundState.activeState})</span>
                 </span>
                 <p className="text-xs font-black leading-tight">
                   Would you like to enter today's live round?
@@ -340,6 +375,33 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
               >
                 Re-Enter Round
               </button>
+            </div>
+          )}
+
+          {/* Upcoming State Round Notice Banner when User's state is not the active live state */}
+          {!isUserInActiveState && (
+            <div className="p-3.5 mb-2.5 bg-gradient-to-r from-pink-500 via-rose-500 to-purple-600 text-white rounded-2xl shadow-md text-left relative overflow-hidden animate-fade-in shrink-0">
+              <div className="flex items-start gap-2.5">
+                <div className="w-9 h-9 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0 text-white mt-0.5 shadow-inner">
+                  <Clock className="w-4.5 h-4.5 animate-pulse" />
+                </div>
+                <div className="flex-1 space-y-0.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[9px] font-black uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-full">
+                      State Round Schedule
+                    </span>
+                    <span className="text-[11px] font-mono font-black text-amber-200">
+                      Starts in ~{upcomingMins} mins
+                    </span>
+                  </div>
+                  <h4 className="text-xs font-black tracking-tight text-white pt-0.5">
+                    Live Round is currently for {roundState.activeState}
+                  </h4>
+                  <p className="text-[10px] text-pink-100 font-medium leading-relaxed">
+                    Your state round for <strong>{user.state || 'your state'}</strong> goes live in ~{upcomingMins} mins. We'll automatically notify your phone & device 10 mins prior!
+                  </p>
+                </div>
+              </div>
             </div>
           )}
 

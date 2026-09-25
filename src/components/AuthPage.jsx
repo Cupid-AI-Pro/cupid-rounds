@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { getUsers, saveUsers, setCurrentUser, updateUser, setAdminAuthenticated } from '../utils/storage';
-import { getRoundState } from '../utils/roundManager';
+import { getRoundState, getStateUpcomingMins } from '../utils/roundManager';
 import { STATES_LIST } from '../data/mockData';
 import { 
   Heart, 
@@ -163,6 +163,7 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
     );
 
     let userToProceed;
+    const isFemaleReg = (regGender || '').toLowerCase() === 'female';
 
     if (existingIndex !== -1) {
       // If user already exists in storage, update with newly entered details and proceed
@@ -172,12 +173,14 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
         password: regPassword || users[existingIndex].password || '123456',
         gender: regGender || users[existingIndex].gender,
         state: regState || users[existingIndex].state,
+        plan: isFemaleReg ? 'free' : (users[existingIndex].plan && users[existingIndex].plan !== 'free' ? users[existingIndex].plan : 'elite'),
         status: isStateActive ? 'onboarding' : 'waitlisted'
       };
       userToProceed = users[existingIndex];
       saveUsers(users);
     } else {
       // Create new user profile
+      const isFemaleReg = (regGender || '').toLowerCase() === 'female';
       const newUser = {
         id: `user_${cleanEmail.replace(/[^a-zA-Z0-9]/g, '')}`,
         name: cleanName,
@@ -185,13 +188,13 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
         password: regPassword || '123456',
         gender: regGender,
         state: regState,
-        plan: 'elite',
+        plan: isFemaleReg ? 'free' : 'elite',
         bio: '',
         occupation: '',
         income: '',
-        avatar: regGender === 'male' 
-          ? 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&auto=format&fit=crop&q=80' 
-          : 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&auto=format&fit=crop&q=80',
+        avatar: isFemaleReg 
+          ? 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&auto=format&fit=crop&q=80' 
+          : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&auto=format&fit=crop&q=80',
         interests: [],
         contact: '',
         likedProfiles: [],
@@ -536,7 +539,7 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
 
         {/* Center Logo */}
         <div className="shrink-0 flex flex-col items-center justify-center text-center">
-          <CupidLogo size="sm" showText={true} textColor="dark" textSubtitle={`${activeState}  •  ROUND ${roundState?.roundNumber || 1}`} />
+          <CupidLogo size="sm" showText={true} textColor="dark" textSubtitle={`${roundState?.activeState || activeState}  •  ROUND ${roundState?.roundNumber || 1}`} />
         </div>
 
         {/* Decorative Top-Right Cursive Handwriting */}
@@ -549,27 +552,43 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
 
       {isWaitlisted ? (
         /* Waitlisted Display */
-        <div className="shrink-0 text-center py-6 flex-1 flex flex-col justify-center items-center bg-white rounded-3xl p-6 border border-slate-100 shadow-sm">
-          <div className="w-14 h-14 bg-pink-100 text-[#FF2E79] rounded-full flex items-center justify-center mb-4 shadow-sm">
+        <div className="shrink-0 text-center py-6 flex-1 flex flex-col justify-center items-center bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-4">
+          <div className="w-14 h-14 bg-rose-50 text-[#FF2E79] rounded-full flex items-center justify-center mx-auto shadow-sm">
             <AlertCircle className="w-7 h-7" />
           </div>
-          <h2 className="text-xl font-bold text-slate-900 mb-1 font-display">Round is Inactive</h2>
-          <p className="text-xs text-slate-500 mb-6 px-2 leading-relaxed font-medium">
-            The active round today is for <strong className="text-[#FF2E79]">{activeState}</strong>. 
-            Since you are from <strong className="text-slate-800">{waitlistStateName}</strong>, you've been placed on our priority waitlist.
-          </p>
-          
-          <div className="bg-pink-50/80 border border-pink-100 rounded-xl p-3 mb-6 w-full text-left">
-            <span className="text-[9px] font-extrabold text-[#FF2E79] uppercase tracking-wider block mb-0.5">Status</span>
-            <span className="text-xs font-semibold text-slate-700">Waitlist registered. We will alert you on round start!</span>
+          <div>
+            <span className="text-[10px] font-black uppercase text-[#FF2E79] bg-rose-50 px-3 py-1 rounded-full border border-rose-100">
+              State Round Pre-Registration
+            </span>
+            <h2 className="text-xl font-black text-slate-900 mt-2 font-display">
+              Round Live for {activeState}
+            </h2>
+            <p className="text-xs text-slate-500 mt-1.5 px-2 leading-relaxed font-medium">
+              The live round active right now is for <strong className="text-[#FF2E79]">{activeState}</strong>. Your state round for <strong className="text-slate-800">{waitlistStateName}</strong> starts in <strong className="text-[#FF2E79]">~{getStateUpcomingMins(waitlistStateName)} minutes</strong>!
+            </p>
           </div>
           
-          <button 
-            onClick={() => { setIsWaitlisted(false); setIsLogin(true); }}
-            className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-full cursor-pointer transition-colors"
-          >
-            Go Back
-          </button>
+          <div className="bg-pink-50/80 border border-pink-100 rounded-2xl p-3.5 w-full text-left space-y-1">
+            <span className="text-[9px] font-extrabold text-[#FF2E79] uppercase tracking-wider block">Automatic Notification Scheduled</span>
+            <span className="text-xs font-semibold text-slate-700 block">
+              ✓ 10-Min Pre-Alert & Live Push Notification set for your phone!
+            </span>
+          </div>
+
+          <div className="w-full space-y-2 pt-2">
+            <button 
+              onClick={() => { setIsWaitlisted(false); setIsLogin(true); }}
+              className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-full cursor-pointer transition-colors shadow-md"
+            >
+              Sign In to Existing Account
+            </button>
+            <button 
+              onClick={() => { setIsWaitlisted(false); setIsLogin(false); }}
+              className="w-full h-11 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-full cursor-pointer transition-colors"
+            >
+              Change Selected State
+            </button>
+          </div>
         </div>
       ) : (
         /* Main Card Container */
@@ -668,7 +687,7 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
                     <input
                       type="text"
                       className="w-full bg-transparent border-none text-xs sm:text-sm font-semibold text-slate-800 placeholder-slate-400 focus:outline-none"
-                      placeholder="e.g. Aditya Chauhan"
+                      placeholder="e.g. Rahul Sharma"
                       value={regName}
                       onChange={(e) => setRegName(e.target.value)}
                     />
@@ -735,6 +754,13 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
                         <span>{g.label}</span>
                       </button>
                     ))}
+                  </div>
+                  {/* Warning Notice for Gender Lock */}
+                  <div className="mt-2 p-2.5 bg-amber-50/90 border border-amber-200/80 rounded-xl text-left flex items-start gap-2 shadow-2xs">
+                    <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                    <p className="text-[11px] font-semibold text-amber-800 leading-snug">
+                      <strong className="font-extrabold text-amber-900">🔒 Warning:</strong> Gender selection is permanent and locked after registration for safety &amp; verified matchmaking.
+                    </p>
                   </div>
                 </div>
 

@@ -25,6 +25,7 @@ import {
   saveRoundState, 
   advanceRoundPhase, 
   startNextRoundForState, 
+  forceRotateToNextState,
   getAllStateSchedules, 
   updateStateScheduleDate,
   runAlgorithmicMatchEngine,
@@ -73,7 +74,8 @@ import {
   Menu,
   X,
   Send,
-  Eye
+  Eye,
+  Zap
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import CupidLogo from './CupidLogo';
@@ -343,12 +345,13 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
   };
 
   const handleStartNextRound = () => {
-    if (confirm(`Start Next Round for ${activeState}?`)) {
-      const updated = startNextRoundForState(activeState);
-      setRoundState(updated);
-      loadAdminData();
-      confetti({ particleCount: 100, spread: 80, origin: { y: 0.5 } });
+    const updated = forceRotateToNextState();
+    setRoundState(updated);
+    if (onStateChange && updated.activeState) {
+      onStateChange(updated.activeState);
     }
+    loadAdminData();
+    confetti({ particleCount: 100, spread: 80, origin: { y: 0.5 } });
   };
 
   const handleRunMatchEngine = () => {
@@ -1102,7 +1105,8 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                 {/* Quick Actions (2x2 grid on mobile) */}
                 <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-[#FFE1EB] shadow-xs space-y-2.5 sm:space-y-3">
                   <h3 className="text-sm sm:text-base font-black text-slate-900 flex items-center gap-1.5">
-                    <span className="text-[#FF2E79]">⚡</span> Quick Actions
+                    <Zap className="w-4 h-4 text-[#FF2E79]" />
+                    <span>Quick Actions</span>
                   </h3>
 
                   <div className="grid grid-cols-2 sm:grid-cols-1 gap-2 text-xs font-bold text-slate-700">
@@ -1396,27 +1400,44 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                     <span>Run 3-Tier Match Engine</span>
                   </button>
 
-                  {roundState.currentPhase !== ROUND_PHASES.COMPLETED ? (
                     <button
                       type="button"
                       onClick={handleAdvancePhase}
-                      className="px-4 py-2 bg-[#FF2E79] hover:bg-rose-600 text-white rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-all shadow-md cursor-pointer"
+                      className="px-3.5 py-2 bg-[#FF2E79] hover:bg-rose-600 text-white rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-all shadow-md cursor-pointer"
                     >
                       <Play className="w-3.5 h-3.5 fill-current" />
                       <span>Advance Phase</span>
                     </button>
-                  ) : (
+
                     <button
                       type="button"
                       onClick={handleStartNextRound}
-                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-all shadow-md cursor-pointer"
+                      className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-all shadow-md cursor-pointer"
                     >
                       <RefreshCw className="w-3.5 h-3.5" />
-                      <span>Start Round {(roundState.roundNumber || 1) + 1}</span>
+                      <span>Rotate to Next State</span>
                     </button>
-                  )}
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const currentSpeed = localStorage.getItem('cupid_demo_rotation_speed') || 'normal';
+                        const newSpeed = currentSpeed === 'fast' ? 'normal' : 'fast';
+                        localStorage.setItem('cupid_demo_rotation_speed', newSpeed);
+                        alert(newSpeed === 'fast' ? '⚡ Fast Auto-Rotation Mode Enabled! Phases will advance every 1 minute and rotate states automatically.' : '📅 Standard 24h Schedule Enabled.');
+                        loadAdminData();
+                      }}
+                      className={`px-3.5 py-2 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-all border shadow-xs cursor-pointer ${
+                        localStorage.getItem('cupid_demo_rotation_speed') === 'fast'
+                          ? 'bg-amber-500 text-white border-amber-600 animate-pulse'
+                          : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
+                      }`}
+                    >
+                      <Zap className="w-3.5 h-3.5" />
+                      <span>{localStorage.getItem('cupid_demo_rotation_speed') === 'fast' ? 'Fast Demo (1 Min/Round)' : '24h Schedule'}</span>
+                    </button>
+                  </div>
                 </div>
-              </div>
 
               {/* State Schedule Modification */}
               <form onSubmit={handleSaveCustomDate} className="pt-2 flex flex-col sm:flex-row items-center gap-3">

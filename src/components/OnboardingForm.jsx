@@ -135,14 +135,27 @@ function WordByWordText({ text, speed = 75 }) {
 }
 
 export default function OnboardingForm({ user, onComplete, onCancel }) {
+  // --- 2. Your Details ---
+  const [age, setAge] = useState(user.age || 21);
+  const [height, setHeight] = useState(user.height || "5'7\"");
+  const [gender, setGender] = useState(user.gender || 'male');
+
+  const isFemaleUser = (user?.gender || '').toLowerCase() === 'female' || (gender || '').toLowerCase() === 'female';
+  const totalSteps = isFemaleUser ? 23 : 25;
+
   const [step, setStep] = useState(() => {
     const params = new URLSearchParams(window.location.search);
     const parsedStep = parseInt(params.get('step') || '1', 10);
-    return parsedStep >= 1 && parsedStep <= 26 ? parsedStep : 1;
+    return parsedStep >= 1 && parsedStep <= (isFemaleUser ? 23 : 26) ? parsedStep : 1;
   });
-  const totalSteps = 25;
   const fileInputRef = useRef(null);
   const [roundState, setRoundState] = useState(getRoundState());
+
+  useEffect(() => {
+    if (user?.gender) {
+      setGender(user.gender);
+    }
+  }, [user?.gender]);
 
   useEffect(() => {
     const handleRoundStateChange = () => {
@@ -169,23 +182,12 @@ export default function OnboardingForm({ user, onComplete, onCancel }) {
     return () => clearTimeout(timer);
   }, [showMilestoneOverlay]);
 
-  // --- 1. Personal Info ---
-  const [name, setName] = useState(user.name || '');
-  const [phone, setPhone] = useState(user.phone || '');
-  const [email, setEmail] = useState(user.email || '');
-  const [instaId, setInstaId] = useState(user.instaId || '');
-  const [hometown, setHometown] = useState(user.hometown || 'Delhi NCR');
-
-  // Real User Photos Uploads
-  const [userPhotos, setUserPhotos] = useState(user.photos || []);
-  const [selectedAvatar3D, setSelectedAvatar3D] = useState(user.avatar3D || AVATAR_3D_CHARACTERS[0].url);
-  const [isFlippedPreview, setIsFlippedPreview] = useState(false);
-  const [photoError, setPhotoError] = useState('');
-
-  // --- 2. Your Details ---
-  const [age, setAge] = useState(user.age || 21);
-  const [height, setHeight] = useState(user.height || "5'7\"");
-  const [gender, setGender] = useState(user.gender || 'male');
+  // Female Users Auto-Bypass Payment Step Guard
+  useEffect(() => {
+    if (isFemaleUser && step >= 24) {
+      handleFinalSubmit();
+    }
+  }, [step, isFemaleUser]);
   const [university, setUniversity] = useState(user.university || 'Bennett University');
   const [customUniversity, setCustomUniversity] = useState('');
   const [branch, setBranch] = useState(user.branch || 'Computer Science (CSE)');
@@ -250,12 +252,38 @@ export default function OnboardingForm({ user, onComplete, onCancel }) {
 
   const [completedUser, setCompletedUser] = useState(null);
 
-  const toggleArrayItem = (arr, setter, item) => {
+  const EXCLUSIVE_ITEMS = [
+    'None', 
+    'Any', 
+    'Any University', 
+    'Any Year', 
+    'Any Branch', 
+    'Any Religion', 
+    'Doesn\'t matter', 
+    'No preference'
+  ];
+
+  const toggleArrayItem = (arr, setter, item, defaultFallback = null) => {
+    const isExclusive = EXCLUSIVE_ITEMS.includes(item);
+
+    if (isExclusive) {
+      // Selecting "None" / "Any" / "Any University" clears all specific options
+      setter([item]);
+      return;
+    }
+
     if (arr.includes(item)) {
-      if (arr.length === 1) return;
-      setter(arr.filter(i => i !== item));
+      // Un-selecting a specific option
+      const updated = arr.filter(i => i !== item);
+      if (updated.length === 0 && defaultFallback) {
+        setter([defaultFallback]);
+      } else {
+        setter(updated);
+      }
     } else {
-      setter([...arr, item]);
+      // Selecting a specific option: automatically remove any active exclusive option ("None", "Any", etc.)
+      const cleanedArr = arr.filter(i => !EXCLUSIVE_ITEMS.includes(i));
+      setter([...cleanedArr, item]);
     }
   };
 
@@ -319,6 +347,11 @@ export default function OnboardingForm({ user, onComplete, onCancel }) {
       return;
     }
 
+    if (isFemaleUser && step >= 23) {
+      handleFinalSubmit();
+      return;
+    }
+
     if (step < totalSteps) {
       setStep(prev => prev + 1);
     }
@@ -339,7 +372,7 @@ export default function OnboardingForm({ user, onComplete, onCancel }) {
 
   const handleInstantAutoPay = () => {
     const amount = selectedPlan === 'basic' ? '100.00' : selectedPlan === 'premium' ? '250.00' : '449.00';
-    const upiLink = `upi://pay?pa=aditya.378%40superyes&pn=CupidRound&am=${amount}&cu=INR&tn=Cupid_Round_${selectedPlan}_Plan`;
+    const upiLink = `upi://pay?pa=cupidround%40upi&pn=CupidRound&am=${amount}&cu=INR&tn=Cupid_Round_${selectedPlan}_Plan`;
     window.open(upiLink, '_blank');
   };
 
@@ -348,18 +381,48 @@ export default function OnboardingForm({ user, onComplete, onCancel }) {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (ev) => {
-      setScreenshotPreview(ev.target.result);
-      setScreenshotFile(file);
-      setPaymentProofUploaded(true);
+      const rawBase64 = ev.target.result;
+      const img = new Image();
+      img.src = rawBase64;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        const maxDim = 600;
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.65);
+        setScreenshotPreview(compressedBase64);
+        setScreenshotFile(file);
+        setPaymentProofUploaded(true);
+      };
+      img.onerror = () => {
+        setScreenshotPreview(rawBase64);
+        setScreenshotFile(file);
+        setPaymentProofUploaded(true);
+      };
     };
     reader.readAsDataURL(file);
   };
 
   const handleFinalSubmit = (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     setIsSubmitting(true);
 
-    const planAmount = selectedPlan === 'basic' ? 100 : selectedPlan === 'premium' ? 250 : 449;
+    const isFemaleUser = (user?.gender || gender || '').toLowerCase() === 'female';
+    const planToSave = isFemaleUser ? 'free' : (selectedPlan || 'basic');
+    const planAmount = isFemaleUser ? 0 : (planToSave === 'basic' ? 100 : planToSave === 'premium' ? 250 : 449);
     const refNumber = `REF_${Math.floor(100000000000 + Math.random() * 900000000000)}`;
 
     const finalUserData = {
@@ -404,39 +467,51 @@ export default function OnboardingForm({ user, onComplete, onCancel }) {
       nonNegotiables,
       autoThreeRounds,
       agreedTerms,
-      plan: selectedPlan,
+      plan: planToSave,
       amountPaid: planAmount,
-      refundUpi: refundUpi || phone,
+      refundUpi: isFemaleUser ? '' : (refundUpi || phone),
       paymentVerified: true,
       paymentRef: refNumber,
       status: 'active'
     };
 
-    savePaymentSubmission({
-      userId: user.id,
-      userName: name || user?.name || 'Unknown',
-      userEmail: email || user?.email || '',
-      userPhone: phone || user?.phone || '',
-      plan: selectedPlan,
-      amount: planAmount,
-      utr: refNumber,
-      screenshotBase64: screenshotPreview || null,
-      userState: user?.state || 'Unknown',
-    });
+    if (!isFemaleUser) {
+      try {
+        savePaymentSubmission({
+          userId: user.id,
+          userName: name || user?.name || 'Unknown',
+          userEmail: email || user?.email || '',
+          userPhone: phone || user?.phone || '',
+          plan: planToSave,
+          amount: planAmount,
+          utr: refNumber,
+          screenshotBase64: screenshotPreview || null,
+          userState: user?.state || 'Unknown',
+        });
+      } catch (err) {
+        console.warn('Payment submission save warning:', err);
+      }
+    }
 
     setTimeout(() => {
-      const savedUser = updateUser(finalUserData) || finalUserData;
-      setCompletedUser(savedUser);
-      setIsSubmitting(false);
-      setStep(26); // Step 26: Thank You Screen
+      let savedUser = finalUserData;
+      try {
+        savedUser = updateUser(finalUserData) || finalUserData;
+      } catch (err) {
+        console.warn('User update warning:', err);
+      } finally {
+        setCompletedUser(savedUser);
+        setIsSubmitting(false);
+        setStep(26); // Step 26: Thank You Screen
 
-      confetti({
-        particleCount: 120,
-        spread: 70,
-        origin: { y: 0.6 },
-        colors: ['#FF2E79', '#FF6584', '#EC4899', '#7C3AED']
-      });
-    }, 1200);
+        confetti({
+          particleCount: 120,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#FF2E79', '#FF6584', '#EC4899', '#7C3AED']
+        });
+      }
+    }, 400);
   };
 
   // =========================================================================
@@ -465,7 +540,7 @@ export default function OnboardingForm({ user, onComplete, onCancel }) {
             Thanks for participating!
           </h2>
           <span className="inline-block px-3 py-1 bg-emerald-50 text-emerald-700 text-[11px] font-bold rounded-full mb-3 border border-emerald-200">
-            Payment Auto-Verified
+            {isFemaleUser ? '✓ 100% Free VIP Access Activated' : 'Payment Auto-Verified'}
           </span>
           
           <div className="bg-slate-50 border border-slate-100 rounded-3xl p-5 text-left my-2 space-y-2.5 shadow-sm">
@@ -495,10 +570,10 @@ export default function OnboardingForm({ user, onComplete, onCancel }) {
               </div>
               <div className="text-right">
                 <span className="text-[10px] font-extrabold tracking-widest uppercase text-pink-200 block mb-0.5">
-                  Your Plan
+                  Your Membership
                 </span>
                 <span className="text-sm font-black uppercase block">
-                  {selectedPlan} (₹{selectedPlan === 'basic' ? 100 : selectedPlan === 'premium' ? 250 : 449})
+                  {isFemaleUser ? '100% Free VIP Pass (₹0)' : `${selectedPlan} (₹${selectedPlan === 'basic' ? 100 : selectedPlan === 'premium' ? 250 : 449})`}
                 </span>
               </div>
             </div>
@@ -600,7 +675,7 @@ export default function OnboardingForm({ user, onComplete, onCancel }) {
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Aditya Chauhan"
+                  placeholder="e.g. Rahul Sharma"
                   className="w-full h-14 min-h-[56px] px-6 py-3.5 bg-slate-50 border-2 border-slate-200/90 rounded-2xl text-base font-bold text-slate-900 placeholder-slate-400 focus:bg-white focus:border-[#FF2E79] focus:ring-4 focus:ring-pink-100 outline-none transition-all shadow-2xs"
                 />
               </div>
@@ -986,73 +1061,49 @@ export default function OnboardingForm({ user, onComplete, onCancel }) {
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 7: Gender Identity                                                   */}
+        {/* STEP 7: Gender Identity (Locked & Verified at Signup)                    */}
         {/* ========================================================================= */}
         {step === 7 && (
           <div key={7} className="bg-white/95 backdrop-blur-md rounded-[32px] p-5 sm:p-6 border border-white/90 shadow-[0_10px_30px_rgba(255,182,193,0.35)] text-left relative overflow-visible space-y-5 animate-step-transition">
             <div>
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
-                STEP 07 • GENDER IDENTITY
+                STEP 07 • VERIFIED GENDER IDENTITY
               </span>
-              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Your Gender</h2>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display tracking-tight">Verified Gender</h2>
               <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
-                Select your gender identity to personalize your match radar
+                Gender set during profile registration at signup
               </p>
             </div>
 
-            <div className="space-y-3.5 pt-1">
-              {[
-                { 
-                  id: 'male', 
-                  label: 'Male', 
-                  desc: 'Identify as male',
-                  icon: <User className="w-5 h-5 stroke-[2.5]" />,
-                  iconBg: 'bg-blue-50 text-blue-600 border-blue-100'
-                },
-                { 
-                  id: 'female', 
-                  label: 'Female', 
-                  desc: 'Identify as female',
-                  icon: <Heart className="w-5 h-5 fill-pink-100 stroke-[2.2]" />,
-                  iconBg: 'bg-rose-50 text-[#FF2E79] border-rose-100'
-                },
-                { 
-                  id: 'others', 
-                  label: 'Others', 
-                  desc: 'Non-binary / others',
-                  icon: <Sparkles className="w-5 h-5 stroke-[2.2]" />,
-                  iconBg: 'bg-purple-50 text-purple-600 border-purple-100'
-                }
-              ].map((g) => {
-                const isSelected = gender === g.id;
-                return (
-                  <button
-                    key={g.id}
-                    type="button"
-                    onClick={() => setGender(g.id)}
-                    className={`w-full p-4.5 sm:p-5 rounded-2xl text-base font-bold transition-all border-2 flex items-center justify-between cursor-pointer ${
-                      isSelected
-                        ? 'bg-rose-50/90 border-[#FF2E79] text-[#FF2E79] shadow-xs font-black scale-[1.01]'
-                        : 'bg-white text-slate-800 border-slate-200/90 hover:border-slate-300 shadow-2xs'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3.5">
-                      <div className={`w-11 h-11 rounded-2xl border flex items-center justify-center shrink-0 shadow-2xs ${g.iconBg}`}>
-                        {g.icon}
-                      </div>
-                      <div className="text-left">
-                        <span className="block text-base font-black text-slate-900">{g.label}</span>
-                        <span className="text-xs text-slate-400 font-medium">{g.desc}</span>
-                      </div>
-                    </div>
-                    {isSelected && (
-                      <div className="w-6 h-6 rounded-full bg-[#FF2E79] text-white flex items-center justify-center shadow-xs shrink-0">
-                        <Check className="w-4 h-4 stroke-[3]" />
-                      </div>
-                    )}
-                  </button>
-                );
-              })}
+            <div className="p-5 rounded-2xl bg-rose-50/90 border-2 border-[#FF2E79] flex items-center justify-between shadow-xs">
+              <div className="flex items-center gap-3.5">
+                <div className="w-12 h-12 rounded-2xl bg-rose-100 text-[#FF2E79] border border-rose-200 flex items-center justify-center shrink-0 shadow-2xs">
+                  {(gender || user?.gender || '').toLowerCase() === 'female' ? (
+                    <Heart className="w-6 h-6 fill-[#FF2E79] stroke-[2]" />
+                  ) : (
+                    <User className="w-6 h-6 stroke-[2.5]" />
+                  )}
+                </div>
+                <div>
+                  <span className="block text-lg font-black text-slate-900 capitalize">
+                    {gender || user?.gender || 'Male'}
+                  </span>
+                  <span className="text-xs text-emerald-700 font-extrabold flex items-center gap-1 mt-0.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Verified at Signup</span>
+                  </span>
+                </div>
+              </div>
+              <div className="px-3 py-1 bg-[#FF2E79] text-white text-[10px] font-black uppercase rounded-full tracking-wider flex items-center gap-1 shadow-xs">
+                <span>Locked</span>
+              </div>
+            </div>
+
+            <div className="p-3.5 bg-amber-50/90 border border-amber-200/80 rounded-2xl flex items-start gap-2.5 text-xs text-amber-900">
+              <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+              <p className="leading-relaxed font-medium">
+                <strong className="font-extrabold text-amber-950">Security Notice:</strong> Gender identity cannot be changed after registration to maintain verified user safety, prevent fake profiles, and protect algorithmic fairness.
+              </p>
             </div>
           </div>
         )}
@@ -1321,7 +1372,7 @@ export default function OnboardingForm({ user, onComplete, onCancel }) {
                     <button
                       key={h}
                       type="button"
-                      onClick={() => toggleArrayItem(habits, setHabits, h)}
+                      onClick={() => toggleArrayItem(habits, setHabits, h, 'None')}
                       className={`px-5 py-3.5 rounded-2xl min-h-[48px] text-xs sm:text-sm font-bold border-2 transition-all cursor-pointer flex items-center justify-center text-center break-words ${
                         isSelected
                           ? 'bg-rose-50/90 border-[#FF2E79] text-[#FF2E79] shadow-xs font-black scale-[1.01]'
@@ -1386,7 +1437,7 @@ export default function OnboardingForm({ user, onComplete, onCancel }) {
               <div className="space-y-2.5">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
-                    <Sparkles className="w-4 h-4" />
+                    <Heart className="w-4 h-4" />
                   </div>
                   <label className="text-sm font-bold text-slate-900">Qualities ({qualities.length} selected) *</label>
                 </div>
@@ -1604,7 +1655,7 @@ export default function OnboardingForm({ user, onComplete, onCancel }) {
                     <button
                       key={u}
                       type="button"
-                      onClick={() => toggleArrayItem(prefUniversity, setPrefUniversity, u)}
+                      onClick={() => toggleArrayItem(prefUniversity, setPrefUniversity, u, 'Any University')}
                       className={`px-5 py-3.5 rounded-2xl min-h-[48px] text-xs sm:text-sm font-bold border-2 transition-all cursor-pointer flex items-center justify-center text-center break-words ${
                         isSelected
                           ? 'bg-rose-50/90 border-[#FF2E79] text-[#FF2E79] shadow-xs font-black scale-[1.01]'
@@ -1680,7 +1731,7 @@ export default function OnboardingForm({ user, onComplete, onCancel }) {
                       <button
                         key={yr}
                         type="button"
-                        onClick={() => toggleArrayItem(prefYearOfStudy, setPrefYearOfStudy, yr)}
+                        onClick={() => toggleArrayItem(prefYearOfStudy, setPrefYearOfStudy, yr, 'Any Year')}
                         className={`px-5 py-3.5 rounded-2xl min-h-[48px] text-xs sm:text-sm font-bold border-2 transition-all cursor-pointer flex items-center justify-center text-center break-words ${
                           isSelected
                             ? 'bg-rose-50/90 border-[#FF2E79] text-[#FF2E79] shadow-xs font-black scale-[1.01]'
@@ -1727,7 +1778,7 @@ export default function OnboardingForm({ user, onComplete, onCancel }) {
                     <button
                       key={r}
                       type="button"
-                      onClick={() => toggleArrayItem(prefReligion, setPrefReligion, r)}
+                      onClick={() => toggleArrayItem(prefReligion, setPrefReligion, r, 'Any')}
                       className={`px-5 py-3.5 rounded-2xl min-h-[48px] text-xs sm:text-sm font-bold border-2 transition-all cursor-pointer flex items-center justify-center text-center break-words ${
                         isSelected
                           ? 'bg-rose-50/90 border-[#FF2E79] text-[#FF2E79] shadow-xs font-black scale-[1.01]'
@@ -1756,7 +1807,7 @@ export default function OnboardingForm({ user, onComplete, onCancel }) {
                     <button
                       key={h}
                       type="button"
-                      onClick={() => toggleArrayItem(prefHabits, setPrefHabits, h)}
+                      onClick={() => toggleArrayItem(prefHabits, setPrefHabits, h, 'None')}
                       className={`px-5 py-3.5 rounded-2xl min-h-[48px] text-xs sm:text-sm font-bold border-2 transition-all cursor-pointer flex items-center justify-center text-center break-words ${
                         isSelected
                           ? 'bg-rose-50/90 border-[#FF2E79] text-[#FF2E79] shadow-xs font-black scale-[1.01]'
@@ -1836,7 +1887,7 @@ export default function OnboardingForm({ user, onComplete, onCancel }) {
               <div className="space-y-2.5">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-full bg-pink-100/60 border border-pink-200/50 flex items-center justify-center text-[#FF2E79]">
-                    <Sparkles className="w-4 h-4" />
+                    <Heart className="w-4 h-4" />
                   </div>
                   <label className="text-sm sm:text-base font-bold text-slate-900">Preferred Qualities *</label>
                 </div>
@@ -1933,7 +1984,7 @@ export default function OnboardingForm({ user, onComplete, onCancel }) {
                     <button
                       key={item}
                       type="button"
-                      onClick={() => toggleArrayItem(nonNegotiables, setNonNegotiables, item)}
+                      onClick={() => toggleArrayItem(nonNegotiables, setNonNegotiables, item, 'None')}
                       className={`px-5 py-3.5 rounded-2xl min-h-[48px] text-xs sm:text-sm font-bold border-2 transition-all cursor-pointer flex items-center justify-center text-center break-words ${
                         isSelected
                           ? 'bg-rose-50/90 border-[#FF2E79] text-[#FF2E79] shadow-xs font-black scale-[1.01]'
@@ -2038,9 +2089,9 @@ export default function OnboardingForm({ user, onComplete, onCancel }) {
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 24: Plan Selection                                                   */}
+        {/* STEP 24: Plan Selection (Male Users Only)                                 */}
         {/* ========================================================================= */}
-        {step === 24 && (
+        {step === 24 && !isFemaleUser && (
           <div key={24} className="space-y-4 animate-step-transition">
             <div className="text-left mb-2">
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
@@ -2119,9 +2170,9 @@ export default function OnboardingForm({ user, onComplete, onCancel }) {
         )}
 
         {/* ========================================================================= */}
-        {/* STEP 25: Payment QR, Auto-Verify & Screenshot Upload                      */}
+        {/* STEP 25: Payment QR, Auto-Verify & Screenshot Upload (Male Users Only)     */}
         {/* ========================================================================= */}
-        {step === 25 && (
+        {step === 25 && !isFemaleUser && (
           <div key={25} className="space-y-4 animate-step-transition">
             <div className="text-left mb-2">
               <span className="text-xs font-black text-[#FF2E79] uppercase tracking-widest block mb-1">
@@ -2184,7 +2235,7 @@ export default function OnboardingForm({ user, onComplete, onCancel }) {
                   <div className="w-36 h-36 mx-auto bg-white p-2 rounded-2xl border-2 border-rose-100 shadow-md flex items-center justify-center relative">
                     <img
                       src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(
-                        `upi://pay?pa=aditya.378%40superyes&pn=CupidRound&am=${
+                        `upi://pay?pa=cupidround%40upi&pn=CupidRound&am=${
                           selectedPlan === 'basic' ? '100.00' : selectedPlan === 'premium' ? '250.00' : '449.00'
                         }&cu=INR&tn=Cupid_Round_${selectedPlan}_Plan`
                       )}`}
@@ -2196,14 +2247,14 @@ export default function OnboardingForm({ user, onComplete, onCancel }) {
                   <button
                     type="button"
                     onClick={() => {
-                      navigator.clipboard.writeText('aditya.378@superyes');
+                      navigator.clipboard.writeText('cupidround@upi');
                       setCopiedUpi(true);
                       setTimeout(() => setCopiedUpi(false), 2000);
                     }}
                     className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-100 shadow-sm transition-all"
                   >
                     <Copy className="w-3.5 h-3.5 text-[#FF2E79]" />
-                    <span>{copiedUpi ? '✓ Copied!' : 'aditya.378@superyes'}</span>
+                    <span>{copiedUpi ? '✓ Copied!' : 'cupidround@upi'}</span>
                   </button>
                   
                   <p className="text-[10px] text-slate-500 font-medium text-center leading-relaxed">
@@ -2298,7 +2349,26 @@ export default function OnboardingForm({ user, onComplete, onCancel }) {
           </button>
         ) : (
           <div>
-            {!screenshotPreview ? (
+            {isFemaleUser ? (
+              <button
+                type="button"
+                onClick={handleFinalSubmit}
+                disabled={isSubmitting}
+                className="w-full h-12 min-h-[48px] bg-gradient-to-r from-[#FF2E79] via-pink-600 to-[#FF2E79] hover:opacity-95 text-white font-black text-base rounded-full flex items-center justify-center gap-2 shadow-[0_6px_18px_rgba(255,46,121,0.30)] transition-all active:scale-[0.98] disabled:opacity-75 cursor-pointer"
+              >
+                {isSubmitting ? (
+                  <div className="flex items-center gap-2">
+                    <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin"></span>
+                    <span>Creating Free VIP Profile...</span>
+                  </div>
+                ) : (
+                  <>
+                    <span>Complete &amp; Activate 100% Free VIP Account</span>
+                    <ArrowRight className="w-4.5 h-4.5 stroke-[2.5]" />
+                  </>
+                )}
+              </button>
+            ) : !screenshotPreview ? (
               <div className="space-y-1.5">
                 <button
                   type="button"

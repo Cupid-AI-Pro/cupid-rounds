@@ -5,7 +5,7 @@
  *
  * SETUP (one-time, takes 5 minutes):
  * 1. Go to https://www.emailjs.com → Sign Up (free)
- * 2. Add an Email Service: Connect your Gmail (aditya.378@superyes / any Gmail)
+ * 2. Add an Email Service: Connect your Gmail (cupidround@upi / any Gmail)
  *    → Service ID: note it down (e.g. "service_cupid")
  * 3. Create an Email Template → Use template variables:
  *       Subject: 💸 New Payment from {{user_name}} — {{plan}} Plan (₹{{amount}})

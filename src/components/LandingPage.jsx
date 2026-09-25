@@ -32,6 +32,7 @@ import StaggeredGrid from './StaggeredGrid';
 import TestimonialsCard from './TestimonialsCard';
 import FlipFadeText from './FlipFadeText';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getAllStateSchedules } from '../utils/roundManager';
 
 export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -933,20 +934,31 @@ export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          {[
-            { state: 'Delhi NCR', status: 'LIVE NOW 🟢', desc: 'DU, IIT, IPU, Ashoka', color: 'border-emerald-300 bg-emerald-50/50' },
-            { state: 'Haryana', status: 'Opens Tomorrow 8 PM', desc: 'Amity, Ashoka, MDU', color: 'border-slate-200 bg-white' },
-            { state: 'Punjab', status: 'Friday 8 PM', desc: 'Thapar, LPU, Chandigarh Univ', color: 'border-slate-200 bg-white' },
-            { state: 'Uttar Pradesh', status: 'Saturday 8 PM', desc: 'Shiv Nadar, Bennett, IITK', color: 'border-slate-200 bg-white' },
-          ].map((item, idx) => (
-            <div key={item.state} className={`p-4 sm:p-5 rounded-3xl border ${item.color} shadow-sm space-y-1.5 sm:space-y-2 saas-card-lift saas-reveal-up saas-delay-${idx + 1}`}>
-              <div className="flex items-center justify-between">
-                <h4 className="font-black text-slate-900 text-xs sm:text-sm">{item.state}</h4>
-                <span className="text-[9px] sm:text-[10px] font-extrabold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">{item.status}</span>
+          {getAllStateSchedules().map((item, idx) => {
+            const isLive = item.isToday;
+            const statusLabel = isLive 
+              ? `LIVE NOW 🟢 • Round #${item.roundNumber || 1}` 
+              : item.daysLeft === 1 
+                ? `Starts Tomorrow (${item.nextRoundDate})` 
+                : `In ${item.daysLeft} Days (${item.nextRoundDate})`;
+            const colorClass = isLive 
+              ? 'border-emerald-300 bg-emerald-50/60 shadow-md ring-2 ring-emerald-200' 
+              : 'border-slate-200 bg-white hover:border-pink-200';
+
+            return (
+              <div key={item.state} className={`p-4 sm:p-5 rounded-3xl border ${colorClass} transition-all space-y-1.5 sm:space-y-2 saas-card-lift saas-reveal-up saas-delay-${(idx % 4) + 1}`}>
+                <div className="flex items-center justify-between">
+                  <h4 className="font-black text-slate-900 text-xs sm:text-sm">{item.state}</h4>
+                  <span className={`text-[9px] sm:text-[10px] font-extrabold px-2.5 py-0.5 rounded-full ${isLive ? 'bg-emerald-600 text-white animate-pulse' : 'bg-slate-100 text-slate-600'}`}>
+                    {statusLabel}
+                  </span>
+                </div>
+                <p className="text-[11px] sm:text-xs text-slate-500 font-medium">
+                  Round #{item.roundNumber || 1} • {isLive ? 'Matches processing live in real-time!' : 'Registration & wishlist open.'}
+                </p>
               </div>
-              <p className="text-[11px] sm:text-xs text-slate-500 font-medium">{item.desc}</p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 

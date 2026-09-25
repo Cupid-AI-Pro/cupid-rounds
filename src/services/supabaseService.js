@@ -31,7 +31,7 @@ export const signUpUser = async ({ email, password, name, gender, state, plan = 
         name,
         gender,
         state,
-        plan: gender === 'female' ? 'free' : plan,
+        plan: (gender || '').toLowerCase() === 'female' ? 'free' : plan,
         status: 'active',
         created_at: new Date().toISOString()
       };
@@ -60,6 +60,7 @@ const localSignUpFallback = ({ email, name, gender, state, plan }) => {
     return { user: null, error: 'An account with this email already exists.' };
   }
 
+  const isFemale = (gender || '').toLowerCase() === 'female';
   const newUser = {
     id: `user_${Date.now()}`,
     name,
@@ -67,9 +68,9 @@ const localSignUpFallback = ({ email, name, gender, state, plan }) => {
     gender,
     state,
     age: 22,
-    plan: gender === 'female' ? 'free' : plan,
+    plan: isFemale ? 'free' : plan,
     status: 'active',
-    avatar: gender === 'female'
+    avatar: isFemale
       ? 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&auto=format&fit=crop&q=80'
       : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&auto=format&fit=crop&q=80',
     university: 'Bennett University',
