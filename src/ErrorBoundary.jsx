@@ -16,10 +16,6 @@ export class ErrorBoundary extends React.Component {
   }
 
   handleReset = () => {
-    try {
-      localStorage.clear();
-      sessionStorage.clear();
-    } catch (e) {}
     this.setState({ hasError: false, error: null });
     window.location.href = window.location.origin + '?view=app';
   };

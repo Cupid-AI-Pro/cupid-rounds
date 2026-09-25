@@ -95,11 +95,11 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
       checkAndTriggerRoundNotifications(user);
       setNotifications(getNotifications(user.id));
     }
-    const hasPrompted = localStorage.getItem(`perm_prompted_${user?.id}`);
+    const hasPrompted = user?.id ? localStorage.getItem(`perm_prompted_${user.id}`) : true;
     if (!hasPrompted) {
       setShowPermissionPrompt(true);
     }
-  }, [user.id, user.gender, user.interestedIn, user.university, activeFilter, roundState.currentPhase]);
+  }, [user?.id, user?.gender, user?.interestedIn, user?.university, activeFilter, roundState?.currentPhase]);
 
   const refreshNotifications = () => {
     if (user?.id) {
@@ -108,22 +108,23 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
   };
 
   const loadCandidates = () => {
-    const allUsers = getUsers();
-    const userLikes = user.likes || [];
-    const userDislikes = user.dislikes || [];
-    const userMatches = user.matches || [];
-    const excludedIds = [user.id, ...userLikes, ...userDislikes, ...userMatches];
+    if (!user) return;
+    const allUsers = getUsers() || [];
+    const userLikes = user?.likes || [];
+    const userDislikes = user?.dislikes || [];
+    const userMatches = user?.matches || [];
+    const excludedIds = [user?.id, ...userLikes, ...userDislikes, ...userMatches];
 
     let stateCandidates = allUsers.filter(u => 
-      !excludedIds.includes(u.id) && 
-      u.state === (user.state || roundState.activeState) &&
+      u && !excludedIds.includes(u.id) && 
+      u.state === (user?.state || roundState?.activeState) &&
       u.status === 'active'
     );
 
-    if (user.interestedIn && user.interestedIn !== 'Everyone') {
+    if (user?.interestedIn && user.interestedIn !== 'Everyone') {
       stateCandidates = stateCandidates.filter(u => u.gender === user.interestedIn);
     } else {
-      stateCandidates = stateCandidates.filter(u => u.gender !== user.gender);
+      stateCandidates = stateCandidates.filter(u => u.gender !== user?.gender);
     }
 
     // Attach real mutual compatibility scores based on Q1-15 details & Q16+ preferences
@@ -133,14 +134,14 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
     }));
 
     if (isFemale) {
-      if (roundState.currentPhase === ROUND_PHASES.ELITE_WINDOW) {
+      if (roundState?.currentPhase === ROUND_PHASES.ELITE_WINDOW) {
         const eliteMales = stateCandidates.filter(u => u.plan === 'elite');
         const otherMales = stateCandidates.filter(u => u.plan !== 'elite');
         stateCandidates = [...eliteMales, ...otherMales];
       }
     } else if (isEliteMale) {
-      const femalesWhoLikedMe = stateCandidates.filter(f => f.likes && f.likes.includes(user.id));
-      const otherFemales = stateCandidates.filter(f => !f.likes || !f.likes.includes(user.id));
+      const femalesWhoLikedMe = stateCandidates.filter(f => f.likes && f.likes.includes(user?.id));
+      const otherFemales = stateCandidates.filter(f => !f.likes || !f.likes.includes(user?.id));
       stateCandidates = [...femalesWhoLikedMe, ...otherFemales];
     } else if (isPremiumMale) {
       stateCandidates = stateCandidates.filter(f => !f.matches || f.matches.length < 2);
@@ -220,10 +221,13 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
 
   const handlePermissionsComplete = () => {
     setShowPermissionPrompt(false);
-    localStorage.setItem(`perm_prompted_${user.id}`, 'true');
+    if (user?.id) {
+      localStorage.setItem(`perm_prompted_${user.id}`, 'true');
+    }
   };
 
   const handleRequestRefund = () => {
+    if (!user) return;
     const updated = {
       ...user,
       refundRequested: true,
@@ -234,8 +238,9 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
   };
 
   const getMatchedUsers = () => {
-    const allUsers = getUsers();
-    return allUsers.filter(u => user.matches?.includes(u.id));
+    if (!user) return [];
+    const allUsers = getUsers() || [];
+    return allUsers.filter(u => u && user?.matches?.includes(u.id));
   };
 
   const matchedUsers = getMatchedUsers();
@@ -342,7 +347,7 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
           </div>
 
           {/* Refund Alert Banner for Unmatched Paid Users */}
-          {(user.refundEligible || user.refundStatus === 'pending') && (
+          {(user?.refundEligible || user?.refundStatus === 'pending') && (
             <div className="mb-3 p-4 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white shadow-md border border-amber-300/40 select-none">
               <div className="flex items-start gap-3">
                 <div className="w-9 h-9 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0">
@@ -358,7 +363,7 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
                     </span>
                   </div>
                   <p className="text-xs font-bold leading-snug">
-                    No mutual match could be formed for this round. Your plan payment of ₹{user.refundAmount || (user.plan === 'elite' ? 449 : (user.plan === 'premium' ? 250 : 100))} is eligible for a full refund.
+                    No mutual match could be formed for this round. Your plan payment of ₹{user?.refundAmount || (user?.plan === 'elite' ? 449 : (user?.plan === 'premium' ? 250 : 100))} is eligible for a full refund.
                   </p>
                   <p className="text-[10px] text-amber-100 font-medium">
                     Admin has been notified. The amount will be refunded to your UPI within 24 hours.
@@ -369,7 +374,7 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
           )}
 
           {/* Re-Entry / Round Participation Prompt Banner */}
-          {(user.status === 'round_pending' || user.roundCompleted || !user.roundParticipating) && (
+          {(user?.status === 'round_pending' || user?.roundCompleted || (user && !user.roundParticipating)) && (
             <div className="mb-3 p-3.5 rounded-2xl bg-gradient-to-r from-[#FF2E79] via-pink-600 to-rose-500 text-white shadow-lg flex items-center justify-between border border-pink-300/40">
               <div className="space-y-0.5 pr-2 text-left">
                 <span className="text-[10px] font-black uppercase tracking-widest text-pink-200 block flex items-center gap-1">
@@ -409,7 +414,7 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
                     Live Round is currently for {roundState.activeState}
                   </h4>
                   <p className="text-[10px] text-pink-100 font-medium leading-relaxed">
-                    Your state round for <strong>{user.state || 'your state'}</strong> goes live in ~{upcomingMins} mins. We'll automatically notify your phone & device 10 mins prior!
+                    Your state round for <strong>{user?.state || 'your state'}</strong> goes live in ~{upcomingMins} mins. We'll automatically notify your phone & device 10 mins prior!
                   </p>
                 </div>
               </div>
@@ -469,7 +474,7 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
                 onClick={() => setCurrentTab('chat')}
                 className="mt-4 px-6 py-2.5 bg-[#FF2E79] text-white rounded-full text-xs font-extrabold shadow-md shadow-rose-300 cursor-pointer"
               >
-                Open Chats ({user.matches?.length})
+                Open Chats ({user?.matches?.length || 0})
               </button>
             </div>
           ) : (
@@ -496,7 +501,7 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
                 Join Round {(roundState.roundNumber || 1) + 1}
               </h3>
               <p className="text-xs text-slate-500 mt-0.5">
-                Re-enter the next live round for {user.state}.
+                Re-enter the next live round for {user?.state || 'your state'}.
               </p>
             </div>
 
@@ -541,11 +546,13 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
               <button
                 type="button"
                 onClick={() => {
-                  const updated = joinRound(user.id, reEntryPlan);
-                  if (updated) {
-                    onUpdateUser(updated);
-                    setShowReEntryModal(false);
-                    confetti({ particleCount: 70, spread: 60 });
+                  if (user?.id) {
+                    const updated = joinRound(user.id, reEntryPlan);
+                    if (updated) {
+                      onUpdateUser(updated);
+                      setShowReEntryModal(false);
+                      confetti({ particleCount: 70, spread: 60 });
+                    }
                   }
                 }}
                 className="flex-1 py-2.5 rounded-xl bg-[#FF2E79] text-white text-xs font-black cursor-pointer shadow-md shadow-rose-300"
