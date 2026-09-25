@@ -33,14 +33,6 @@ export const PHASE_LABELS = {
  * Initialize or get the global Round Management State
  */
 export const getRoundState = () => {
-  const stored = localStorage.getItem(ROUND_STATE_KEY);
-  if (stored) {
-    try {
-      return JSON.parse(stored);
-    } catch (e) {}
-  }
-
-  // Default state: Delhi NCR, Round 1, Registration Phase
   const defaultState = {
     activeState: 'Delhi NCR',
     roundNumber: 1,
@@ -67,6 +59,24 @@ export const getRoundState = () => {
       refundCount: 0
     }
   };
+
+  const stored = localStorage.getItem(ROUND_STATE_KEY);
+  if (stored) {
+    try {
+      const parsed = JSON.parse(stored);
+      if (parsed && typeof parsed === 'object') {
+        return {
+          ...defaultState,
+          ...parsed,
+          activeState: parsed.activeState || defaultState.activeState,
+          roundNumber: parsed.roundNumber || defaultState.roundNumber,
+          currentPhase: parsed.currentPhase || defaultState.currentPhase,
+          femaleMaxMatches: parsed.femaleMaxMatches || 2
+        };
+      }
+    } catch (e) {}
+  }
+
   localStorage.setItem(ROUND_STATE_KEY, JSON.stringify(defaultState));
   return defaultState;
 };

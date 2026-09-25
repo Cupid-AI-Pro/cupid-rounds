@@ -75,12 +75,12 @@ export default function ReEntryModal({ user, roundState, onClose, onEditQuestion
 
   const handleFinalize = (shouldEditProfile) => {
     // Activate profile for the current round
-    joinRound(user.id, selectedPlan);
+    const updatedUser = joinRound(user.id, selectedPlan);
 
     if (shouldEditProfile) {
       onEditQuestionnaire();
     } else {
-      onCompleteReEntry();
+      onCompleteReEntry(updatedUser);
     }
   };
 

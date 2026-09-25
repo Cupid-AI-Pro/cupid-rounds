@@ -89,6 +89,10 @@ export default function App() {
 
     const handleStateChange = () => {
       syncStateFromStorage();
+      const updatedUser = getCurrentUser();
+      if (updatedUser) {
+        setLocalCurrentUser(updatedUser);
+      }
     };
 
     window.addEventListener('cupid_round_state_changed', handleStateChange);

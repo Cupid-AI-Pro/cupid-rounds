@@ -429,7 +429,7 @@ export default function OnboardingForm({ user, onComplete, onCancel }) {
     reader.readAsDataURL(file);
   };
 
-  const handleFinalSubmit = (e) => {
+  function handleFinalSubmit(e) {
     if (e && e.preventDefault) e.preventDefault();
     setIsSubmitting(true);
 

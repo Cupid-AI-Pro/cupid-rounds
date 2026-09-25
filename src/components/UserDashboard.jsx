@@ -713,8 +713,11 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
               onUpdateUser(allUsers[idx]);
             }
           }}
-          onCompleteReEntry={() => {
+          onCompleteReEntry={(updatedUser) => {
             setShowReEntryModal(false);
+            if (updatedUser) {
+              onUpdateUser(updatedUser);
+            }
             loadCandidates();
           }}
         />
