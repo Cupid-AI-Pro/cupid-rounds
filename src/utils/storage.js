@@ -271,11 +271,17 @@ export const clearAllData = () => {
 export const getUsers = () => {
   initializeStorage();
   const usersJson = localStorage.getItem(KEYS.USERS);
-  return usersJson ? JSON.parse(usersJson) : [];
+  if (!usersJson) return [];
+  try {
+    const parsed = JSON.parse(usersJson);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) {
+    return [];
+  }
 };
 
 export const saveUsers = (users) => {
-  localStorage.setItem(KEYS.USERS, JSON.stringify(users));
+  localStorage.setItem(KEYS.USERS, JSON.stringify(users || []));
   notifyDataChanged();
 };
 
@@ -285,24 +291,31 @@ export const getActiveState = () => {
 };
 
 export const setActiveState = (state) => {
-  localStorage.setItem(KEYS.ACTIVE_STATE, state);
+  localStorage.setItem(KEYS.ACTIVE_STATE, state || 'Delhi NCR');
   notifyDataChanged();
 };
 
 export const getCurrentUser = () => {
   const userJson = localStorage.getItem(KEYS.CURRENT_USER);
-  if (!userJson) return null;
+  if (!userJson || userJson === 'null' || userJson === 'undefined') return null;
   
-  // Refresh current user data from the central users list
-  const sessionUser = JSON.parse(userJson);
-  const users = getUsers();
-  const freshUser = users.find(u => u.id === sessionUser.id);
-  
-  if (freshUser) {
-    localStorage.setItem(KEYS.CURRENT_USER, JSON.stringify(freshUser));
-    return freshUser;
+  try {
+    const sessionUser = JSON.parse(userJson);
+    if (!sessionUser || typeof sessionUser !== 'object' || !sessionUser.id) {
+      return null;
+    }
+    const users = getUsers();
+    const freshUser = users.find(u => u && u.id === sessionUser.id);
+    
+    if (freshUser) {
+      localStorage.setItem(KEYS.CURRENT_USER, JSON.stringify(freshUser));
+      return freshUser;
+    }
+    return sessionUser;
+  } catch (e) {
+    localStorage.removeItem(KEYS.CURRENT_USER);
+    return null;
   }
-  return sessionUser;
 };
 
 export const setCurrentUser = (user) => {
