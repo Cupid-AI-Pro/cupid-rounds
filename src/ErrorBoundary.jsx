@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles } from 'lucide-react';
+import { Heart } from 'lucide-react';
 
 export class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -21,7 +21,7 @@ export class ErrorBoundary extends React.Component {
       sessionStorage.clear();
     } catch (e) {}
     this.setState({ hasError: false, error: null });
-    window.location.href = window.location.origin + '?view=app&reset=true';
+    window.location.href = window.location.origin + '?view=app';
   };
 
   render() {
@@ -30,7 +30,7 @@ export class ErrorBoundary extends React.Component {
         <div className="min-h-screen w-full bg-[#FFEBF2] flex flex-col items-center justify-center p-6 text-center font-sans select-none">
           <div className="bg-white max-w-sm w-full rounded-3xl p-6 shadow-2xl border border-rose-100 space-y-4">
             <div className="w-14 h-14 bg-rose-100 text-[#FF2E79] rounded-2xl flex items-center justify-center mx-auto shadow-sm">
-              <Sparkles className="w-7 h-7" />
+              <Heart className="w-7 h-7 fill-current" />
             </div>
             <div className="space-y-1">
               <h3 className="text-xl font-black text-slate-900 font-display">Cupid Rounds</h3>

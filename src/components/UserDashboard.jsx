@@ -43,7 +43,7 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-6 bg-gradient-to-b from-[#FFF0F4] to-[#FFF5F8] text-center font-sans">
         <div className="w-12 h-12 bg-pink-100 text-[#FF2E79] rounded-2xl flex items-center justify-center animate-spin mb-3">
-          <Sparkles className="w-6 h-6" />
+          <Heart className="w-6 h-6 fill-current" />
         </div>
         <p className="text-xs font-extrabold text-slate-700">Loading Cupid Dashboard...</p>
       </div>

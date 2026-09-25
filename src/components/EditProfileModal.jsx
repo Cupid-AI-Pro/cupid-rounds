@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { 
   X, 
   Check, 
-  Sparkles, 
   GraduationCap, 
   User, 
   Heart, 

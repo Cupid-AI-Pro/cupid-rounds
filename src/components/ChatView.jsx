@@ -3,7 +3,6 @@ import {
   MessageSquare, 
   Send, 
   ChevronLeft, 
-  Sparkles, 
   CheckCircle2, 
   MapPin, 
   GraduationCap, 
@@ -156,7 +155,7 @@ export default function ChatView({ user, matchedUsers = [], onOpenMatchProfile }
 
         {/* Icebreakers Carousel */}
         <div className="px-3 py-1.5 bg-white/80 border-t border-slate-100 overflow-x-auto no-scrollbar flex items-center gap-1.5">
-          <Sparkles className="w-3 h-3 text-amber-500 shrink-0" />
+          <Heart className="w-3 h-3 text-rose-500 fill-current shrink-0" />
           {ICEBREAKERS.map((prompt, i) => (
             <button
               key={i}

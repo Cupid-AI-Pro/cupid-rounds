@@ -104,7 +104,7 @@ export default function CinematicLoadingScreen({ onComplete, activeState, durati
       <div className="relative z-10 flex flex-col items-center justify-center text-center space-y-4 my-auto">
         <CupidLogo size="2xl" showText={true} textColor="white" />
         <p className="text-xs font-medium text-white/75 tracking-wide max-w-[240px]">
-          {idx === 3 ? `Find your person in ${displayState}` : COUPLE_EDITORIAL_PHOTOS[currentIdx].tagline}
+          {currentIdx === 3 ? `Find your person in ${displayState}` : COUPLE_EDITORIAL_PHOTOS[currentIdx].tagline}
         </p>
       </div>
 

@@ -8,7 +8,7 @@ import AdminDashboard from './components/AdminDashboard';
 import CinematicLoadingScreen from './components/CinematicLoadingScreen';
 import { initializeStorage, getCurrentUser, getActiveState, logout, setCurrentUser, isAdminAuthenticated } from './utils/storage';
 import { checkAndRotateRoundAutomated, getRoundState } from './utils/roundManager';
-import { Sparkles, Phone, ShieldCheck, ArrowLeft, Globe } from 'lucide-react';
+import { Phone, ShieldCheck, ArrowLeft, Globe } from 'lucide-react';
 
 export default function App() {
   const [currentUser, setLocalCurrentUser] = useState(() => {

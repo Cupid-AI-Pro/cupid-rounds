@@ -6,7 +6,6 @@ import {
   Heart, 
   ShieldCheck, 
   MapPin, 
-  Sparkles, 
   Coffee, 
   BookOpen, 
   Music, 
@@ -219,7 +218,7 @@ export function StaggeredGrid({
       title: "Sunday Drop",
       subtitle: "Curated Matches",
       description: "Weekly match drop every Sunday at 8 PM for real weekend dates.",
-      icon: <Sparkles className="w-4 h-4 text-amber-500" />,
+      icon: <Heart className="w-4 h-4 text-rose-500" />,
       image: "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&w=800&q=80"
     },
     {
@@ -239,7 +238,7 @@ export function StaggeredGrid({
     { label: "Verified DU", icon: ShieldCheck },
     { label: "Campus Radar", icon: MapPin },
     { label: "Indie Gigs", icon: Music },
-    { label: "Sunday Drop", icon: Sparkles },
+    { label: "Sunday Drop", icon: Heart },
     { label: "Library Meet", icon: BookOpen },
     { label: "100% Refund", icon: Award },
     { label: "Real Vibe", icon: Heart },

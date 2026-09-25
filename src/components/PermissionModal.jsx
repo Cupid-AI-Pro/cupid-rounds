@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { 
   MapPin, 
   Bell, 
-  Sparkles, 
   ShieldCheck, 
   CheckCircle2, 
   Compass, 

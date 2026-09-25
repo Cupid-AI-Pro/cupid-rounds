@@ -8,7 +8,6 @@ import {
   User, 
   Heart, 
   ShieldCheck, 
-  Sparkles, 
   Camera, 
   Upload, 
   AlertCircle, 

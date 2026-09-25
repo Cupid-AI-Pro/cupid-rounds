@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { 
   X, 
-  Sparkles, 
   CheckCircle2, 
   QrCode, 
   Upload, 

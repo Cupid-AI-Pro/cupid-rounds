@@ -8,7 +8,6 @@ import {
   Coins, 
   LogOut, 
   Heart, 
-  Sparkles, 
   CheckCircle2, 
   Bell, 
   Navigation, 
@@ -261,7 +260,7 @@ export default function ProfileView({ user, onLogout, onRequestRefund, onOpenPer
           className="flex items-center justify-between py-1.5 border-t border-slate-100 cursor-pointer hover:bg-pink-50/50 rounded-xl px-1 transition-colors"
         >
           <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-[#FF2E79]" />
+            <Heart className="w-4 h-4 text-[#FF2E79] fill-current" />
             <div>
               <span className="text-xs font-bold text-slate-800 block">Interactive App Guide</span>
               <span className="text-[10px] text-slate-400 block">Replay button tooltips & workflow walkthrough</span>

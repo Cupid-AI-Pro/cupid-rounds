@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { 
   Heart, 
-  Sparkles, 
   Compass, 
   MessageSquare, 
   User, 
@@ -275,7 +274,7 @@ export default function InteractiveTourGuide({ user = {}, userId, onComplete }) 
       {/* Top Header Row: Badge & Skip Tour */}
       <div className="flex items-center justify-between pt-1 px-1 z-20">
         <div className="flex items-center gap-1.5 bg-white/15 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
-          <Sparkles className="w-3.5 h-3.5 text-[#FF2E79]" />
+          <Heart className="w-3.5 h-3.5 text-[#FF2E79] fill-current" />
           <span className="text-[11px] font-extrabold text-white">
             {stepData.badgeText}
           </span>

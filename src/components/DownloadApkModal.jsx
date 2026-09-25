@@ -6,7 +6,6 @@ import {
   Download,
   ArrowRight,
   CheckCircle2,
-  Sparkles,
   Zap,
   PackageCheck
 } from 'lucide-react';

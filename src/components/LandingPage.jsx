@@ -18,7 +18,6 @@ import {
   Music,
   Compass,
   MessageCircle,
-  Sparkles,
   Zap,
   MapPin,
   Radio,
@@ -452,7 +451,7 @@ export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
           <div className="hidden xl:block absolute right-[6%] top-[2%] z-30 pointer-events-none animate-float-widget-2">
             <div className="bg-white/90 backdrop-blur-md border border-rose-200/80 px-3.5 py-2 rounded-2xl shadow-lg shadow-rose-500/10 flex items-center gap-2">
               <div className="w-6 h-6 rounded-xl bg-gradient-to-tr from-[#FF2E79] to-rose-400 text-white flex items-center justify-center text-xs shadow-sm">
-                <Sparkles className="w-3.5 h-3.5" />
+                <Heart className="w-3.5 h-3.5 fill-current" />
               </div>
               <div className="text-left leading-none">
                 <span className="text-[9px] font-black text-slate-900 block">{currentProfile.matchScore} Match Score</span>

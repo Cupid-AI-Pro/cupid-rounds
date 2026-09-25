@@ -3,7 +3,6 @@ import {
   Bell, 
   X, 
   Heart, 
-  Sparkles, 
   Calendar, 
   Flame, 
   CheckCheck, 
@@ -91,7 +90,7 @@ export default function NotificationsModal({ user, notifications, onClose, onRef
             notifications.map((notif) => {
               const getIcon = () => {
                 if (notif.type === 'like') return <Heart className="w-4 h-4 text-[#FF2E79] fill-current" />;
-                if (notif.type === 'match') return <Sparkles className="w-4 h-4 text-emerald-600 fill-current" />;
+                if (notif.type === 'match') return <Heart className="w-4 h-4 text-emerald-600 fill-current" />;
                 if (notif.type === 'round_1day') return <Calendar className="w-4 h-4 text-amber-600" />;
                 if (notif.type === 'round_today') return <Flame className="w-4 h-4 text-[#FF2E79] fill-current" />;
                 return <ShieldCheck className="w-4 h-4 text-blue-600" />;

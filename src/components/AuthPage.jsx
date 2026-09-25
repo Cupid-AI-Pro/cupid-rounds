@@ -5,7 +5,6 @@ import { getRoundState, getStateUpcomingMins } from '../utils/roundManager';
 import { STATES_LIST } from '../data/mockData';
 import { 
   Heart, 
-  Sparkles, 
   AlertCircle, 
   ArrowRight, 
   UserCheck, 
