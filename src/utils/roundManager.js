@@ -500,38 +500,60 @@ export const joinRound = (userId, planName = 'basic') => {
 };
 
 /**
- * Automated 1-Hour Round Timer & State Rotation Engine (Testing Mode)
- * Automatically advances round phases & rotates state every 60 minutes.
- * - Registration Phase: 30 Mins
- * - Elite Spotlight Window: 15 Mins
- * - Premium Matching Window: 10 Mins
- * - Basic Allocation & Settlement: 5 Mins
+ * Automated 1-Hour Round Timer & State Rotation Engine
+ * Automatically rotates active state round every 60 minutes.
+ * Within each 60-minute round:
+ * - 0 to 30 Mins: Registration & Plan Purchase (Phase 1)
+ * - 30 to 45 Mins: Elite Spotlight Window (Phase 2)
+ * - 45 to 55 Mins: Premium Matching Window (Phase 3)
+ * - 55 to 60 Mins: Basic Allocation & Settlement (Phase 4)
+ * - 60 Mins: Round Closes & Rotates to Next State automatically!
  */
 export const checkAndRotateRoundAutomated = () => {
   const current = getRoundState();
-  if (!current || !current.phaseStartedAt) return;
-
-  const isFastDemo = typeof window !== 'undefined' && localStorage.getItem('cupid_demo_rotation_speed') === 'fast';
+  if (!current) return;
 
   const now = new Date();
-  const started = new Date(current.phaseStartedAt);
-  const elapsedMinutes = (now.getTime() - started.getTime()) / (1000 * 60);
+  const roundStart = new Date(current.roundStartDate || current.phaseStartedAt || Date.now());
+  const totalRoundElapsedMins = Math.max(0, (now.getTime() - roundStart.getTime()) / (1000 * 60));
 
-  // 1-Hour testing cycle phase durations (in minutes)
-  let targetPhaseDurationMins = 30; // Registration = 30 mins
-  if (current.currentPhase === ROUND_PHASES.ELITE_WINDOW) {
-    targetPhaseDurationMins = 15; // Elite = 15 mins
-  } else if (current.currentPhase === ROUND_PHASES.PREMIUM_WINDOW) {
-    targetPhaseDurationMins = 10; // Premium = 10 mins
-  } else if (current.currentPhase === ROUND_PHASES.BASIC_SETTLEMENT) {
-    targetPhaseDurationMins = 5; // Basic Settlement = 5 mins
+  const isFastDemo = typeof window !== 'undefined' && localStorage.getItem('cupid_demo_rotation_speed') === 'fast';
+  const maxRoundDurationMins = isFastDemo ? 4 : 60; // 60 mins total per state round
+
+  // 1. If 60+ minutes have elapsed, auto-rotate state round to NEXT state!
+  if (totalRoundElapsedMins >= maxRoundDurationMins) {
+    const states = getStatesList();
+    const currentIdx = states.findIndex(s => s.toLowerCase() === (current.activeState || '').toLowerCase());
+    const safeCurrentIdx = currentIdx !== -1 ? currentIdx : 0;
+    
+    const roundsToAdvance = isFastDemo ? 1 : Math.max(1, Math.floor(totalRoundElapsedMins / maxRoundDurationMins));
+    const nextIdx = (safeCurrentIdx + roundsToAdvance) % states.length;
+    const nextState = states[nextIdx];
+
+    runAlgorithmicMatchEngine(current.activeState);
+    startNextRoundForState(nextState);
+    return;
   }
 
-  // Fast Demo mode elapses phases in 1 minute for instant UI testing
-  const isExpired = isFastDemo ? (elapsedMinutes >= 1) : (elapsedMinutes >= targetPhaseDurationMins);
+  // 2. Phase calculation within the 60-minute round window
+  let expectedPhase = ROUND_PHASES.REGISTRATION;
+  if (isFastDemo) {
+    if (totalRoundElapsedMins >= 3) expectedPhase = ROUND_PHASES.BASIC_SETTLEMENT;
+    else if (totalRoundElapsedMins >= 2) expectedPhase = ROUND_PHASES.PREMIUM_WINDOW;
+    else if (totalRoundElapsedMins >= 1) expectedPhase = ROUND_PHASES.ELITE_WINDOW;
+  } else {
+    if (totalRoundElapsedMins >= 55) expectedPhase = ROUND_PHASES.BASIC_SETTLEMENT;
+    else if (totalRoundElapsedMins >= 45) expectedPhase = ROUND_PHASES.PREMIUM_WINDOW;
+    else if (totalRoundElapsedMins >= 30) expectedPhase = ROUND_PHASES.ELITE_WINDOW;
+  }
 
-  if (isExpired) {
-    advanceRoundPhase();
+  if (current.currentPhase !== expectedPhase) {
+    const updated = {
+      ...current,
+      currentPhase: expectedPhase,
+      phaseStartedAt: new Date().toISOString()
+    };
+    saveRoundState(updated);
   }
 
   // Pre-Round Alert Dispatcher: Check if upcoming state round starts in <= 10 mins
@@ -541,9 +563,7 @@ export const checkAndRotateRoundAutomated = () => {
     const nextIdx = (currentIdx + 1) % states.length;
     const nextState = states[nextIdx];
 
-    const roundStart = new Date(current.roundStartDate || current.phaseStartedAt);
-    const totalElapsedMins = Math.max(0, (now.getTime() - roundStart.getTime()) / (1000 * 60));
-    const minsUntilNextState = Math.max(1, Math.ceil(60 - totalElapsedMins));
+    const minsUntilNextState = Math.max(1, Math.ceil(maxRoundDurationMins - totalRoundElapsedMins));
 
     if (minsUntilNextState <= 10) {
       const alertKey = `alert_10m_${nextState}_r${(current.stateRoundMap?.[nextState] || 1)}`;
@@ -568,3 +588,4 @@ export const checkAndRotateRoundAutomated = () => {
     console.warn('Pre-round alert check error:', e);
   }
 };
+

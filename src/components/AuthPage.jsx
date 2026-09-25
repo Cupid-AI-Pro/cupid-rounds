@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { getUsers, saveUsers, setCurrentUser, updateUser, setAdminAuthenticated } from '../utils/storage';
-import { getRoundState, getStateUpcomingMins } from '../utils/roundManager';
+import { getRoundState, getStateUpcomingMins, forceRotateToNextState } from '../utils/roundManager';
 import { STATES_LIST } from '../data/mockData';
 import { 
   Heart, 
@@ -17,7 +17,8 @@ import {
   Eye,
   EyeOff,
   MapPin,
-  Check
+  Check,
+  RefreshCw
 } from 'lucide-react';
 import CinematicLoadingScreen from './CinematicLoadingScreen';
 import CupidLogo from './CupidLogo';
@@ -141,7 +142,7 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
     }, 450);
   };
 
-  // Handle standard registration (Guaranteed forward navigation)
+  // Handle standard registration (Guaranteed forward navigation directly into UserDashboard)
   const handleRegister = (e) => {
     e.preventDefault();
     setError('');
@@ -154,7 +155,8 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
       return;
     }
 
-    const isStateActive = regState.toLowerCase() === activeState.toLowerCase();
+    const currentActiveState = roundState?.activeState || activeState || 'Delhi NCR';
+    const isStateActive = regState.toLowerCase() === currentActiveState.toLowerCase();
     const users = getUsers();
     const existingIndex = users.findIndex(u => 
       u.id === `user_${cleanEmail.replace(/[^a-zA-Z0-9]/g, '')}` || 
@@ -165,7 +167,7 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
     const isFemaleReg = (regGender || '').toLowerCase() === 'female';
 
     if (existingIndex !== -1) {
-      // If user already exists in storage, update with newly entered details and proceed
+      // If user already exists in storage, update with newly entered details and proceed directly to dashboard
       users[existingIndex] = {
         ...users[existingIndex],
         name: cleanName || users[existingIndex].name,
@@ -173,13 +175,12 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
         gender: regGender || users[existingIndex].gender,
         state: regState || users[existingIndex].state,
         plan: isFemaleReg ? 'free' : (users[existingIndex].plan && users[existingIndex].plan !== 'free' ? users[existingIndex].plan : 'elite'),
-        status: isStateActive ? 'onboarding' : 'waitlisted'
+        status: isStateActive ? 'active' : 'waitlisted'
       };
       userToProceed = users[existingIndex];
       saveUsers(users);
     } else {
-      // Create new user profile
-      const isFemaleReg = (regGender || '').toLowerCase() === 'female';
+      // Create new user profile with active status so user enters UserDashboard directly
       const newUser = {
         id: `user_${cleanEmail.replace(/[^a-zA-Z0-9]/g, '')}`,
         name: cleanName,
@@ -188,20 +189,22 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
         gender: regGender,
         state: regState,
         plan: isFemaleReg ? 'free' : 'elite',
-        bio: '',
-        occupation: '',
-        income: '',
+        bio: 'Looking for a genuine connection',
+        occupation: 'Student / Professional',
+        income: '12 LPA',
+        university: 'Bennett University',
+        branch: 'Computer Science (CSE)',
         avatar: isFemaleReg 
           ? 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&auto=format&fit=crop&q=80' 
           : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&auto=format&fit=crop&q=80',
-        interests: [],
-        contact: '',
+        interests: ['Travel', 'Music', 'Fitness'],
+        contact: '@user_insta',
         likedProfiles: [],
         receivedLikes: [],
         matches: [],
         declinedMatches: [],
         suggestedMatches: [],
-        status: isStateActive ? 'onboarding' : 'waitlisted'
+        status: isStateActive ? 'active' : 'waitlisted'
       };
       users.push(newUser);
       saveUsers(users);
@@ -215,6 +218,56 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
       setCurrentUser(userToProceed);
       onLoginSuccess(userToProceed);
     }
+  };
+
+  // Quick Demo Sign In — lands DIRECTLY into UserDashboard
+  const handleDemoSignIn = (gender = 'male') => {
+    const users = getUsers();
+    const curState = roundState?.activeState || activeState || 'Delhi NCR';
+    let demoUser = users.find(u => 
+      (u.gender || '').toLowerCase() === gender.toLowerCase() && 
+      (u.state || '').toLowerCase() === curState.toLowerCase() &&
+      u.status === 'active'
+    );
+    
+    if (!demoUser) {
+      demoUser = users.find(u => (u.gender || '').toLowerCase() === gender.toLowerCase() && u.status === 'active');
+    }
+
+    if (!demoUser) {
+      demoUser = {
+        id: `demo_${gender}_${Date.now()}`,
+        name: gender === 'male' ? 'Aarav Sharma' : 'Ananya Verma',
+        email: `demo_${gender}@cupid.com`,
+        password: '123456',
+        gender: gender,
+        state: curState,
+        plan: 'elite',
+        status: 'active',
+        bio: 'Looking for genuine connections on Cupid',
+        occupation: 'Software Engineer',
+        income: '14 LPA',
+        university: 'Bennett University',
+        branch: 'Computer Science (CSE)',
+        avatar: gender === 'female' 
+          ? 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&auto=format&fit=crop&q=80' 
+          : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&auto=format&fit=crop&q=80',
+        interests: ['Travel', 'Music', 'Fitness'],
+        contact: '@demo_cupid',
+        likedProfiles: [],
+        receivedLikes: [],
+        matches: [],
+        suggestedMatches: []
+      };
+      users.push(demoUser);
+      saveUsers(users);
+    } else {
+      demoUser.status = 'active';
+      saveUsers(users);
+    }
+
+    setCurrentUser(demoUser);
+    onLoginSuccess(demoUser);
   };
 
   // Handle standard login
@@ -673,6 +726,31 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
                   <span>Access Match Dashboard</span>
                   <ArrowRight className="w-4.5 h-4.5 stroke-[2.5]" />
                 </button>
+
+                {/* Instant 1-Click Dashboard Access */}
+                <div className="pt-3 border-t border-slate-100 mt-4 space-y-2">
+                  <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block text-center">
+                    Instant 1-Click Dashboard Access
+                  </span>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleDemoSignIn('male')}
+                      className="py-2.5 px-3 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs rounded-2xl flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95"
+                    >
+                      <User className="w-3.5 h-3.5" />
+                      <span>Male Dashboard</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDemoSignIn('female')}
+                      className="py-2.5 px-3 bg-[#FF2E79] hover:bg-[#e02469] text-white font-extrabold text-xs rounded-2xl flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95"
+                    >
+                      <Heart className="w-3.5 h-3.5 fill-white" />
+                      <span>Female Dashboard</span>
+                    </button>
+                  </div>
+                </div>
               </form>
             ) : (
               /* REGISTER form */
