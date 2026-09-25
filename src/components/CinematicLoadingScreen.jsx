@@ -26,8 +26,8 @@ export default function CinematicLoadingScreen({ onComplete, activeState, durati
   const [currentIdx, setCurrentIdx] = useState(0);
   const [progress, setProgress] = useState(0);
   const roundState = getRoundState();
-  const displayState = activeState || roundState?.activeState || 'Delhi NCR';
-  const roundNum = roundState?.roundNumber || 1;
+  const displayState = roundState?.activeState || activeState || 'Delhi NCR';
+  const roundNum = roundState?.stateRoundMap?.[displayState] || roundState?.roundNumber || 1;
 
   // 1. Smooth Progress Loader
   useEffect(() => {

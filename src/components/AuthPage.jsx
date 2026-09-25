@@ -29,6 +29,9 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
   const [error, setError] = useState('');
   const [roundState, setRoundState] = useState(getRoundState());
 
+  const liveState = roundState?.activeState || activeState || 'Delhi NCR';
+  const liveRoundNum = roundState?.stateRoundMap?.[liveState] || roundState?.roundNumber || 1;
+
   useEffect(() => {
     const handleRoundStateChange = () => {
       setRoundState(getRoundState());
@@ -408,7 +411,7 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
         {/* Top Header Row */}
         <div className="pt-1 text-left">
           <div className="flex items-center justify-between mb-2">
-            <CupidLogo size="sm" showText={true} textColor="dark" textSubtitle={`${activeState} • Round ${roundState?.roundNumber || 1}`} />
+            <CupidLogo size="sm" showText={true} textColor="dark" textSubtitle={`${liveState} • ROUND ${liveRoundNum}`} />
             <button
               onClick={() => setShowSplash(true)}
               className="text-[11px] font-semibold text-slate-400 hover:text-slate-700 transition-colors"
@@ -591,7 +594,7 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
 
         {/* Center Logo */}
         <div className="shrink-0 flex flex-col items-center justify-center text-center">
-          <CupidLogo size="sm" showText={true} textColor="dark" textSubtitle={`${roundState?.activeState || activeState}  •  ROUND ${roundState?.roundNumber || 1}`} />
+          <CupidLogo size="sm" showText={true} textColor="dark" textSubtitle={`${liveState} • ROUND ${liveRoundNum}`} />
         </div>
 
         {/* Decorative Top-Right Cursive Handwriting */}

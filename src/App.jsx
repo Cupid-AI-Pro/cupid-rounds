@@ -31,7 +31,11 @@ export default function App() {
     return getCurrentUser();
   });
 
-  const [activeState, setActiveState] = useState('Delhi NCR');
+  const [activeState, setActiveState] = useState(() => {
+    initializeStorage();
+    const rs = getRoundState();
+    return rs?.activeState || 'Delhi NCR';
+  });
   const [showLoginInPhone, setShowLoginInPhone] = useState(false);
   const [isPlayingIntro, setIsPlayingIntro] = useState(false);
   

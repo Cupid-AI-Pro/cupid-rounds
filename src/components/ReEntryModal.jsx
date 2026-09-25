@@ -101,10 +101,10 @@ export default function ReEntryModal({ user, roundState, onClose, onEditQuestion
             <RefreshCw className="w-6 h-6 animate-spin-slow" />
           </div>
           <h2 className="text-xl font-black text-slate-900 tracking-tight font-display">
-            Re-Enter Round #{roundState.roundNumber || 1}
+            Re-Enter Round #{roundState?.stateRoundMap?.[roundState?.activeState || user?.state] || roundState?.roundNumber || 1}
           </h2>
           <p className="text-xs text-slate-500 font-medium">
-            Active for <strong className="text-[#FF2E79]">{roundState.activeState || user.state}</strong>
+            Active for <strong className="text-[#FF2E79]">{roundState?.activeState || user?.state}</strong>
           </p>
         </div>
 
@@ -119,7 +119,7 @@ export default function ReEntryModal({ user, roundState, onClose, onEditQuestion
                 100% Free VIP Female Entry
               </span>
               <h3 className="text-lg font-black text-slate-900 pt-2 font-display">
-                Re-Enter Round #{roundState.roundNumber || 1}
+                Re-Enter Round #{roundState?.stateRoundMap?.[roundState?.activeState || user?.state] || roundState?.roundNumber || 1}
               </h3>
               <p className="text-xs text-slate-500 font-medium max-w-xs mx-auto">
                 Round entry is 100% FREE for female members! No payment or subscription required.
