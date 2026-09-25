@@ -197,7 +197,7 @@ export default function SwipeableDeck({
         {/* Cursive Decorative Overlay Text on Right */}
         <div className="absolute top-1/4 right-5 z-20 pointer-events-none -rotate-6 text-right">
           <p className="font-cursive text-2xl text-white/90 drop-shadow-[0_2px_10px_rgba(0,0,0,0.7)] font-bold tracking-wide">
-            Maybe you? ♡
+            Maybe you?
           </p>
         </div>
 

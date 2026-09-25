@@ -452,7 +452,7 @@ export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
           <div className="hidden xl:block absolute right-[6%] top-[2%] z-30 pointer-events-none animate-float-widget-2">
             <div className="bg-white/90 backdrop-blur-md border border-rose-200/80 px-3.5 py-2 rounded-2xl shadow-lg shadow-rose-500/10 flex items-center gap-2">
               <div className="w-6 h-6 rounded-xl bg-gradient-to-tr from-[#FF2E79] to-rose-400 text-white flex items-center justify-center text-xs shadow-sm">
-                ⚡
+                <Sparkles className="w-3.5 h-3.5" />
               </div>
               <div className="text-left leading-none">
                 <span className="text-[9px] font-black text-slate-900 block">{currentProfile.matchScore} Match Score</span>
@@ -563,9 +563,7 @@ export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
               {/* Heart burst celebration particles */}
               {likeBurst && (
                 <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-40">
-                  <span className="text-3xl animate-heart-burst absolute -top-2 left-6">💖</span>
-                  <span className="text-2xl animate-heart-burst absolute -top-4 right-8" style={{ animationDelay: '0.1s' }}>✨</span>
-                  <span className="text-3xl animate-heart-burst absolute top-8 left-12" style={{ animationDelay: '0.15s' }}>🎉</span>
+                  <span className="text-[#FF2E79] font-black text-xl animate-heart-burst absolute -top-2 left-6">MATCH</span>
                 </div>
               )}
 
@@ -623,7 +621,7 @@ export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
                   }`}
                 >
                   <Heart className="w-3.5 h-3.5 fill-white" />
-                  <span>{isLiked ? 'Matched! 🎉 (Chat Unlocked)' : `Like ${currentProfile.name}`}</span>
+                  <span>{isLiked ? 'Matched! (Chat Unlocked)' : `Like ${currentProfile.name}`}</span>
                 </button>
 
                 <div className="flex items-center justify-between px-1 text-[9px] sm:text-[11px] font-bold text-slate-400">
@@ -833,7 +831,7 @@ export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
           {/* Elite Pass ₹450 (Featured Scale Zoom) */}
           <div className="bg-gradient-to-b from-rose-50/70 via-white to-white border-2 border-[#FF2E79] rounded-3xl p-5 sm:p-6 flex flex-col justify-between shadow-xl shadow-rose-500/15 relative transform lg:-translate-y-2 saas-card-lift saas-reveal-scale saas-delay-4">
             <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3.5 py-0.5 rounded-full bg-gradient-to-r from-[#FF2E79] to-rose-500 text-white font-black text-[9px] uppercase tracking-widest shadow-md">
-              Most Popular 🔥
+              Most Popular
             </div>
             <div>
               <span className="px-3 py-1 rounded-full bg-rose-100 text-[#FF2E79] font-extrabold text-[10px] uppercase tracking-wider">
@@ -937,7 +935,7 @@ export default function LandingPage({ onLaunchApp, onOpenAdmin, activeState }) {
           {getAllStateSchedules().map((item, idx) => {
             const isLive = item.isToday;
             const statusLabel = isLive 
-              ? `LIVE NOW 🟢 • Round #${item.roundNumber || 1}` 
+              ? `LIVE NOW • Round #${item.roundNumber || 1}` 
               : item.daysLeft === 1 
                 ? `Starts Tomorrow (${item.nextRoundDate})` 
                 : `In ${item.daysLeft} Days (${item.nextRoundDate})`;

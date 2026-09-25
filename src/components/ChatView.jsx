@@ -15,18 +15,18 @@ import {
 } from 'lucide-react';
 
 const ICEBREAKERS = [
-  "Coffee date this weekend? ☕",
-  "What's your major? 📚",
-  "Favorite late-night food spot in NCR? 🍕",
-  "What's your current Spotify anthem? 🎵",
-  "Are you more introvert or extrovert? ✨"
+  "Coffee date this weekend?",
+  "What's your major?",
+  "Favorite late-night food spot in NCR?",
+  "What's your current Spotify anthem?",
+  "Are you more introvert or extrovert?"
 ];
 
 export default function ChatView({ user, matchedUsers = [], onOpenMatchProfile }) {
   const [activeChatUser, setActiveChatUser] = useState(matchedUsers[0] || null);
   const [messages, setMessages] = useState({
     [matchedUsers[0]?.id || 'default']: [
-      { id: 1, sender: 'them', text: "Hey! We matched on Cupid's round 🎉", time: 'Just now' },
+      { id: 1, sender: 'them', text: "Hey! We matched on Cupid's round", time: 'Just now' },
       { id: 2, sender: 'them', text: "Love your vibe! What are you studying?", time: 'Just now' }
     ]
   });
@@ -34,7 +34,7 @@ export default function ChatView({ user, matchedUsers = [], onOpenMatchProfile }
   const [searchQuery, setSearchQuery] = useState('');
 
   const currentMessages = activeChatUser ? (messages[activeChatUser.id] || [
-    { id: 1, sender: 'them', text: `Hey ${user?.name?.split(' ')?.[0] || 'there'}! Cupid matched us ✨`, time: 'Just now' }
+    { id: 1, sender: 'them', text: `Hey ${user?.name?.split(' ')?.[0] || 'there'}! Cupid matched us`, time: 'Just now' }
   ]) : [];
 
   const handleSendMessage = (textToSend) => {
@@ -58,10 +58,10 @@ export default function ChatView({ user, matchedUsers = [], onOpenMatchProfile }
     // Simulated cute response after 1 second
     setTimeout(() => {
       const cuteReplies = [
-        "Haha totally agree! ☕ Let's connect soon!",
+        "Haha totally agree! Let's connect soon!",
         "That's awesome! I'm around campus too.",
-        "Aww that's so sweet! Check my Insta in the bio ✨",
-        "Omg yes! Murthal drives or Blue Tokai coffee anytime 🚙"
+        "Aww that's so sweet! Check my Insta in the bio",
+        "Omg yes! Murthal drives or Blue Tokai coffee anytime"
       ];
       const reply = cuteReplies[Math.floor(Math.random() * cuteReplies.length)];
       setMessages(prev => ({
@@ -273,7 +273,7 @@ export default function ChatView({ user, matchedUsers = [], onOpenMatchProfile }
                     <span>{m.university || m.state}</span>
                   </div>
                   <p className="text-[10.5px] text-[#FF2E79] font-bold truncate mt-0.5">
-                    Mutual Match • Tap to chat ✨
+                    Mutual Match • Tap to chat
                   </p>
                 </div>
               </div>

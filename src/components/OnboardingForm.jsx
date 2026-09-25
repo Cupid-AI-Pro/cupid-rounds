@@ -628,7 +628,7 @@ export default function OnboardingForm({ user, onComplete, onCancel }) {
 
           <div className="text-right pointer-events-none select-none">
             <span className="font-cursive text-[#FF2E79] font-bold text-sm sm:text-base leading-tight block rotate-[-3deg]">
-              Good People<br />Brighter Stories ♡
+              Good People<br />Brighter Stories
             </span>
           </div>
         </div>

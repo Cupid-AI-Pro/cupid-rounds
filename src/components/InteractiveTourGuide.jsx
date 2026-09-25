@@ -299,9 +299,9 @@ export default function InteractiveTourGuide({ user = {}, userId, onComplete }) 
       {stepData.target === 'card_stack' && (
         <div className="absolute top-[135px] inset-x-4 h-[350px] rounded-[28px] border-2 border-[#FF2E79] ring-8 ring-[#FF2E79]/20 animate-pulse pointer-events-none z-10 flex items-center justify-center">
           <div className="flex items-center gap-4 text-white font-extrabold text-[11px] bg-slate-950/80 px-4 py-2 rounded-full border border-white/20 shadow-xl">
-            <span>👈 Swipe Left (Skip)</span>
+            <span>Swipe Left (Skip)</span>
             <span className="text-[#FF2E79] font-black">•</span>
-            <span className="text-[#FF2E79]">👉 Swipe Right (Like)</span>
+            <span className="text-[#FF2E79]">Swipe Right (Like)</span>
           </div>
         </div>
       )}

@@ -6,21 +6,25 @@
  */
 
 export const calculateCompatibilityScore = (userA, userB) => {
-  if (!userA || !userB) return 75;
+  try {
+    if (!userA || !userB) return 75;
 
-  // Directional evaluation: How well B matches A's preferences
-  const scoreAtoB = evaluateDirectionalScore(userA, userB);
-  // Directional evaluation: How well A matches B's preferences
-  const scoreBtoA = evaluateDirectionalScore(userB, userA);
+    // Directional evaluation: How well B matches A's preferences
+    const scoreAtoB = evaluateDirectionalScore(userA, userB);
+    // Directional evaluation: How well A matches B's preferences
+    const scoreBtoA = evaluateDirectionalScore(userB, userA);
 
-  // Non-negotiables penalties
-  const penaltyA = evaluateNonNegotiablesPenalty(userA, userB);
-  const penaltyB = evaluateNonNegotiablesPenalty(userB, userA);
+    // Non-negotiables penalties
+    const penaltyA = evaluateNonNegotiablesPenalty(userA, userB);
+    const penaltyB = evaluateNonNegotiablesPenalty(userB, userA);
 
-  const rawAverage = (scoreAtoB + scoreBtoA) / 2;
-  const finalScore = Math.max(62, Math.min(99, Math.round(rawAverage - penaltyA - penaltyB)));
+    const rawAverage = (scoreAtoB + scoreBtoA) / 2;
+    const finalScore = Math.max(62, Math.min(99, Math.round(rawAverage - penaltyA - penaltyB)));
 
-  return finalScore;
+    return finalScore;
+  } catch (e) {
+    return 78;
+  }
 };
 
 const evaluateDirectionalScore = (seeker, candidate) => {

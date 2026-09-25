@@ -642,7 +642,7 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
         {/* Sidebar Footer */}
         <div className="pt-4 border-t border-slate-100 space-y-3">
           <div className="text-center">
-            <p className="font-cursive text-sm text-[#FF2E79] font-bold">Good People Brighter Stories ♡</p>
+            <p className="font-cursive text-sm text-[#FF2E79] font-bold">Good People Brighter Stories</p>
           </div>
 
           <button
@@ -729,7 +729,6 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
               <div>
                 <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-1.5">
                   <span>Welcome back, Admin</span>
-                  <span className="inline-block animate-bounce">👋</span>
                 </h1>
                 <p className="text-[11px] sm:text-xs text-slate-500 font-medium">
                   Here's what's happening on Cupid today.
@@ -737,7 +736,7 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
               </div>
 
               <div className="flex items-center gap-3">
-                <span className="font-cursive text-sm text-[#FF2E79] font-bold hidden md:inline">Good People Brighter Stories ♡</span>
+                <span className="font-cursive text-sm text-[#FF2E79] font-bold hidden md:inline">Good People Brighter Stories</span>
                 <div className="bg-white border border-[#FFE1EB] px-3 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold text-slate-700 flex items-center gap-1.5 shadow-2xs">
                   <Calendar className="w-3.5 h-3.5 text-[#FF2E79]" />
                   <span>{new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
@@ -1424,7 +1423,7 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                         const currentSpeed = localStorage.getItem('cupid_demo_rotation_speed') || 'normal';
                         const newSpeed = currentSpeed === 'fast' ? 'normal' : 'fast';
                         localStorage.setItem('cupid_demo_rotation_speed', newSpeed);
-                        alert(newSpeed === 'fast' ? '⚡ Fast Auto-Rotation Mode Enabled! Phases will advance every 1 minute and rotate states automatically.' : '📅 Standard 24h Schedule Enabled.');
+                        alert(newSpeed === 'fast' ? 'Fast Auto-Rotation Mode Enabled! Phases will advance every 1 minute and rotate states automatically.' : 'Standard 24h Schedule Enabled.');
                         loadAdminData();
                       }}
                       className={`px-3.5 py-2 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-all border shadow-xs cursor-pointer ${

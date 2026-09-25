@@ -8,7 +8,7 @@
  * 2. Add an Email Service: Connect your Gmail (cupidround@upi / any Gmail)
  *    → Service ID: note it down (e.g. "service_cupid")
  * 3. Create an Email Template → Use template variables:
- *       Subject: 💸 New Payment from {{user_name}} — {{plan}} Plan (₹{{amount}})
+ *       Subject: New Payment from {{user_name}} — {{plan}} Plan (₹{{amount}})
  *       Body:
  *         Name: {{user_name}}
  *         Email: {{user_email}}

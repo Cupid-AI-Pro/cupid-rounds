@@ -545,7 +545,7 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
         {/* Decorative Top-Right Cursive Handwriting */}
         <div className="shrink-0 text-right pointer-events-none select-none">
           <span className="font-cursive text-[#E085A3] font-medium text-[14px] sm:text-[16px] leading-tight block rotate-[-4deg]">
-            Good People<br />Brighter Stories ♡
+            Good People<br />Brighter Stories
           </span>
         </div>
       </div>
@@ -571,7 +571,7 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
           <div className="bg-pink-50/80 border border-pink-100 rounded-2xl p-3.5 w-full text-left space-y-1">
             <span className="text-[9px] font-extrabold text-[#FF2E79] uppercase tracking-wider block">Automatic Notification Scheduled</span>
             <span className="text-xs font-semibold text-slate-700 block">
-              ✓ 10-Min Pre-Alert & Live Push Notification set for your phone!
+              10-Min Pre-Alert & Live Push Notification set for your phone!
             </span>
           </div>
 
@@ -736,9 +736,9 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
                   <label className="text-xs font-bold text-slate-800 text-left mb-1.5 block">Gender *</label>
                   <div className="grid grid-cols-3 gap-2.5">
                     {[
-                      { id: 'male', label: 'Male', icon: '♂' },
-                      { id: 'female', label: 'Female', icon: '♀' },
-                      { id: 'others', label: 'Other', icon: '⚧' }
+                      { id: 'male', label: 'Male' },
+                      { id: 'female', label: 'Female' },
+                      { id: 'others', label: 'Other' }
                     ].map((g) => (
                       <button
                         key={g.id}
@@ -759,7 +759,7 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
                   <div className="mt-2 p-2.5 bg-amber-50/90 border border-amber-200/80 rounded-xl text-left flex items-start gap-2 shadow-2xs">
                     <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                     <p className="text-[11px] font-semibold text-amber-800 leading-snug">
-                      <strong className="font-extrabold text-amber-900">🔒 Warning:</strong> Gender selection is permanent and locked after registration for safety &amp; verified matchmaking.
+                      <strong className="font-extrabold text-amber-900">Warning:</strong> Gender selection is permanent and locked after registration for safety &amp; verified matchmaking.
                     </p>
                   </div>
                 </div>

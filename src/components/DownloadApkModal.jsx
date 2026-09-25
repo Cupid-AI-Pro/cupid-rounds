@@ -145,7 +145,7 @@ export default function DownloadApkModal({ isOpen, onClose, onLaunchApp }) {
             </div>
             <div className="flex items-start gap-2">
               <span className="w-4 h-4 rounded-full bg-rose-100 text-[#FF2E79] font-black text-[10px] flex items-center justify-center shrink-0 mt-0.5">3</span>
-              <span>Tap <strong>Install</strong> when prompted — enjoy the app! 🎉</span>
+              <span>Tap <strong>Install</strong> when prompted — enjoy the app!</span>
             </div>
           </div>
         </div>

@@ -268,7 +268,7 @@ export default function ProfileView({ user, onLogout, onRequestRefund, onOpenPer
             </div>
           </div>
           <span className="text-[10px] font-extrabold text-[#FF2E79] bg-pink-50 px-2 py-0.5 rounded-full border border-pink-200">
-            Replay 💡
+            Replay
           </span>
         </div>
       </div>
