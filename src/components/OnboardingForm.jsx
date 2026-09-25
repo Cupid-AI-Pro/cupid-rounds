@@ -135,6 +135,19 @@ function WordByWordText({ text, speed = 75 }) {
 }
 
 export default function OnboardingForm({ user, onComplete, onCancel }) {
+  // --- 1. Personal Info ---
+  const [name, setName] = useState(user.name || '');
+  const [phone, setPhone] = useState(user.phone || '');
+  const [email, setEmail] = useState(user.email || '');
+  const [instaId, setInstaId] = useState(user.instaId || '');
+  const [hometown, setHometown] = useState(user.hometown || 'Delhi NCR');
+
+  // Real User Photos Uploads
+  const [userPhotos, setUserPhotos] = useState(user.photos || []);
+  const [selectedAvatar3D, setSelectedAvatar3D] = useState(user.avatar3D || AVATAR_3D_CHARACTERS[0].url);
+  const [isFlippedPreview, setIsFlippedPreview] = useState(false);
+  const [photoError, setPhotoError] = useState('');
+
   // --- 2. Your Details ---
   const [age, setAge] = useState(user.age || 21);
   const [height, setHeight] = useState(user.height || "5'7\"");
