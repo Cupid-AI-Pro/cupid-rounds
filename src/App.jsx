@@ -13,7 +13,13 @@ import { Sparkles, Phone, ShieldCheck, ArrowLeft, Globe } from 'lucide-react';
 export default function App() {
   const [currentUser, setLocalCurrentUser] = useState(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get('step') || params.get('reset')) {
+    if (params.get('reset')) {
+      try {
+        localStorage.clear();
+      } catch (e) {}
+      return null;
+    }
+    if (params.get('step')) {
       return {
         id: 'test_onboarding_user',
         name: 'Test User',
