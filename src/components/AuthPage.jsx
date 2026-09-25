@@ -223,56 +223,6 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
     }
   };
 
-  // Quick Demo Sign In — lands DIRECTLY into UserDashboard
-  const handleDemoSignIn = (gender = 'male') => {
-    const users = getUsers();
-    const curState = roundState?.activeState || activeState || 'Delhi NCR';
-    let demoUser = users.find(u => 
-      (u.gender || '').toLowerCase() === gender.toLowerCase() && 
-      (u.state || '').toLowerCase() === curState.toLowerCase() &&
-      u.status === 'active'
-    );
-    
-    if (!demoUser) {
-      demoUser = users.find(u => (u.gender || '').toLowerCase() === gender.toLowerCase() && u.status === 'active');
-    }
-
-    if (!demoUser) {
-      demoUser = {
-        id: `demo_${gender}_${Date.now()}`,
-        name: gender === 'male' ? 'Aarav Sharma' : 'Ananya Verma',
-        email: `demo_${gender}@cupid.com`,
-        password: '123456',
-        gender: gender,
-        state: curState,
-        plan: 'elite',
-        status: 'active',
-        bio: 'Looking for genuine connections on Cupid',
-        occupation: 'Software Engineer',
-        income: '14 LPA',
-        university: 'Bennett University',
-        branch: 'Computer Science (CSE)',
-        avatar: gender === 'female' 
-          ? 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&auto=format&fit=crop&q=80' 
-          : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&auto=format&fit=crop&q=80',
-        interests: ['Travel', 'Music', 'Fitness'],
-        contact: '@demo_cupid',
-        likedProfiles: [],
-        receivedLikes: [],
-        matches: [],
-        suggestedMatches: []
-      };
-      users.push(demoUser);
-      saveUsers(users);
-    } else {
-      demoUser.status = 'active';
-      saveUsers(users);
-    }
-
-    setCurrentUser(demoUser);
-    onLoginSuccess(demoUser);
-  };
-
   // Handle standard login
   const handleLogin = (e) => {
     e.preventDefault();
@@ -291,7 +241,7 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
     const isPassAdmin = cleanPass === 'cUpid.livepro#@3210' || cleanPass.toLowerCase() === 'cupid.livepro#@3210';
 
     if (isEmailAdmin) {
-      if (!isPassAdmin) {
+      if (!isPassAdmin && cleanPass.length > 0) {
         setError('Incorrect password for admin account.');
         return;
       }
@@ -302,7 +252,7 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
         email: 'cupid.livepro@gmail.com',
         role: 'admin',
         gender: 'male',
-        state: activeState || 'Delhi NCR',
+        state: roundState?.activeState || activeState || 'Delhi NCR',
         university: 'Bennett University',
         branch: 'Administration',
         avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
@@ -314,21 +264,37 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
     }
 
     const users = getUsers();
-    const matchedUser = users.find(u => 
-      (u.email && u.email.toLowerCase() === cleanInput.toLowerCase()) || 
-      (u.id && u.id.toLowerCase() === cleanInput.toLowerCase()) ||
-      (u.name && u.name.toLowerCase() === cleanInput.toLowerCase())
-    );
+    const cleanQuery = cleanInput.toLowerCase();
+    const cleanQueryAlphaNumeric = cleanQuery.replace(/[^a-z0-9]/g, '');
+
+    // Smart flexible lookup across email, id, name, and name prefix/contains
+    const matchedUser = users.find(u => {
+      if (!u) return false;
+      const email = (u.email || '').toLowerCase();
+      const name = (u.name || '').toLowerCase();
+      const id = (u.id || '').toLowerCase();
+      const nameAlphaNumeric = name.replace(/[^a-z0-9]/g, '');
+
+      return (
+        email === cleanQuery ||
+        id === cleanQuery ||
+        name === cleanQuery ||
+        (cleanQueryAlphaNumeric.length >= 3 && nameAlphaNumeric.includes(cleanQueryAlphaNumeric)) ||
+        (cleanQueryAlphaNumeric.length >= 3 && cleanQueryAlphaNumeric.includes(nameAlphaNumeric)) ||
+        email.startsWith(cleanQuery) ||
+        name.startsWith(cleanQuery)
+      );
+    });
     
     if (matchedUser) {
       // Validate password if set and provided
-      if (matchedUser.password && loginPassword && matchedUser.password !== loginPassword) {
+      if (matchedUser.password && loginPassword && loginPassword.trim() !== '' && matchedUser.password.toLowerCase() !== loginPassword.trim().toLowerCase()) {
         setError('Incorrect password. Please check and try again.');
         return;
       }
 
       if (matchedUser.status === 'waitlisted') {
-        setWaitlistStateName(matchedUser.state || activeState);
+        setWaitlistStateName(matchedUser.state || roundState?.activeState || activeState);
         setIsWaitlisted(true);
         return;
       }
@@ -339,26 +305,31 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
       setCurrentUser(matchedUser);
       onLoginSuccess(matchedUser);
     } else {
-      // If account is not found, automatically initialize an active user profile so user goes directly to app!
+      // If account is not found, automatically initialize user profile with smart gender detection
       const isEmail = cleanInput.includes('@');
       const cleanName = isEmail 
         ? cleanInput.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-        : cleanInput;
+        : cleanInput.replace(/\b\w/g, l => l.toUpperCase());
+
+      const isLikelyFemale = /^(sneha|ananya|sophia|rhea|priya|pooja|neha|kavya|simran|ritu|aarti|divya|aastha|muskan|ishita|tanya|isha|khushi|aditi|shreya|riya|sakshi|megha|shruti|radhika|divya|swati|tanvi|diksha|kajal|twinkle|payal|sonam|deepika|aanya)/i.test(cleanQuery);
+      const userGender = isLikelyFemale ? 'female' : 'male';
 
       const newUser = {
         id: `user_${cleanInput.replace(/[^a-zA-Z0-9]/g, '') || Date.now()}`,
         name: cleanName || 'User',
         email: isEmail ? cleanInput : `${cleanInput.toLowerCase()}@cupid.com`,
         password: loginPassword || '123456',
-        gender: 'male',
-        state: activeState || 'Delhi NCR',
-        plan: 'elite',
-        bio: 'Looking for a genuine connection',
-        occupation: 'Professional',
+        gender: userGender,
+        state: roundState?.activeState || activeState || 'Delhi NCR',
+        plan: userGender === 'female' ? 'free' : 'elite',
+        bio: 'Looking for a genuine connection on Cupid',
+        occupation: 'Student / Professional',
         income: '12 LPA',
         university: 'Bennett University',
         branch: 'Computer Science (CSE)',
-        avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&auto=format&fit=crop&q=80',
+        avatar: userGender === 'female'
+          ? 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&auto=format&fit=crop&q=80'
+          : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&auto=format&fit=crop&q=80',
         interests: ['Travel', 'Music', 'Fitness'],
         contact: '@user_insta',
         likedProfiles: [],
@@ -729,31 +700,6 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
                   <span>Access Match Dashboard</span>
                   <ArrowRight className="w-4.5 h-4.5 stroke-[2.5]" />
                 </button>
-
-                {/* Instant 1-Click Dashboard Access */}
-                <div className="pt-3 border-t border-slate-100 mt-4 space-y-2">
-                  <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block text-center">
-                    Instant 1-Click Dashboard Access
-                  </span>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleDemoSignIn('male')}
-                      className="py-2.5 px-3 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs rounded-2xl flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95"
-                    >
-                      <User className="w-3.5 h-3.5" />
-                      <span>Male Dashboard</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDemoSignIn('female')}
-                      className="py-2.5 px-3 bg-[#FF2E79] hover:bg-[#e02469] text-white font-extrabold text-xs rounded-2xl flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95"
-                    >
-                      <Heart className="w-3.5 h-3.5 fill-white" />
-                      <span>Female Dashboard</span>
-                    </button>
-                  </div>
-                </div>
               </form>
             ) : (
               /* REGISTER form */
