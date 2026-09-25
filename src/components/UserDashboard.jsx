@@ -378,8 +378,8 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
           {(user?.status === 'round_pending' || user?.roundCompleted || (user && !user.roundParticipating)) && (
             <div className="mb-3 p-3.5 rounded-2xl bg-gradient-to-r from-[#FF2E79] via-pink-600 to-rose-500 text-white shadow-lg flex items-center justify-between border border-pink-300/40">
               <div className="space-y-0.5 pr-2 text-left">
-                <span className="text-[10px] font-black uppercase tracking-widest text-pink-200 block flex items-center gap-1">
-                  <Zap className="w-3 h-3 text-pink-200 inline" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-pink-200 block flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-pink-200 animate-pulse shrink-0" />
                   <span>Round #{roundState.roundNumber || 1} Live ({roundState.activeState})</span>
                 </span>
                 <p className="text-xs font-black leading-tight">

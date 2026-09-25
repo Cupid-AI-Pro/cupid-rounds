@@ -205,14 +205,11 @@ export default function SwipeableDeck({
         {/* Bottom Details Overlay & Action Buttons */}
         <div className="absolute inset-x-0 bottom-0 pt-16 pb-4 px-4 bg-gradient-to-t from-black/95 via-black/55 to-transparent pointer-events-none z-20">
           <div className="space-y-1.5">
-            {/* Name and Verified Badge */}
+            {/* Name */}
             <div className="flex items-center gap-2">
               <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight drop-shadow-sm">
                 {currentCandidate.name}
               </h2>
-              <div className="w-4 h-4 rounded-full bg-[#FF2E79] flex items-center justify-center text-white shrink-0 shadow-sm">
-                <Check className="w-2.5 h-2.5 stroke-[3]" />
-              </div>
             </div>
 
             {/* Subtitle Details */}

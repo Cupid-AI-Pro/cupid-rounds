@@ -135,7 +135,6 @@ export default function FullProfileModal({ candidate, onClose, onLike, onDecline
             <div className="flex items-center gap-1.5 mb-1">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#10B981]" />
               <span className="text-[11px] font-bold text-white tracking-wider">Active</span>
-              <div className="w-3.5 h-3.5 bg-[#FF2E79] rounded-full flex items-center justify-center text-[8px] font-black text-white">✓</div>
             </div>
 
             {/* Name */}

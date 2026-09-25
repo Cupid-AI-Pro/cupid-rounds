@@ -387,7 +387,6 @@ export default function CampusRadarMap({
                   <h4 className="font-extrabold text-sm text-slate-900 font-display">
                     {selectedUser.name}, {selectedUser.age}
                   </h4>
-                  <BadgeCheck className="w-4 h-4 text-[#FF2E79] fill-[#FF2E79]/10" />
                 </div>
                 <p className="text-[11px] text-slate-500 font-semibold">
                   {selectedUser.university || 'Campus Student'} • {selectedUser.distanceKm || 1.8} km

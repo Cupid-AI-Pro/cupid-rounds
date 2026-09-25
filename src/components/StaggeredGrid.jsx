@@ -242,7 +242,7 @@ export function StaggeredGrid({
     { label: "Library Meet", icon: BookOpen },
     { label: "100% Refund", icon: Award },
     { label: "Real Vibe", icon: Heart },
-    { label: "Speed Dating", icon: Zap },
+    { label: "Speed Dating", icon: Coffee },
     { label: "Campus Friends", icon: Users },
   ];
 
