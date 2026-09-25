@@ -44,11 +44,11 @@ export default function CampusRadarMap({
   const initialPinchDistRef = useRef(null);
   const mapContainerRef = useRef(null);
 
-  const activeRegion = user.state || 'Delhi NCR';
+  const activeRegion = user?.state || 'Delhi NCR';
 
   // User campus position
-  const userCampusX = user.mapX || 50;
-  const userCampusY = user.mapY || 50;
+  const userCampusX = user?.mapX || 50;
+  const userCampusY = user?.mapY || 50;
 
   // Strict Regional Geofencing: Only show candidates from the user's active state/region
   const allMapUsers = [...candidates, ...matchedUsers].filter(

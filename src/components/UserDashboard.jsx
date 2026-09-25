@@ -39,6 +39,17 @@ import {
 } from '../services/notificationManager';
 
 export default function UserDashboard({ user, onUpdateUser, onLogout }) {
+  if (!user || typeof user !== 'object') {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center p-6 bg-gradient-to-b from-[#FFF0F4] to-[#FFF5F8] text-center font-sans">
+        <div className="w-12 h-12 bg-pink-100 text-[#FF2E79] rounded-2xl flex items-center justify-center animate-spin mb-3">
+          <Sparkles className="w-6 h-6" />
+        </div>
+        <p className="text-xs font-extrabold text-slate-700">Loading Cupid Dashboard...</p>
+      </div>
+    );
+  }
+
   const [candidates, setCandidates] = useState([]);
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [expandedCandidate, setExpandedCandidate] = useState(null);
@@ -52,13 +63,13 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
   });
 
   const [roundState, setRoundState] = useState(getRoundState());
-  const isFemale = (user.gender || '').toLowerCase() === 'female';
-  const isEliteMale = (user.gender || '').toLowerCase() === 'male' && user.plan === 'elite';
-  const isPremiumMale = (user.gender || '').toLowerCase() === 'male' && user.plan === 'premium';
-  const femaleMatchesCount = user.matches?.length || 0;
-  const isFemaleLimitReached = isFemale && femaleMatchesCount >= (roundState.femaleMaxMatches || 2);
-  const isUserInActiveState = (user.state || '').toLowerCase() === (roundState.activeState || '').toLowerCase();
-  const upcomingMins = getStateUpcomingMins(user.state);
+  const isFemale = (user?.gender || '').toLowerCase() === 'female';
+  const isEliteMale = (user?.gender || '').toLowerCase() === 'male' && user?.plan === 'elite';
+  const isPremiumMale = (user?.gender || '').toLowerCase() === 'male' && user?.plan === 'premium';
+  const femaleMatchesCount = user?.matches?.length || 0;
+  const isFemaleLimitReached = isFemale && femaleMatchesCount >= (roundState?.femaleMaxMatches || 2);
+  const isUserInActiveState = (user?.state || '').toLowerCase() === (roundState?.activeState || '').toLowerCase();
+  const upcomingMins = getStateUpcomingMins(user?.state);
 
   const [showReEntryModal, setShowReEntryModal] = useState(false);
   const [reEntryPlan, setReEntryPlan] = useState('elite');

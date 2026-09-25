@@ -39,11 +39,11 @@ export default function ProfileView({ user, onLogout, onRequestRefund, onOpenPer
     };
   }, []);
 
-  const planName = user.plan === 'basic' ? 'Basic (₹100)' : user.plan === 'premium' ? 'Premium (₹250)' : 'VIP Elite (₹449)';
+  const planName = user?.plan === 'basic' ? 'Basic (₹100)' : user?.plan === 'premium' ? 'Premium (₹250)' : (user?.plan === 'free' ? '100% Free VIP Pass (₹0)' : 'VIP Elite (₹449)');
 
   // Round participation check:
   // If user is currently in an active matchmaking round (e.g. status: 'active'), preferences are locked mid-round.
-  const isRoundActive = user.status === 'active' && !user.roundCompleted;
+  const isRoundActive = user?.status === 'active' && !user?.roundCompleted;
 
   const handleEditClick = () => {
     if (isRoundActive) {

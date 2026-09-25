@@ -34,7 +34,7 @@ export default function ChatView({ user, matchedUsers = [], onOpenMatchProfile }
   const [searchQuery, setSearchQuery] = useState('');
 
   const currentMessages = activeChatUser ? (messages[activeChatUser.id] || [
-    { id: 1, sender: 'them', text: `Hey ${user.name.split(' ')[0]}! Cupid matched us ✨`, time: 'Just now' }
+    { id: 1, sender: 'them', text: `Hey ${user?.name?.split(' ')?.[0] || 'there'}! Cupid matched us ✨`, time: 'Just now' }
   ]) : [];
 
   const handleSendMessage = (textToSend) => {
