@@ -29,6 +29,34 @@ export default function SwipeableDeck({
     setCurrentIndex(0);
   }, [candidates.length]);
 
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!isDraggingRef.current) return;
+      const dx = e.clientX - startPosRef.current.x;
+      const dy = e.clientY - startPosRef.current.y;
+      setDragOffset({ x: dx, y: dy });
+    };
+    const handleMouseUp = () => {
+      if (!isDraggingRef.current) return;
+      isDraggingRef.current = false;
+      setIsDragging(false);
+      if (Math.abs(dragOffset.x) > 60) {
+        setDragOffset({ x: 0, y: 0 });
+        setCurrentIndex(prev => (candidates.length > 0 ? (prev + 1) % candidates.length : 0));
+      } else {
+        setDragOffset({ x: 0, y: 0 });
+      }
+    };
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+    }
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, dragOffset.x, candidates.length]);
+
   if (!candidates || candidates.length === 0) {
     return (
       <div className="w-full h-full flex flex-col justify-center items-center text-center p-6 bg-white/90 backdrop-blur-xl border border-rose-100 rounded-[32px] select-none shadow-lg">
@@ -82,33 +110,6 @@ export default function SwipeableDeck({
     setIsDragging(true);
     startPosRef.current = { x: e.clientX, y: e.clientY };
   };
-
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      if (!isDraggingRef.current) return;
-      const dx = e.clientX - startPosRef.current.x;
-      const dy = e.clientY - startPosRef.current.y;
-      setDragOffset({ x: dx, y: dy });
-    };
-    const handleMouseUp = () => {
-      if (!isDraggingRef.current) return;
-      isDraggingRef.current = false;
-      setIsDragging(false);
-      if (Math.abs(dragOffset.x) > 60) {
-        handleNextCard();
-      } else {
-        setDragOffset({ x: 0, y: 0 });
-      }
-    };
-    if (isDragging) {
-      window.addEventListener('mousemove', handleMouseMove);
-      window.addEventListener('mouseup', handleMouseUp);
-    }
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [isDragging, dragOffset.x]);
 
   const handleHeartClick = (e) => {
     e.stopPropagation();
