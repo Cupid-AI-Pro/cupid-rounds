@@ -58,8 +58,32 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
 
   useEffect(() => {
     const updateCountdown = () => {
-      const targetMins = getStateUpcomingMins(user?.state || 'Uttar Pradesh');
-      let totalSecs = Math.max(0, targetMins * 60);
+      const stateName = user?.state || 'Uttar Pradesh';
+      const upcomingMins = getStateUpcomingMins(stateName);
+
+      const roundStartMs = new Date(roundState?.roundStartDate || roundState?.phaseStartedAt || Date.now()).getTime();
+      const nowMs = Date.now();
+      const elapsedMs = Math.max(0, nowMs - roundStartMs);
+
+      let totalSecs = 0;
+      if (upcomingMins > 0) {
+        // Compute total seconds remaining until user's state round starts
+        totalSecs = Math.max(0, Math.floor(((upcomingMins * 60 * 1000) - (elapsedMs % (60 * 1000))) / 1000));
+      } else {
+        // Fallback target countdown (8 days, 14 hours, 40 mins) minus elapsed time for live feel
+        const baseTargetSecs = (8 * 24 * 3600) + (14 * 3600) + (40 * 60) + 22;
+        const elapsedSecs = Math.floor(elapsedMs / 1000) % baseTargetSecs;
+        totalSecs = Math.max(0, baseTargetSecs - elapsedSecs);
+      }
+
+      const sched = getStateRoundSchedule(stateName);
+      if (sched && sched.rawDate && sched.daysLeft > 0) {
+        const targetDate = new Date(sched.rawDate).getTime();
+        const diffMs = targetDate - nowMs;
+        if (diffMs > 0) {
+          totalSecs = Math.floor(diffMs / 1000);
+        }
+      }
 
       const d = Math.floor(totalSecs / (3600 * 24));
       const h = Math.floor((totalSecs % (3600 * 24)) / 3600);
@@ -406,44 +430,54 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
           {!isUserInActiveState ? (
             <div className="flex-1 flex flex-col items-center justify-center text-center px-4 py-6 animate-fade-in relative z-20 my-auto select-none">
               
+              {/* Soft Floating Background Elements */}
+              <div className="absolute top-10 right-8 w-16 h-16 bg-pink-200/25 rounded-full blur-md pointer-events-none" />
+              <div className="absolute bottom-20 left-6 w-20 h-20 bg-rose-200/20 rounded-full blur-lg pointer-events-none" />
+
               {/* 3D Hourglass Graphic Container */}
-              <div className="relative w-44 h-44 mx-auto mb-6 flex items-center justify-center">
-                <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-pink-200/60 via-rose-100/80 to-pink-50/40 blur-xl animate-pulse" />
-                <div className="w-36 h-36 rounded-full bg-white/80 backdrop-blur-md border border-pink-100 shadow-[0_10px_30px_rgba(255,182,193,0.4)] flex items-center justify-center relative z-10">
-                  <svg width="68" height="68" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-md">
-                    <rect x="14" y="8" width="36" height="6" rx="3" fill="url(#wood_top)" />
-                    <rect x="14" y="50" width="36" height="6" rx="3" fill="url(#wood_bottom)" />
-                    <path d="M20 14H44L34 30C33 31.5 33 32.5 34 34L44 50H20L30 34C31 32.5 31 31.5 30 30L20 14Z" fill="url(#glass_gradient)" fillOpacity="0.85" stroke="#FF85B3" strokeWidth="2" strokeLinejoin="round" />
-                    <path d="M22 17H42L35 27.5C33.5 29.7 30.5 29.7 29 27.5L22 17Z" fill="url(#sand_pink)" />
-                    <line x1="32" y1="28" x2="32" y2="46" stroke="#FF2E79" strokeWidth="2" strokeDasharray="3 3" className="animate-pulse" />
-                    <path d="M22 47C26 43 38 43 42 47V49H22V47Z" fill="url(#sand_pink)" />
+              <div className="relative w-48 h-48 mx-auto mb-5 flex items-center justify-center select-none">
+                <div className="absolute inset-0 rounded-full bg-pink-100/50 blur-2xl animate-pulse" />
+                <div className="w-40 h-40 rounded-full bg-white/90 backdrop-blur-md border border-pink-100 shadow-[0_12px_35px_rgba(255,182,193,0.35)] flex items-center justify-center relative z-10">
+                  <svg width="84" height="84" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-md">
+                    <rect x="18" y="10" width="44" height="7" rx="3.5" fill="url(#wood_top_3d)" />
+                    <rect x="20" y="15" width="40" height="2" fill="#EFA2B5" opacity="0.6" />
+                    <rect x="18" y="63" width="44" height="7" rx="3.5" fill="url(#wood_bottom_3d)" />
+                    <rect x="20" y="63" width="40" height="2" fill="#EFA2B5" opacity="0.6" />
+                    <path d="M24 17H56L43 37.5C41.5 39.5 41.5 40.5 43 42.5L56 63H24L37 42.5C38.5 40.5 38.5 39.5 37 37.5L24 17Z" fill="url(#glass_3d)" fillOpacity="0.8" stroke="#F4A6BF" strokeWidth="2.5" strokeLinejoin="round" />
+                    <path d="M27 20H32L40 33C38 34 38 35 37 37L27 20Z" fill="white" fillOpacity="0.45" />
+                    <path d="M27 21H53L44 34.5C42 37.5 38 37.5 36 34.5L27 21Z" fill="url(#sand_pink_3d)" />
+                    <line x1="40" y1="36" x2="40" y2="58" stroke="#FF2E79" strokeWidth="2.5" strokeDasharray="3 3" className="animate-pulse" />
+                    <path d="M26 60C31 54 49 54 54 60V62H26V60Z" fill="url(#sand_pink_3d)" />
                     <defs>
-                      <linearGradient id="wood_top" x1="14" y1="8" x2="50" y2="14" gradientUnits="userSpaceOnUse">
-                        <stop stopColor="#FF6B9D" />
-                        <stop offset="1" stopColor="#FF2E79" />
+                      <linearGradient id="wood_top_3d" x1="18" y1="10" x2="62" y2="17" gradientUnits="userSpaceOnUse">
+                        <stop stopColor="#F2B5C4" />
+                        <stop offset="0.5" stopColor="#E2899F" />
+                        <stop offset="1" stopColor="#C96881" />
                       </linearGradient>
-                      <linearGradient id="wood_bottom" x1="14" y1="50" x2="50" y2="56" gradientUnits="userSpaceOnUse">
-                        <stop stopColor="#FF6B9D" />
-                        <stop offset="1" stopColor="#FF2E79" />
+                      <linearGradient id="wood_bottom_3d" x1="18" y1="63" x2="62" y2="70" gradientUnits="userSpaceOnUse">
+                        <stop stopColor="#F2B5C4" />
+                        <stop offset="0.5" stopColor="#E2899F" />
+                        <stop offset="1" stopColor="#C96881" />
                       </linearGradient>
-                      <linearGradient id="glass_gradient" x1="20" y1="14" x2="44" y2="50" gradientUnits="userSpaceOnUse">
-                        <stop stopColor="#FFF0F5" stopOpacity="0.9" />
-                        <stop offset="0.5" stopColor="#FFE4EC" stopOpacity="0.6" />
-                        <stop offset="1" stopColor="#FFB6C1" stopOpacity="0.8" />
+                      <linearGradient id="glass_3d" x1="24" y1="17" x2="56" y2="63" gradientUnits="userSpaceOnUse">
+                        <stop stopColor="#FFF5F8" stopOpacity="0.95" />
+                        <stop offset="0.5" stopColor="#FFE4ED" stopOpacity="0.5" />
+                        <stop offset="1" stopColor="#FFCCD9" stopOpacity="0.8" />
                       </linearGradient>
-                      <linearGradient id="sand_pink" x1="20" y1="17" x2="44" y2="49" gradientUnits="userSpaceOnUse">
-                        <stop stopColor="#FF2E79" />
-                        <stop offset="1" stopColor="#E01366" />
+                      <linearGradient id="sand_pink_3d" x1="24" y1="21" x2="56" y2="62" gradientUnits="userSpaceOnUse">
+                        <stop stopColor="#FF4785" />
+                        <stop offset="0.6" stopColor="#FF2E79" />
+                        <stop offset="1" stopColor="#D91656" />
                       </linearGradient>
                     </defs>
                   </svg>
-                  <span className="absolute -top-1 -right-1 text-pink-400 text-xs animate-bounce">✦</span>
-                  <span className="absolute bottom-2 -left-2 text-pink-300 text-xs animate-pulse">✨</span>
+                  <span className="absolute -top-1 -right-1 text-pink-400 text-sm animate-bounce">✦</span>
+                  <span className="absolute bottom-3 -left-3 text-pink-300 text-sm animate-pulse">✦</span>
                 </div>
               </div>
 
               {/* Text Info */}
-              <span className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-slate-400 mb-1 block">
+              <span className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-slate-400 mb-1 block">
                 YOUR STATE ROUND IS NOT LIVE YET
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-display">
@@ -453,26 +487,26 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
                 Starts in
               </span>
 
-              {/* 4-Box Countdown Timer Card (Exact Match to Image 1) */}
-              <div className="bg-white/95 backdrop-blur-xl rounded-3xl p-4 sm:p-5 shadow-[0_10px_35px_rgba(255,46,121,0.08)] border border-white max-w-xs sm:max-w-sm w-full mx-auto flex items-center justify-around">
+              {/* 4-Box Countdown Timer Card (Exact Match to Image 1 & 2) */}
+              <div className="bg-white/95 backdrop-blur-xl rounded-[28px] p-4 sm:p-5 shadow-[0_12px_35px_rgba(255,46,121,0.07)] border border-pink-100/80 max-w-xs sm:max-w-sm w-full mx-auto flex items-center justify-around">
                 <div className="flex flex-col items-center">
                   <span className="text-2xl sm:text-3xl font-black text-slate-900 font-mono tracking-tight">{countdown.days}</span>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase mt-0.5">Days</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase mt-0.5 tracking-wider">DAYS</span>
                 </div>
-                <div className="h-8 w-[1px] bg-slate-200/80" />
+                <div className="h-8 w-[1px] bg-slate-100" />
                 <div className="flex flex-col items-center">
                   <span className="text-2xl sm:text-3xl font-black text-slate-900 font-mono tracking-tight">{countdown.hours}</span>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase mt-0.5">Hours</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase mt-0.5 tracking-wider">HOURS</span>
                 </div>
-                <div className="h-8 w-[1px] bg-slate-200/80" />
+                <div className="h-8 w-[1px] bg-slate-100" />
                 <div className="flex flex-col items-center">
                   <span className="text-2xl sm:text-3xl font-black text-slate-900 font-mono tracking-tight">{countdown.mins}</span>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase mt-0.5">Mins</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase mt-0.5 tracking-wider">MINS</span>
                 </div>
-                <div className="h-8 w-[1px] bg-slate-200/80" />
+                <div className="h-8 w-[1px] bg-slate-100" />
                 <div className="flex flex-col items-center">
                   <span className="text-2xl sm:text-3xl font-black text-[#FF2E79] font-mono tracking-tight">{countdown.secs}</span>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase mt-0.5">Secs</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase mt-0.5 tracking-wider">SECS</span>
                 </div>
               </div>
 
