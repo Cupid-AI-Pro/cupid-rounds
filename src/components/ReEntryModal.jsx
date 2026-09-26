@@ -8,13 +8,19 @@ import {
   ArrowRight, 
   ShieldCheck, 
   RefreshCw,
-  Edit3
+  Edit3,
+  Heart,
+  User,
+  GraduationCap,
+  MapPin,
+  Sparkles
 } from 'lucide-react';
 import { savePaymentSubmission } from '../utils/storage';
 import { joinRound } from '../utils/roundManager';
 
 export default function ReEntryModal({ user, roundState, onClose, onEditQuestionnaire, onCompleteReEntry }) {
-  const [step, setStep] = useState(1); // 1: Select Plan, 2: Payment Upload, 3: Edit Profile Choice
+  const isFemale = (user?.gender || '').toLowerCase() === 'female';
+  const [step, setStep] = useState(isFemale ? 3 : 1); // For female direct to details check (step 3), for male plan selection (step 1)
   const [selectedPlan, setSelectedPlan] = useState('elite');
   const [utrNumber, setUtrNumber] = useState('');
   const [screenshotBase64, setScreenshotBase64] = useState('');
@@ -67,14 +73,13 @@ export default function ReEntryModal({ user, roundState, onClose, onEditQuestion
       submittedAt: new Date().toISOString()
     });
 
-    // Advance to Step 3 (Ask about updating questionnaire)
     setIsSubmitting(false);
-    setStep(3);
+    setStep(3); // Advance to profile details check
   };
 
   const handleFinalize = (shouldEditProfile) => {
-    // Activate profile for the current round
-    const updatedUser = joinRound(user.id, selectedPlan);
+    const activePlan = isFemale ? 'free' : selectedPlan;
+    const updatedUser = joinRound(user.id, activePlan);
 
     if (shouldEditProfile) {
       onEditQuestionnaire();
@@ -84,21 +89,21 @@ export default function ReEntryModal({ user, roundState, onClose, onEditQuestion
   };
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+    <div className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto select-none">
       <div className="bg-white max-w-md w-full rounded-3xl p-5 sm:p-6 relative shadow-2xl border border-rose-100 animate-slide-up">
         
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 cursor-pointer"
+          className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 cursor-pointer transition-colors"
         >
           <X className="w-4 h-4" />
         </button>
 
-        {/* Header */}
-        <div className="text-center space-y-1.5 mb-5">
-          <div className="w-12 h-12 bg-pink-100 text-[#FF2E79] rounded-2xl flex items-center justify-center mx-auto shadow-sm">
-            <RefreshCw className="w-6 h-6 animate-spin-slow" />
+        {/* Modal Header */}
+        <div className="text-center space-y-1 mb-5">
+          <div className="w-12 h-12 bg-pink-50 text-[#FF2E79] rounded-2xl flex items-center justify-center mx-auto shadow-xs border border-rose-100">
+            {isFemale ? <Heart className="w-6 h-6 fill-[#FF2E79]" /> : <RefreshCw className="w-6 h-6" />}
           </div>
           <h2 className="text-xl font-black text-slate-900 tracking-tight font-display">
             Re-Enter Round #{roundState?.stateRoundMap?.[roundState?.activeState || user?.state] || roundState?.roundNumber || 1}
@@ -108,60 +113,23 @@ export default function ReEntryModal({ user, roundState, onClose, onEditQuestion
           </p>
         </div>
 
-        {/* FEMALE USER 100% FREE DIRECT RE-ENTRY */}
-        {(user?.gender || '').toLowerCase() === 'female' ? (
-          <div className="space-y-4 text-center py-2">
-            <div className="w-14 h-14 bg-pink-100 text-[#FF2E79] rounded-2xl flex items-center justify-center mx-auto shadow-sm">
-              <Heart className="w-7 h-7 fill-current" />
-            </div>
-            <div className="space-y-1">
-              <span className="px-3 py-1 bg-[#FF2E79] text-white text-[10px] font-black uppercase rounded-full tracking-wider">
-                100% Free VIP Female Entry
-              </span>
-              <h3 className="text-lg font-black text-slate-900 pt-2 font-display">
-                Re-Enter Round #{roundState?.stateRoundMap?.[roundState?.activeState || user?.state] || roundState?.roundNumber || 1}
-              </h3>
-              <p className="text-xs text-slate-500 font-medium max-w-xs mx-auto">
-                Round entry is 100% FREE for female members! No payment or subscription required.
-              </p>
-            </div>
-
-            <div className="space-y-2 pt-3">
-              <button
-                onClick={() => handleFinalize(true)}
-                className="w-full py-3 bg-[#FF2E79] hover:bg-rose-600 text-white font-extrabold text-xs rounded-full flex items-center justify-center gap-2 shadow-md cursor-pointer"
-              >
-                <Edit3 className="w-4 h-4" />
-                <span>Update Questionnaire & Join Round</span>
-              </button>
-
-              <button
-                onClick={() => handleFinalize(false)}
-                className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs rounded-full flex items-center justify-center gap-2 shadow-md cursor-pointer"
-              >
-                <span>Keep Profile & Join Round Now</span>
-              </button>
-            </div>
-          </div>
-        ) : (
-          <>
-            {/* STEP 1: SELECT PLAN */}
-        {step === 1 && (
+        {/* MALE USER STEP 1: SELECT PLAN */}
+        {!isFemale && step === 1 && (
           <div className="space-y-4">
-            <p className="text-xs font-bold text-slate-700">Choose your participation tier for this round:</p>
+            <p className="text-xs font-bold text-slate-700">Select your participation plan for this live round:</p>
 
             <div className="space-y-2.5">
               {[
-                { id: 'elite', title: 'VIP Elite Plan', price: 449, badge: 'Recommended', desc: '16h Spotlight Window + Max 2 Mutual Matches + Priority Refund Protection' },
-                { id: 'premium', title: 'Premium Plan', price: 250, badge: 'Popular', desc: '8h Matching Window + High Compatibility Profiles + Refund Guarantee' },
-                { id: 'basic', title: 'Basic Plan', price: 100, badge: 'Standard', desc: '24h Registration + Auto Mutual Compatibility Settlement' }
+                { id: 'elite', title: 'VIP Elite Plan', price: 449, badge: 'Recommended', desc: '16h Spotlight Window + Priority Mutual Match + Refund Protection' },
+                { id: 'premium', title: 'Premium Plan', price: 250, badge: 'Popular', desc: '8h Matching Window + Suitable Profiles + Refund Guarantee' },
+                { id: 'basic', title: 'Basic Plan', price: 100, badge: 'Standard', desc: '24h Registration + Auto Compatibility Allocation' }
               ].map((p) => (
                 <div
                   key={p.id}
                   onClick={() => setSelectedPlan(p.id)}
                   className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all ${
                     selectedPlan === p.id 
-                      ? 'border-[#FF2E79] bg-rose-50/50 shadow-sm' 
+                      ? 'border-[#FF2E79] bg-rose-50/50 shadow-xs' 
                       : 'border-slate-200 hover:border-slate-300 bg-white'
                   }`}
                 >
@@ -183,14 +151,14 @@ export default function ReEntryModal({ user, roundState, onClose, onEditQuestion
               onClick={() => setStep(2)}
               className="w-full h-12 bg-[#FF2E79] hover:bg-rose-600 text-white font-extrabold text-xs uppercase tracking-wider rounded-full flex items-center justify-center gap-2 shadow-md cursor-pointer transition-all active:scale-98"
             >
-              <span>Proceed to UPI Payment (₹{planPrices[selectedPlan]})</span>
+              <span>Proceed to Payment (₹{planPrices[selectedPlan]})</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         )}
 
-        {/* STEP 2: UPI PAYMENT & PROOF UPLOAD */}
-        {step === 2 && (
+        {/* MALE USER STEP 2: UPI PAYMENT PROOF */}
+        {!isFemale && step === 2 && (
           <form onSubmit={handlePaymentSubmit} className="space-y-4">
             <div className="bg-slate-900 text-white p-4 rounded-2xl text-center space-y-2">
               <span className="text-[10px] font-extrabold uppercase text-pink-300 tracking-wider">Scan QR to Pay via GPay / PhonePe / Paytm</span>
@@ -251,40 +219,79 @@ export default function ReEntryModal({ user, roundState, onClose, onEditQuestion
           </form>
         )}
 
-        {/* STEP 3: QUESTIONNAIRE UPDATE QUESTION */}
+        {/* PROFILE DETAILS CHECK & FINAL CONFIRMATION (Both Female & Male Step 3) */}
         {step === 3 && (
-          <div className="space-y-4 text-center">
-            <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
-              <CheckCircle2 className="w-7 h-7" />
+          <div className="space-y-4">
+            {isFemale ? (
+              <div className="bg-rose-50 border border-rose-200 p-3 rounded-2xl text-center space-y-1">
+                <span className="px-2.5 py-0.5 bg-[#FF2E79] text-white text-[9.5px] font-black uppercase rounded-full tracking-wider">
+                  100% Free VIP Female Entry
+                </span>
+                <p className="text-xs font-bold text-slate-800 pt-1">
+                  Round entry is completely free for female members!
+                </p>
+              </div>
+            ) : (
+              <div className="bg-emerald-50 border border-emerald-200 p-3 rounded-2xl text-center space-y-1">
+                <span className="px-2.5 py-0.5 bg-emerald-600 text-white text-[9.5px] font-black uppercase rounded-full tracking-wider">
+                  Payment Submitted
+                </span>
+                <p className="text-xs font-bold text-emerald-900">
+                  Your plan payment proof has been recorded.
+                </p>
+              </div>
+            )}
+
+            {/* User Profile Summary Card */}
+            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-2">
+              <div className="flex items-center justify-between border-b border-slate-200/60 pb-2">
+                <span className="text-[11px] font-black uppercase tracking-wider text-slate-400">Current Questionnaire Details</span>
+                <span className="text-xs font-extrabold text-slate-900">{user?.name} ({user?.age})</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-xs font-semibold text-slate-700 pt-0.5">
+                <div>
+                  <span className="text-[10px] text-slate-400 uppercase block font-bold">University</span>
+                  <span className="truncate block font-bold text-slate-900">{user?.university || 'Bennett University'}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-400 uppercase block font-bold">Branch</span>
+                  <span className="truncate block font-bold text-slate-900">{user?.branch?.split(' ')?.[0] || 'Design'}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-400 uppercase block font-bold">Hometown</span>
+                  <span className="truncate block font-bold text-slate-900">{user?.hometown || user?.state || 'Delhi'}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-400 uppercase block font-bold">State Round</span>
+                  <span className="truncate block font-bold text-slate-900">{user?.state || 'Delhi NCR'}</span>
+                </div>
+              </div>
             </div>
 
-            <div>
-              <h3 className="text-base font-black text-slate-900">Payment Submitted Successfully!</h3>
-              <p className="text-xs text-slate-500 mt-1">
-                Your payment proof is under verification. Would you like to update your questionnaire or profile details before going live in this round?
-              </p>
-            </div>
+            <p className="text-xs text-slate-500 font-medium text-center">
+              Would you like to make any changes to your form details before entering this live round?
+            </p>
 
-            <div className="space-y-2 pt-2">
+            <div className="space-y-2 pt-1">
               <button
+                type="button"
                 onClick={() => handleFinalize(true)}
-                className="w-full py-3 bg-[#FF2E79] hover:bg-rose-600 text-white font-extrabold text-xs rounded-full flex items-center justify-center gap-2 shadow-md cursor-pointer"
+                className="w-full py-3 bg-[#FF2E79] hover:bg-rose-600 text-white font-extrabold text-xs rounded-full flex items-center justify-center gap-2 shadow-md cursor-pointer transition-all active:scale-98"
               >
                 <Edit3 className="w-4 h-4" />
-                <span>Yes, Update My Questionnaire & Profile</span>
+                <span>Update Form Details & Enter Round</span>
               </button>
 
               <button
+                type="button"
                 onClick={() => handleFinalize(false)}
-                className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs rounded-full flex items-center justify-center gap-2 shadow-md cursor-pointer"
+                className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs rounded-full flex items-center justify-center gap-2 shadow-md cursor-pointer transition-all active:scale-98"
               >
-                <span>No, Keep Current Profile & Go Live</span>
+                <span>Confirm Details & Enter Round Now</span>
               </button>
             </div>
           </div>
         )}
-      </>
-    )}
 
       </div>
     </div>

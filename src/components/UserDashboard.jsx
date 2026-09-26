@@ -374,120 +374,215 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
             </div>
           )}
 
-          {/* Re-Entry / Round Participation Prompt Banner */}
-          {(user?.status === 'round_pending' || user?.roundCompleted || (user && !user.roundParticipating)) && (
-            <div className="mb-3 p-3.5 rounded-2xl bg-gradient-to-r from-[#FF2E79] via-pink-600 to-rose-500 text-white shadow-lg flex items-center justify-between border border-pink-300/40">
-              <div className="space-y-0.5 pr-2 text-left">
-                <span className="text-[10px] font-black uppercase tracking-widest text-pink-200 block flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-pink-200 animate-pulse shrink-0" />
-                  <span>Round #{roundState.roundNumber || 1} Live ({roundState.activeState})</span>
-                </span>
-                <p className="text-xs font-black leading-tight">
-                  Would you like to enter today's live round?
-                </p>
+          {/* ----------------------------------------------------------------- */}
+          {/* DYNAMIC HOME TAB VIEW BASED ON USER STATE ROUND STATUS            */}
+          {/* ----------------------------------------------------------------- */}
+          
+          {/* CASE 1: USER'S STATE ROUND IS NOT LIVE YET (EXACT MATCH TO IMAGE 1) */}
+          {!isUserInActiveState ? (
+            <div className="flex-1 flex flex-col items-center justify-center text-center px-4 py-6 animate-fade-in relative z-20 my-auto select-none">
+              
+              {/* 3D Hourglass Graphic Container */}
+              <div className="relative w-44 h-44 mx-auto mb-6 flex items-center justify-center">
+                <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-pink-200/60 via-rose-100/80 to-pink-50/40 blur-xl animate-pulse" />
+                <div className="w-36 h-36 rounded-full bg-white/80 backdrop-blur-md border border-pink-100 shadow-[0_10px_30px_rgba(255,182,193,0.4)] flex items-center justify-center relative z-10">
+                  <svg width="68" height="68" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-md">
+                    <rect x="14" y="8" width="36" height="6" rx="3" fill="url(#wood_top)" />
+                    <rect x="14" y="50" width="36" height="6" rx="3" fill="url(#wood_bottom)" />
+                    <path d="M20 14H44L34 30C33 31.5 33 32.5 34 34L44 50H20L30 34C31 32.5 31 31.5 30 30L20 14Z" fill="url(#glass_gradient)" fillOpacity="0.85" stroke="#FF85B3" strokeWidth="2" strokeLinejoin="round" />
+                    <path d="M22 17H42L35 27.5C33.5 29.7 30.5 29.7 29 27.5L22 17Z" fill="url(#sand_pink)" />
+                    <line x1="32" y1="28" x2="32" y2="46" stroke="#FF2E79" strokeWidth="2" strokeDasharray="3 3" className="animate-pulse" />
+                    <path d="M22 47C26 43 38 43 42 47V49H22V47Z" fill="url(#sand_pink)" />
+                    <defs>
+                      <linearGradient id="wood_top" x1="14" y1="8" x2="50" y2="14" gradientUnits="userSpaceOnUse">
+                        <stop stopColor="#FF6B9D" />
+                        <stop offset="1" stopColor="#FF2E79" />
+                      </linearGradient>
+                      <linearGradient id="wood_bottom" x1="14" y1="50" x2="50" y2="56" gradientUnits="userSpaceOnUse">
+                        <stop stopColor="#FF6B9D" />
+                        <stop offset="1" stopColor="#FF2E79" />
+                      </linearGradient>
+                      <linearGradient id="glass_gradient" x1="20" y1="14" x2="44" y2="50" gradientUnits="userSpaceOnUse">
+                        <stop stopColor="#FFF0F5" stopOpacity="0.9" />
+                        <stop offset="0.5" stopColor="#FFE4EC" stopOpacity="0.6" />
+                        <stop offset="1" stopColor="#FFB6C1" stopOpacity="0.8" />
+                      </linearGradient>
+                      <linearGradient id="sand_pink" x1="20" y1="17" x2="44" y2="49" gradientUnits="userSpaceOnUse">
+                        <stop stopColor="#FF2E79" />
+                        <stop offset="1" stopColor="#E01366" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  <span className="absolute -top-1 -right-1 text-pink-400 text-xs animate-bounce">✦</span>
+                  <span className="absolute bottom-2 -left-2 text-pink-300 text-xs animate-pulse">✨</span>
+                </div>
               </div>
+
+              {/* Text Info */}
+              <span className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-slate-400 mb-1 block">
+                YOUR STATE ROUND IS NOT LIVE YET
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-display">
+                Next Round for <span className="text-[#FF2E79]">{user?.state || 'Uttar Pradesh'}</span>
+              </h2>
+              <span className="text-xs font-semibold text-slate-400 mt-2 mb-3 block">
+                Starts in
+              </span>
+
+              {/* 4-Box Countdown Timer Card (Exact Match to Image 1) */}
+              <div className="bg-white/95 backdrop-blur-xl rounded-3xl p-4 sm:p-5 shadow-[0_10px_35px_rgba(255,46,121,0.08)] border border-white max-w-xs sm:max-w-sm w-full mx-auto flex items-center justify-around">
+                <div className="flex flex-col items-center">
+                  <span className="text-2xl sm:text-3xl font-black text-slate-900 font-mono tracking-tight">{countdown.days}</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase mt-0.5">Days</span>
+                </div>
+                <div className="h-8 w-[1px] bg-slate-200/80" />
+                <div className="flex flex-col items-center">
+                  <span className="text-2xl sm:text-3xl font-black text-slate-900 font-mono tracking-tight">{countdown.hours}</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase mt-0.5">Hours</span>
+                </div>
+                <div className="h-8 w-[1px] bg-slate-200/80" />
+                <div className="flex flex-col items-center">
+                  <span className="text-2xl sm:text-3xl font-black text-slate-900 font-mono tracking-tight">{countdown.mins}</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase mt-0.5">Mins</span>
+                </div>
+                <div className="h-8 w-[1px] bg-slate-200/80" />
+                <div className="flex flex-col items-center">
+                  <span className="text-2xl sm:text-3xl font-black text-[#FF2E79] font-mono tracking-tight">{countdown.secs}</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase mt-0.5">Secs</span>
+                </div>
+              </div>
+
+              <p className="text-xs text-slate-500 font-medium max-w-xs mx-auto mt-6 leading-relaxed">
+                We'll notify you as soon as the round goes live on your phone.
+              </p>
+
+            </div>
+          ) : (!user?.roundParticipating || user?.status === 'round_pending') ? (
+
+            /* CASE 2: USER'S STATE ROUND IS LIVE NOW -> RE-ENTER PROMPT (EXACT MATCH TO IMAGE 2) */
+            <div className="flex-1 flex flex-col items-center justify-center text-center px-4 py-6 animate-fade-in relative z-20 my-auto select-none">
+              
+              {/* 3D Floating Pink Hearts Graphic Container */}
+              <div className="relative w-44 h-44 mx-auto mb-6 flex items-center justify-center">
+                <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-pink-200/60 via-rose-100/80 to-pink-50/40 blur-xl animate-pulse" />
+                <div className="w-36 h-36 rounded-full bg-white/80 backdrop-blur-md border border-pink-100 shadow-[0_10px_30px_rgba(255,182,193,0.4)] flex items-center justify-center relative z-10">
+                  <svg width="76" height="76" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-lg">
+                    <path d="M48 22C41.5 22 37 27 35 30C33 27 28.5 22 22 22C13.5 22 8 28.5 8 37C8 51 27 64 35 68C43 64 62 51 62 37C62 28.5 56.5 22 48 22Z" fill="url(#heart_main_2)" />
+                    <path d="M22 25C17 25 12.5 29.5 12 35C13 31 16.5 27.5 21 27C23 26.8 24 25.5 22 25Z" fill="white" fillOpacity="0.6" />
+                    <path d="M58 38C53 38 49.5 42 48 44.5C46.5 42 43 38 38 38C31.5 38 27 43 27 49.5C27 60 41.5 70 48 73C54.5 70 69 60 69 49.5C69 43 64.5 38 58 38Z" fill="url(#heart_front_2)" />
+                    <path d="M38 40.5C34 40.5 30.5 44 30 48.5C31 45 33.5 42.5 37 42C38.5 41.8 39.5 40.8 38 40.5Z" fill="white" fillOpacity="0.75" />
+                    <defs>
+                      <linearGradient id="heart_main_2" x1="8" y1="22" x2="62" y2="68" gradientUnits="userSpaceOnUse">
+                        <stop stopColor="#FF5C93" />
+                        <stop offset="0.5" stopColor="#FF2E79" />
+                        <stop offset="1" stopColor="#D91656" />
+                      </linearGradient>
+                      <linearGradient id="heart_front_2" x1="27" y1="38" x2="69" y2="73" gradientUnits="userSpaceOnUse">
+                        <stop stopColor="#FFE0EB" />
+                        <stop offset="0.6" stopColor="#FFB3CB" />
+                        <stop offset="1" stopColor="#FF7CA8" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  <span className="absolute -top-1 right-2 text-pink-400 text-xs animate-bounce">✦</span>
+                  <span className="absolute bottom-4 left-0 text-pink-300 text-xs animate-pulse">✦</span>
+                </div>
+              </div>
+
+              {/* Text Info */}
+              <span className="text-[10.5px] font-extrabold uppercase tracking-[0.2em] text-slate-500 mb-1 block">
+                ROUND #{roundState?.roundNumber || 1} IS LIVE NOW
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-display">
+                <span className="text-[#FF2E79]">{user?.state || 'Uttar Pradesh'}</span> Round is Live!
+              </h2>
+
+              <p className="text-xs text-slate-500 font-medium max-w-xs mx-auto mt-2 mb-6 leading-relaxed">
+                You can now enter the round and get matched with profiles from your state.
+              </p>
+
+              {/* Re-Enter Round Button */}
               <button
                 onClick={() => setShowReEntryModal(true)}
-                className="px-3.5 py-2 bg-white text-[#FF2E79] font-black text-xs rounded-xl shrink-0 shadow-md cursor-pointer hover:bg-rose-50 transition-all active:scale-95"
+                className="w-full max-w-[240px] py-3.5 bg-gradient-to-r from-[#FF2E79] via-pink-600 to-rose-500 hover:from-rose-600 hover:to-pink-600 text-white font-extrabold text-sm rounded-full shadow-lg shadow-pink-300/60 flex items-center justify-center gap-2 active:scale-95 transition-all cursor-pointer"
               >
-                Re-Enter Round
-              </button>
-            </div>
-          )}
-
-          {/* Upcoming State Round Notice Banner when User's state is not the active live state */}
-          {!isUserInActiveState && (
-            <div className="p-3.5 mb-2.5 bg-gradient-to-r from-pink-500 via-rose-500 to-purple-600 text-white rounded-2xl shadow-md text-left relative overflow-hidden animate-fade-in shrink-0">
-              <div className="flex items-start gap-2.5">
-                <div className="w-9 h-9 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0 text-white mt-0.5 shadow-inner">
-                  <Clock className="w-4.5 h-4.5 animate-pulse" />
-                </div>
-                <div className="flex-1 space-y-0.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[9px] font-black uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-full">
-                      State Round Schedule
-                    </span>
-                    <span className="text-[11px] font-mono font-black text-amber-200">
-                      Starts in ~{upcomingMins} mins
-                    </span>
-                  </div>
-                  <h4 className="text-xs font-black tracking-tight text-white pt-0.5">
-                    Live Round is currently for {roundState.activeState}
-                  </h4>
-                  <p className="text-[10px] text-pink-100 font-medium leading-relaxed">
-                    Your state round for <strong>{user?.state || 'your state'}</strong> goes live in ~{upcomingMins} mins. We'll automatically notify your phone & device 10 mins prior!
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Segmented Filter Pills Bar (Exact Match to Image 1) */}
-          <div className="flex items-center justify-between gap-2 mb-2.5 select-none">
-            <div className="bg-white/90 backdrop-blur-md rounded-full p-1 border border-white/90 shadow-2xs flex items-center gap-1 flex-1">
-              <button
-                onClick={() => setActiveFilter('nearby')}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-full text-xs transition-all cursor-pointer ${
-                  activeFilter === 'nearby'
-                    ? 'bg-gradient-to-r from-[#FF2E79] to-pink-600 text-white font-black shadow-md shadow-pink-300/40'
-                    : 'text-slate-600 font-bold hover:bg-slate-50'
-                }`}
-              >
-                <MapPin className="w-3.5 h-3.5" />
-                <span>Nearby</span>
+                <span>Re-Enter Round</span>
+                <ChevronRight className="w-4 h-4 stroke-[3]" />
               </button>
 
-              <button
-                onClick={() => setActiveFilter('forYou')}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-full text-xs transition-all cursor-pointer ${
-                  activeFilter === 'forYou'
-                    ? 'bg-gradient-to-r from-[#FF2E79] to-pink-600 text-white font-black shadow-md shadow-pink-300/40'
-                    : 'text-slate-600 font-bold hover:bg-slate-50'
-                }`}
-              >
-                <Heart className="w-3.5 h-3.5 fill-current" />
-                <span>For You</span>
-              </button>
-
-              <button
-                onClick={() => setCurrentTab('radar')}
-                className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-full text-xs text-[#FF2E79] font-black bg-pink-50/80 hover:bg-pink-100/80 transition-all cursor-pointer shrink-0"
-              >
-                <Users className="w-3.5 h-3.5 text-[#FF2E79]" />
-                <span>R1 • Live</span>
-                <span className="w-2 h-2 rounded-full bg-[#FF2E79] animate-ping" />
-              </button>
-            </div>
-          </div>
-
-          {/* Card Deck Container (Expanded to fill vertical space) */}
-          {isFemaleLimitReached ? (
-            <div className="flex-1 flex flex-col items-center justify-center p-6 bg-white/90 backdrop-blur-md rounded-[28px] border border-white text-center shadow-sm">
-              <div className="w-14 h-14 bg-pink-50 text-[#FF2E79] rounded-full flex items-center justify-center mb-3">
-                <Heart className="w-7 h-7 fill-current" />
-              </div>
-              <h3 className="text-base font-extrabold text-slate-900 font-display">2/2 Matches Selected</h3>
-              <p className="text-xs text-slate-500 max-w-[240px] mt-1 leading-relaxed">
-                You have selected your 2 matches for Round {roundState.roundNumber}. Chat directly with them in the Chat tab!
-              </p>
-              <button
-                type="button"
-                onClick={() => setCurrentTab('chat')}
-                className="mt-4 px-6 py-2.5 bg-[#FF2E79] text-white rounded-full text-xs font-extrabold shadow-md shadow-rose-300 cursor-pointer"
-              >
-                Open Chats ({user?.matches?.length || 0})
-              </button>
             </div>
           ) : (
-            <div className="flex-1 relative overflow-visible h-full min-h-0 pb-1" style={{ minHeight: 0 }}>
-              <SwipeableDeck
-                candidates={candidates}
-                user={user}
-                onLike={handleLike}
-                onDecline={handleDecline}
-                onOpenDetail={(c) => setExpandedCandidate(c)}
-              />
-            </div>
+
+            /* CASE 3: USER IS PARTICIPATING IN ACTIVE LIVE ROUND -> SHOW CANDIDATE DECK */
+            <>
+              {/* Segmented Filter Pills Bar */}
+              <div className="flex items-center justify-between gap-2 mb-2.5 select-none">
+                <div className="bg-white/90 backdrop-blur-md rounded-full p-1 border border-white/90 shadow-2xs flex items-center gap-1 flex-1">
+                  <button
+                    onClick={() => setActiveFilter('nearby')}
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-full text-xs transition-all cursor-pointer ${
+                      activeFilter === 'nearby'
+                        ? 'bg-gradient-to-r from-[#FF2E79] to-pink-600 text-white font-black shadow-md shadow-pink-300/40'
+                        : 'text-slate-600 font-bold hover:bg-slate-50'
+                    }`}
+                  >
+                    <MapPin className="w-3.5 h-3.5" />
+                    <span>Nearby</span>
+                  </button>
+
+                  <button
+                    onClick={() => setActiveFilter('forYou')}
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-full text-xs transition-all cursor-pointer ${
+                      activeFilter === 'forYou'
+                        ? 'bg-gradient-to-r from-[#FF2E79] to-pink-600 text-white font-black shadow-md shadow-pink-300/40'
+                        : 'text-slate-600 font-bold hover:bg-slate-50'
+                    }`}
+                  >
+                    <Heart className="w-3.5 h-3.5 fill-current" />
+                    <span>For You</span>
+                  </button>
+
+                  <button
+                    onClick={() => setCurrentTab('radar')}
+                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-full text-xs text-[#FF2E79] font-black bg-pink-50/80 hover:bg-pink-100/80 transition-all cursor-pointer shrink-0"
+                  >
+                    <Users className="w-3.5 h-3.5 text-[#FF2E79]" />
+                    <span>R{roundState?.roundNumber || 1} • Live</span>
+                    <span className="w-2 h-2 rounded-full bg-[#FF2E79] animate-ping" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Card Deck Container */}
+              {isFemaleLimitReached ? (
+                <div className="flex-1 flex flex-col items-center justify-center p-6 bg-white/90 backdrop-blur-md rounded-[28px] border border-white text-center shadow-sm">
+                  <div className="w-14 h-14 bg-pink-50 text-[#FF2E79] rounded-full flex items-center justify-center mb-3">
+                    <Heart className="w-7 h-7 fill-current" />
+                  </div>
+                  <h3 className="text-base font-extrabold text-slate-900 font-display">2/2 Matches Selected</h3>
+                  <p className="text-xs text-slate-500 max-w-[240px] mt-1 leading-relaxed">
+                    You have selected your 2 matches for Round {roundState.roundNumber}. Chat directly with them in the Chat tab!
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setCurrentTab('chat')}
+                    className="mt-4 px-6 py-2.5 bg-[#FF2E79] text-white rounded-full text-xs font-extrabold shadow-md shadow-rose-300 cursor-pointer"
+                  >
+                    Open Chats ({user?.matches?.length || 0})
+                  </button>
+                </div>
+              ) : (
+                <div className="flex-1 relative overflow-visible h-full min-h-0 pb-1" style={{ minHeight: 0 }}>
+                  <SwipeableDeck
+                    candidates={candidates}
+                    user={user}
+                    onLike={handleLike}
+                    onDecline={handleDecline}
+                    onOpenDetail={(c) => setExpandedCandidate(c)}
+                  />
+                </div>
+              )}
+            </>
           )}
 
         </div>
