@@ -104,21 +104,47 @@ export const deleteState = (stateName) => {
 // ─── Colleges Management Helpers ──────────────────────────────────────────────
 const DEFAULT_COLLEGES = {
   "Delhi NCR": [
-    "IIT Delhi", "Sharda University", "LLOYD University", "NIET University", 
-    "Bennett University", "ABES University", "JIIT University", "Galgotias University", 
-    "IILM University", "GL Bajaj University", "Delhi University (DU)", "DTU"
+    "IIT Delhi", "Bennett University", "Sharda University", "JIIT Noida", 
+    "Galgotias University", "Amity University", "Delhi University (DU)", "DTU",
+    "NSUT Dwarka", "IIIT Delhi", "Ashoka University", "NIET Greater Noida"
   ],
   "Uttar Pradesh": [
-    "AKTU Lucknow", "BHU Varanasi", "Amity Noida", "Integral University", "SRM Modinagar"
+    "AKGEC Ghaziabad", "KIET Ghaziabad", "BHU Varanasi", "IIT Kanpur", 
+    "MNNIT Allahabad", "Amity Lucknow", "HBTI Kanpur", "IMS Ghaziabad", 
+    "Integral University", "SRM Modinagar", "AKTU Lucknow"
+  ],
+  "Maharashtra": [
+    "IIT Bombay", "COEP Pune", "VJTI Mumbai", "Symbiosis Pune", 
+    "NMIMS Mumbai", "PICT Pune", "MIT WPU Pune", "SPIT Mumbai", 
+    "VIT Pune", "DY Patil Pune"
+  ],
+  "Karnataka": [
+    "IISc Bangalore", "RVCE Bangalore", "BMSCE Bangalore", "PES University", 
+    "MSRIT Bangalore", "Manipal University (MAHE)", "BMSIT Bangalore", "JSSATE Bangalore"
+  ],
+  "Tamil Nadu": [
+    "IIT Madras", "Anna University", "PSG Tech Coimbatore", "SRM Kattankulathur", 
+    "VIT Vellore", "SASTRA Tanjore", "SSN College Chennai", "Loyola College Chennai"
+  ],
+  "Telangana": [
+    "IIT Hyderabad", "IIIT Hyderabad", "CBIT Hyderabad", "BITS Hyderabad", 
+    "JNTU Hyderabad", "VNR VJIET", "Vasavi College", "Osmania University"
+  ],
+  "West Bengal": [
+    "IIT Kharagpur", "Jadavpur University", "IIM Calcutta", "St. Xavier's Kolkata", 
+    "Heritage Institute", "Techno India Kolkata", "IIEST Shibpur", "Presidency University"
   ],
   "Haryana": [
-    "Ashoka University", "O.P. Jindal Global University", "YMCA Faridabad", "Manav Rachna"
+    "Ashoka University", "O.P. Jindal Global University", "YMCA Faridabad", "Manav Rachna", "NCU Gurugram"
   ],
   "Punjab": [
-    "Thapar University", "LPU Phagwara", "Chandigarh University", "PEC Chandigarh"
+    "Thapar University", "LPU Phagwara", "Chandigarh University", "PEC Chandigarh", "IIT Ropar"
   ],
   "Rajasthan": [
-    "BITS Pilani", "MNIT Jaipur", "Manipal University Jaipur", "JK Lakshmipat University"
+    "BITS Pilani", "MNIT Jaipur", "Manipal University Jaipur", "JK Lakshmipat University", "IIT Jodhpur"
+  ],
+  "Gujarat": [
+    "IIT Gandhinagar", "DAIICT Gandhinagar", "Nirma University", "SVNIT Surat", "PDPU Gandhinagar"
   ]
 };
 

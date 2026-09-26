@@ -12,33 +12,72 @@ import {
   Globe,
   ChevronDown
 } from 'lucide-react';
-import { getStatesList } from '../utils/storage';
+import { getStatesList, getCollegesByState } from '../utils/storage';
 
-// College location mapping for Delhi NCR & major hubs
+// Known college coordinate mappings
 const COLLEGE_LOCATIONS = {
-  'bennett university': { x: 48, y: 56, label: 'BENNETT UNIVERSITY', area: 'Tech Zone II' },
-  'bennett': { x: 48, y: 56, label: 'BENNETT UNIVERSITY', area: 'Tech Zone II' },
-  'knowledge park iii': { x: 40, y: 45, label: 'KNOWLEDGE PARK III', area: 'Sharda Hub' },
-  'sharda university': { x: 40, y: 45, label: 'KNOWLEDGE PARK III', area: 'Sharda Hub' },
-  'galgotias university': { x: 76, y: 66, label: 'GALGOTIAS CAMPUS', area: 'Knowledge Park II' },
-  'galgotias': { x: 76, y: 66, label: 'GALGOTIAS CAMPUS', area: 'Knowledge Park II' },
-  'amity university': { x: 62, y: 32, label: 'AMITY CAMPUS', area: 'Noida Expressway' },
-  'amity': { x: 62, y: 32, label: 'AMITY CAMPUS', area: 'Noida Expressway' },
-  'iit delhi': { x: 84, y: 44, label: 'IIT DELHI', area: 'Hauz Khas' },
-  'iit': { x: 84, y: 44, label: 'IIT DELHI', area: 'Hauz Khas' },
-  'delhi university (du)': { x: 78, y: 24, label: 'DELHI UNIVERSITY', area: 'GTB Nagar' },
-  'delhi university': { x: 78, y: 24, label: 'DELHI UNIVERSITY', area: 'GTB Nagar' },
-  'du': { x: 78, y: 24, label: 'DELHI UNIVERSITY', area: 'GTB Nagar' },
-  'dtu': { x: 20, y: 28, label: 'DTU CAMPUS', area: 'Rohini Hub' },
-  'delhi technological university': { x: 20, y: 28, label: 'DTU CAMPUS', area: 'Rohini Hub' },
-  'jiit noida': { x: 68, y: 54, label: 'JIIT NOIDA', area: 'Sector 62' },
-  'jiit': { x: 68, y: 54, label: 'JIIT NOIDA', area: 'Sector 62' },
-  'nsut': { x: 26, y: 58, label: 'NSUT DWARKA', area: 'Dwarka Sector 3' },
-  'iiit delhi': { x: 72, y: 48, label: 'IIIT DELHI', area: 'Okhla Phase III' },
-  'ashoka university': { x: 18, y: 16, label: 'ASHOKA CAMPUS', area: 'Sonipat Hub' }
+  // Delhi NCR
+  'bennett university': { x: 48, y: 56, label: 'BENNETT UNIVERSITY' },
+  'bennett': { x: 48, y: 56, label: 'BENNETT UNIVERSITY' },
+  'knowledge park iii': { x: 40, y: 45, label: 'KNOWLEDGE PARK III' },
+  'sharda university': { x: 40, y: 45, label: 'KNOWLEDGE PARK III' },
+  'galgotias university': { x: 76, y: 66, label: 'GALGOTIAS CAMPUS' },
+  'galgotias': { x: 76, y: 66, label: 'GALGOTIAS CAMPUS' },
+  'amity university': { x: 62, y: 32, label: 'AMITY CAMPUS' },
+  'amity': { x: 62, y: 32, label: 'AMITY CAMPUS' },
+  'iit delhi': { x: 84, y: 44, label: 'IIT DELHI' },
+  'iit': { x: 84, y: 44, label: 'IIT DELHI' },
+  'delhi university (du)': { x: 78, y: 24, label: 'DELHI UNIVERSITY' },
+  'delhi university': { x: 78, y: 24, label: 'DELHI UNIVERSITY' },
+  'du': { x: 78, y: 24, label: 'DELHI UNIVERSITY' },
+  'dtu': { x: 20, y: 28, label: 'DTU CAMPUS' },
+  'delhi technological university': { x: 20, y: 28, label: 'DTU CAMPUS' },
+  'jiit noida': { x: 68, y: 54, label: 'JIIT NOIDA' },
+  'jiit': { x: 68, y: 54, label: 'JIIT NOIDA' },
+  'nsut': { x: 26, y: 58, label: 'NSUT DWARKA' },
+  'iiit delhi': { x: 72, y: 48, label: 'IIIT DELHI' },
+  'ashoka university': { x: 18, y: 16, label: 'ASHOKA CAMPUS' },
+
+  // Maharashtra
+  'iit bombay': { x: 32, y: 28, label: 'IIT BOMBAY' },
+  'coep pune': { x: 65, y: 58, label: 'COEP PUNE' },
+  'coep': { x: 65, y: 58, label: 'COEP PUNE' },
+  'vjti mumbai': { x: 28, y: 42, label: 'VJTI MUMBAI' },
+  'symbiosis pune': { x: 75, y: 45, label: 'SYMBIOSIS PUNE' },
+  'nmims mumbai': { x: 22, y: 55, label: 'NMIMS MUMBAI' },
+  'pict pune': { x: 70, y: 72, label: 'PICT PUNE' },
+  'mit wpu pune': { x: 58, y: 68, label: 'MIT WPU PUNE' },
+
+  // Karnataka
+  'iisc bangalore': { x: 42, y: 26, label: 'IISC BANGALORE' },
+  'rvce bangalore': { x: 24, y: 62, label: 'RVCE BANGALORE' },
+  'bmsce bangalore': { x: 52, y: 54, label: 'BMSCE BANGALORE' },
+  'pes university': { x: 30, y: 44, label: 'PES UNIVERSITY' },
+  'msrit bangalore': { x: 68, y: 32, label: 'MSRIT BANGALORE' },
+  'manipal university (mahe)': { x: 76, y: 68, label: 'MANIPAL (MAHE)' },
+
+  // Uttar Pradesh
+  'akgec ghaziabad': { x: 28, y: 36, label: 'AKGEC GHAZIABAD' },
+  'kiet ghaziabad': { x: 35, y: 24, label: 'KIET GHAZIABAD' },
+  'bhu varanasi': { x: 82, y: 62, label: 'BHU VARANASI' },
+  'iit kanpur': { x: 64, y: 48, label: 'IIT KANPUR' },
+  'mnnit allahabad': { x: 74, y: 72, label: 'MNNIT ALLAHABAD' },
+  'amity lucknow': { x: 55, y: 38, label: 'AMITY LUCKNOW' },
+
+  // Tamil Nadu
+  'iit madras': { x: 45, y: 32, label: 'IIT MADRAS' },
+  'anna university': { x: 52, y: 45, label: 'ANNA UNIVERSITY' },
+  'vit vellore': { x: 28, y: 55, label: 'VIT VELLORE' },
+  'srm kattankulathur': { x: 68, y: 62, label: 'SRM CAMPUS' },
+
+  // Telangana
+  'iit hyderabad': { x: 30, y: 30, label: 'IIT HYDERABAD' },
+  'iiit hyderabad': { x: 48, y: 45, label: 'IIIT HYDERABAD' },
+  'cbit hyderabad': { x: 65, y: 55, label: 'CBIT HYDERABAD' },
+  'bits hyderabad': { x: 72, y: 28, label: 'BITS HYDERABAD' }
 };
 
-// Default landmark pins for map background
+// Default fallback landmarks for Delhi NCR
 const DEFAULT_LANDMARKS = [
   { name: 'DTU CAMPUS', x: 20, y: 28 },
   { name: 'AMITY CAMPUS', x: 62, y: 32 },
@@ -69,6 +108,39 @@ export default function CampusRadarMap({
   const dragStartRef = useRef({ x: 0, y: 0 });
   const initialPinchDistRef = useRef(null);
 
+  // Dynamically get state colleges added by Admin or defaults
+  const stateCollegesList = typeof getCollegesByState === 'function' ? getCollegesByState(activeRegion) : [];
+
+  // Generate dynamic landmark pins for the active state
+  const stateLandmarks = React.useMemo(() => {
+    if (!stateCollegesList || stateCollegesList.length === 0) {
+      return DEFAULT_LANDMARKS;
+    }
+
+    const angleStep = (2 * Math.PI) / Math.min(8, stateCollegesList.length);
+    const radius = 28;
+
+    return stateCollegesList.slice(0, 8).map((colName, idx) => {
+      const colKey = colName.toLowerCase();
+      if (COLLEGE_LOCATIONS[colKey]) {
+        return {
+          name: COLLEGE_LOCATIONS[colKey].label || colName.toUpperCase(),
+          x: COLLEGE_LOCATIONS[colKey].x,
+          y: COLLEGE_LOCATIONS[colKey].y
+        };
+      }
+      // Calculate geometric ring layout for custom admin colleges
+      const angle = idx * angleStep - Math.PI / 2;
+      const px = Math.max(16, Math.min(84, Math.round(48 + radius * Math.cos(angle))));
+      const py = Math.max(16, Math.min(84, Math.round(52 + radius * Math.sin(angle))));
+      return {
+        name: colName.toUpperCase(),
+        x: px,
+        y: py
+      };
+    });
+  }, [activeRegion, stateCollegesList]);
+
   // User campus position
   const userCollegeKey = (user?.university || 'Bennett University').toLowerCase();
   const userCollegeCoords = COLLEGE_LOCATIONS[userCollegeKey] || { x: 48, y: 56 };
@@ -85,6 +157,7 @@ export default function CampusRadarMap({
     const key = (c.university || '').toLowerCase();
     let baseCoords = null;
     
+    // Check if matching custom college location exists
     for (let colKey in COLLEGE_LOCATIONS) {
       if (key.includes(colKey) || colKey.includes(key)) {
         baseCoords = COLLEGE_LOCATIONS[colKey];
@@ -92,14 +165,25 @@ export default function CampusRadarMap({
       }
     }
 
+    // Check if candidate college is in active state landmarks list
+    if (!baseCoords) {
+      const matchedLandmark = stateLandmarks.find(lm => 
+        key.includes(lm.name.toLowerCase()) || lm.name.toLowerCase().includes(key)
+      );
+      if (matchedLandmark) {
+        baseCoords = { x: matchedLandmark.x, y: matchedLandmark.y, label: matchedLandmark.name };
+      }
+    }
+
+    // Fallback: If college is "Other" or custom, place at balanced state position
     if (!baseCoords) {
       const angles = [35, 120, 210, 300, 75, 160, 240, 330];
-      const radius = 16 + ((idx * 7) % 22);
+      const radius = 18 + ((idx * 7) % 22);
       const angleRad = (angles[idx % angles.length] * Math.PI) / 180;
       baseCoords = {
         x: Math.max(15, Math.min(85, Math.round(userCampusX + radius * Math.cos(angleRad)))),
         y: Math.max(15, Math.min(85, Math.round(userCampusY + radius * Math.sin(angleRad)))),
-        label: c.university?.toUpperCase() || 'CAMPUS'
+        label: c.university ? c.university.toUpperCase() : 'OTHERS HUB'
       };
     } else {
       const offsetX = (idx % 2 === 0 ? 1 : -1) * (Math.floor(idx / 2) * 3);
@@ -269,7 +353,7 @@ export default function CampusRadarMap({
           </div>
         </div>
 
-        {/* 2. DISTANCE FILTER PILL CAROUSEL (Exact Match to Screenshot) */}
+        {/* 2. DISTANCE FILTER PILL CAROUSEL */}
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar bg-white/70 backdrop-blur-md p-1.5 rounded-full border border-pink-100/70 shadow-xs">
           {[
             { id: 'all', label: `📍 All ${activeRegion.split(' ')[0]} Campuses` },
@@ -323,7 +407,7 @@ export default function CampusRadarMap({
       </div>
 
       {/* ------------------------------------------------------------- */}
-      {/* INTERACTIVE RADAR CANVAS: RADAR MAP WITH VECTOR COUNTER-SCALING */}
+      {/* INTERACTIVE RADAR CANVAS: RADAR MAP WITH STATE SPECIFIC PINS  */}
       {/* ------------------------------------------------------------- */}
       <div 
         onMouseDown={handleMouseDown}
@@ -355,7 +439,7 @@ export default function CampusRadarMap({
             <path d="M 0,75 Q 50,65 100,80" fill="none" stroke="#FF85AD" strokeWidth="1.5" />
             <path d="M 30,30 C 50,10 70,50 90,70" fill="none" stroke="#FFD0E0" strokeWidth="3" />
 
-            {/* Concentric Radar Distance Rings (Matching Screenshot) */}
+            {/* Concentric Radar Distance Rings */}
             <circle cx={userCampusX} cy={userCampusY} r="16" fill="none" stroke="#FF2E79" strokeOpacity="0.22" strokeWidth="1.2" strokeDasharray="3 3" />
             <circle cx={userCampusX} cy={userCampusY} r="32" fill="none" stroke="#FF2E79" strokeOpacity="0.18" strokeWidth="1.2" strokeDasharray="4 4" />
             <circle cx={userCampusX} cy={userCampusY} r="46" fill="none" stroke="#FF2E79" strokeOpacity="0.12" strokeWidth="1.2" strokeDasharray="5 5" />
@@ -374,9 +458,9 @@ export default function CampusRadarMap({
             </defs>
           </svg>
 
-          {/* 2. DEFAULT COLLEGE LANDMARK PINS WITH GOOGLE-MAPS VECTOR COUNTER-SCALING */}
+          {/* 2. DYNAMIC STATE-SPECIFIC LANDMARK PINS (Matches Selected State & Admin Custom Colleges) */}
           <div className="absolute inset-0 pointer-events-none">
-            {DEFAULT_LANDMARKS.map((lm, idx) => (
+            {stateLandmarks.map((lm, idx) => (
               <div
                 key={idx}
                 className="absolute flex items-center gap-1.5 opacity-85 transition-transform"
