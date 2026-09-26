@@ -7,7 +7,7 @@ import UserDashboard from './components/UserDashboard';
 import AdminDashboard from './components/AdminDashboard';
 import CinematicLoadingScreen from './components/CinematicLoadingScreen';
 import { initializeStorage, getCurrentUser, getActiveState, logout, setCurrentUser, isAdminAuthenticated } from './utils/storage';
-import { checkAndRotateRoundAutomated, getRoundState } from './utils/roundManager';
+import { checkAndRotateRoundAutomated, getRoundState, fetchRoundStateFromSupabase, subscribeToRoundChanges } from './utils/roundManager';
 import { Phone, ShieldCheck, ArrowLeft, Globe } from 'lucide-react';
 
 export default function App() {
@@ -97,6 +97,20 @@ export default function App() {
 
     syncStateFromStorage();
 
+    // 1. Fetch live round state from Supabase on mount
+    fetchRoundStateFromSupabase().then((rs) => {
+      if (rs?.activeState) {
+        setActiveState(rs.activeState);
+      }
+    });
+
+    // 2. Subscribe to Realtime round changes from Supabase
+    const unsubscribe = subscribeToRoundChanges((freshRound) => {
+      if (freshRound?.activeState) {
+        setActiveState(freshRound.activeState);
+      }
+    });
+
     const handleStateChange = () => {
       syncStateFromStorage();
       const updatedUser = getCurrentUser();
@@ -109,9 +123,10 @@ export default function App() {
     window.addEventListener('cupid_data_changed', handleStateChange);
 
     const interval = setInterval(() => {
+      fetchRoundStateFromSupabase();
       checkAndRotateRoundAutomated();
       syncStateFromStorage();
-    }, 5000);
+    }, 4000);
 
     const user = getCurrentUser();
     if (user) {
@@ -122,6 +137,7 @@ export default function App() {
     }
 
     return () => {
+      if (typeof unsubscribe === 'function') unsubscribe();
       window.removeEventListener('cupid_round_state_changed', handleStateChange);
       window.removeEventListener('cupid_data_changed', handleStateChange);
       clearInterval(interval);

@@ -23,6 +23,7 @@ import {
 import { 
   getRoundState, 
   saveRoundState, 
+  fetchRoundStateFromSupabase,
   advanceRoundPhase, 
   startNextRoundForState, 
   forceRotateToNextState,
@@ -110,6 +111,9 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
   const [collegesList, setCollegesList] = useState(getCollegesByState(activeState || 'Delhi NCR'));
   const [editingCollege, setEditingCollege] = useState(null);
   const [newCollegeName, setNewCollegeName] = useState('');
+
+  // Live Round Active State (Synced with Supabase & Mobile Devices)
+  const [liveStateSelect, setLiveStateSelect] = useState(activeState || 'Delhi NCR');
 
   // Schedule Modification
   const [scheduleStateSelect, setScheduleStateSelect] = useState(activeState || 'Delhi NCR');
@@ -265,13 +269,21 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
   };
 
   const handleActiveStateChange = (newState) => {
+    if (!newState) return;
     setActiveState(newState);
     const current = getRoundState();
-    const updated = { ...current, activeState: newState };
+    const updated = { 
+      ...current, 
+      activeState: newState,
+      phaseStartedAt: new Date().toISOString()
+    };
     saveRoundState(updated);
     setRoundState(updated);
-    onStateChange(newState);
+    setLiveStateSelect(newState);
+    if (onStateChange) onStateChange(newState);
     loadAdminData();
+    confetti({ particleCount: 90, spread: 70, origin: { y: 0.6 } });
+    alert(`🎉 Live Round Successfully Switched to ${newState}!\n\nThis round is now instantly LIVE across all users' mobile devices and synced with Supabase.`);
   };
 
   // States Management Actions
@@ -1438,29 +1450,74 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                   </div>
                 </div>
 
-              {/* State Schedule Modification */}
-              <form onSubmit={handleSaveCustomDate} className="pt-2 flex flex-col sm:flex-row items-center gap-3">
-                <div className="w-full sm:w-48">
-                  <CustomSelect
-                    value={scheduleStateSelect}
-                    onChange={setScheduleStateSelect}
-                    options={statesList}
-                  />
+              {/* 1. LIVE ACTIVE STATE ROUND SELECTION (SYNCED INSTANTLY ACROSS ALL PHONES) */}
+              <div className="p-4 rounded-xl bg-slate-800/90 border border-slate-700/80 space-y-3">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <MapPin className="w-4 h-4 text-[#FF2E79]" />
+                      <span className="text-xs font-black uppercase tracking-wider text-slate-300">
+                        Live Round State (Active On All Phones):
+                      </span>
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping inline-block"></span>
+                        {roundState.activeState} LIVE
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-400">
+                      Selecting and switching the state here activates the round immediately across all users' mobile screens and syncs to Supabase.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
+                    <div className="w-full sm:w-52">
+                      <CustomSelect
+                        value={liveStateSelect}
+                        onChange={setLiveStateSelect}
+                        options={statesList}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleActiveStateChange(liveStateSelect)}
+                      className="px-4 py-2 bg-gradient-to-r from-[#FF2E79] to-rose-600 hover:from-rose-500 hover:to-pink-600 text-white rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-all shadow-md cursor-pointer whitespace-nowrap active:scale-95"
+                    >
+                      <Check className="w-4 h-4" />
+                      <span>Switch Live Round State</span>
+                    </button>
+                  </div>
                 </div>
-                <input
-                  type="date"
-                  required
-                  className="h-10 px-3 rounded-xl bg-slate-800 text-white text-xs border border-slate-700 w-full sm:w-auto"
-                  value={customRoundDate}
-                  onChange={(e) => setCustomRoundDate(e.target.value)}
-                />
-                <button
-                  type="submit"
-                  className="h-10 px-4 rounded-xl bg-[#FF2E79] text-white text-xs font-bold w-full sm:w-auto"
-                >
-                  Override Date
-                </button>
-              </form>
+              </div>
+
+              {/* 2. CALENDAR SCHEDULE DATE OVERRIDE (OPTIONAL) */}
+              <div className="pt-2 border-t border-slate-800/80">
+                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Future 10-Day Rotation Schedule Override (Optional):</span>
+                </div>
+                <form onSubmit={handleSaveCustomDate} className="flex flex-col sm:flex-row items-center gap-3">
+                  <div className="w-full sm:w-48">
+                    <CustomSelect
+                      value={scheduleStateSelect}
+                      onChange={setScheduleStateSelect}
+                      options={statesList}
+                    />
+                  </div>
+                  <input
+                    type="date"
+                    required
+                    className="h-10 px-3 rounded-xl bg-slate-800 text-white text-xs border border-slate-700 w-full sm:w-auto"
+                    value={customRoundDate}
+                    onChange={(e) => setCustomRoundDate(e.target.value)}
+                  />
+                  <button
+                    type="submit"
+                    className="h-10 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold w-full sm:w-auto cursor-pointer"
+                  >
+                    Override Calendar Date
+                  </button>
+                </form>
+              </div>
             </div>
           </div>
         )}

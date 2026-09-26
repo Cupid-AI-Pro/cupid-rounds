@@ -1,5 +1,6 @@
 import { getUsers, saveUsers, getActiveState, setActiveState, createMatch, getCurrentUser, setCurrentUser, getStatesList } from './storage.js';
 import { PLANS_INFO } from '../data/mockData.js';
+import { supabase, isSupabaseConfigured } from '../services/supabaseClient.js';
 
 // Round State Storage Key
 const ROUND_STATE_KEY = 'cupid_round_state_v2';
@@ -81,6 +82,118 @@ export const getRoundState = () => {
   return defaultState;
 };
 
+/**
+ * Sync round state to Supabase so all devices (phones & PCs) see the live round instantly
+ */
+export const syncRoundStateToSupabase = async (state) => {
+  if (!isSupabaseConfigured() || !state) return;
+  try {
+    const payload = {
+      state: state.activeState || 'Delhi NCR',
+      round_number: Number(state.roundNumber) || 1,
+      phase: state.currentPhase || ROUND_PHASES.REGISTRATION,
+      female_max_matches: Number(state.femaleMaxMatches) || 2,
+      phase_started_at: state.phaseStartedAt || new Date().toISOString(),
+      is_active: true
+    };
+
+    const { data: existing, error: selectErr } = await supabase
+      .from('rounds')
+      .select('id')
+      .eq('is_active', true)
+      .limit(1);
+
+    if (existing && existing.length > 0) {
+      await supabase
+        .from('rounds')
+        .update(payload)
+        .eq('id', existing[0].id);
+    } else {
+      await supabase
+        .from('rounds')
+        .insert(payload);
+    }
+  } catch (err) {
+    console.warn('[Supabase] syncRoundStateToSupabase error:', err);
+  }
+};
+
+/**
+ * Fetch active round state from Supabase to synchronize client
+ */
+export const fetchRoundStateFromSupabase = async () => {
+  if (!isSupabaseConfigured()) return null;
+  try {
+    const { data, error } = await supabase
+      .from('rounds')
+      .select('*')
+      .eq('is_active', true)
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    if (error || !data || data.length === 0) return null;
+    const remote = data[0];
+    const local = getRoundState();
+
+    const hasChanged = 
+      remote.state !== local.activeState ||
+      remote.phase !== local.currentPhase ||
+      remote.round_number !== local.roundNumber;
+
+    if (hasChanged) {
+      const merged = {
+        ...local,
+        activeState: remote.state,
+        currentPhase: remote.phase,
+        roundNumber: remote.round_number || 1,
+        femaleMaxMatches: remote.female_max_matches || 2,
+        phaseStartedAt: remote.phase_started_at || local.phaseStartedAt
+      };
+      localStorage.setItem(ROUND_STATE_KEY, JSON.stringify(merged));
+      if (merged.activeState) {
+        setActiveState(merged.activeState);
+      }
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('cupid_round_state_changed'));
+        window.dispatchEvent(new CustomEvent('cupid_data_changed'));
+      }
+      return merged;
+    }
+    return local;
+  } catch (err) {
+    console.warn('[Supabase] fetchRoundStateFromSupabase error:', err);
+    return null;
+  }
+};
+
+/**
+ * Listen to realtime changes in Supabase rounds table
+ */
+export const subscribeToRoundChanges = (callback) => {
+  if (!isSupabaseConfigured()) return () => {};
+  try {
+    const channel = supabase
+      .channel('cupid_live_rounds_sync')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'rounds' },
+        async () => {
+          const fresh = await fetchRoundStateFromSupabase();
+          if (fresh && callback) callback(fresh);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      try {
+        supabase.removeChannel(channel);
+      } catch (e) {}
+    };
+  } catch (e) {
+    return () => {};
+  }
+};
+
 export const saveRoundState = (state) => {
   localStorage.setItem(ROUND_STATE_KEY, JSON.stringify(state));
   if (state.activeState) {
@@ -89,6 +202,8 @@ export const saveRoundState = (state) => {
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new Event('cupid_round_state_changed'));
   }
+  // Async push to Supabase for multi-device sync
+  syncRoundStateToSupabase(state);
 };
 
 /**
