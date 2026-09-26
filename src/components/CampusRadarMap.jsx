@@ -38,7 +38,7 @@ const COLLEGE_LOCATIONS = {
   'ashoka university': { x: 18, y: 16, label: 'ASHOKA CAMPUS', area: 'Sonipat Hub' }
 };
 
-// Fallback college pins for general map display
+// Default landmark pins for map background
 const DEFAULT_LANDMARKS = [
   { name: 'DTU CAMPUS', x: 20, y: 28 },
   { name: 'AMITY CAMPUS', x: 62, y: 32 },
@@ -75,30 +75,16 @@ export default function CampusRadarMap({
   const userCampusX = userCollegeCoords.x;
   const userCampusY = userCollegeCoords.y;
 
-  // Filter candidate profiles for the current active region & distance
+  // Deduplicated candidate list
   const allMapUsers = [...candidates, ...matchedUsers].filter(
     (u, index, self) => index === self.findIndex((t) => t.id === u.id)
   );
 
-  const geofencedUsers = allMapUsers.filter((u) => {
-    if (u.state && u.state.toLowerCase() !== activeRegion.toLowerCase()) {
-      return false;
-    }
-
-    const dist = u.distanceKm !== undefined ? u.distanceKm : 2.5;
-    if (distanceFilter === '2' && dist > 2) return false;
-    if (distanceFilter === '5' && dist > 5) return false;
-    if (distanceFilter === '10' && dist > 10) return false;
-
-    return true;
-  });
-
-  // Calculate coordinates for candidates based on their college name
-  const candidateWithCoords = geofencedUsers.map((c, idx) => {
+  // Calculate coordinates & exact distance in km relative to user campus
+  const candidateWithCoords = allMapUsers.map((c, idx) => {
     const key = (c.university || '').toLowerCase();
     let baseCoords = null;
     
-    // Find matching college key
     for (let colKey in COLLEGE_LOCATIONS) {
       if (key.includes(colKey) || colKey.includes(key)) {
         baseCoords = COLLEGE_LOCATIONS[colKey];
@@ -107,9 +93,8 @@ export default function CampusRadarMap({
     }
 
     if (!baseCoords) {
-      // Deterministic spread around map based on candidate index
       const angles = [35, 120, 210, 300, 75, 160, 240, 330];
-      const radius = 18 + ((idx * 7) % 22);
+      const radius = 16 + ((idx * 7) % 22);
       const angleRad = (angles[idx % angles.length] * Math.PI) / 180;
       baseCoords = {
         x: Math.max(15, Math.min(85, Math.round(userCampusX + radius * Math.cos(angleRad)))),
@@ -117,8 +102,7 @@ export default function CampusRadarMap({
         label: c.university?.toUpperCase() || 'CAMPUS'
       };
     } else {
-      // Small offset if multiple students are at the same college
-      const offsetX = (idx % 2 === 0 ? 1 : -1) * (Math.floor(idx / 2) * 4);
+      const offsetX = (idx % 2 === 0 ? 1 : -1) * (Math.floor(idx / 2) * 3);
       const offsetY = (idx % 3 === 0 ? 2 : -2) * (Math.floor(idx / 3) * 3);
       baseCoords = {
         ...baseCoords,
@@ -127,17 +111,38 @@ export default function CampusRadarMap({
       };
     }
 
+    // Exact Euclidean distance on map scaled to real-world km
+    const dx = baseCoords.x - userCampusX;
+    const dy = baseCoords.y - userCampusY;
+    const mapDistUnits = Math.sqrt(dx * dx + dy * dy);
+    const realKm = c.distanceKm !== undefined ? Number(c.distanceKm) : Number(Math.max(0.6, (mapDistUnits * 0.18)).toFixed(1));
+
     return {
       ...c,
       posX: baseCoords.x,
       posY: baseCoords.y,
-      collegeLabel: baseCoords.label
+      collegeLabel: baseCoords.label,
+      calculatedDistanceKm: realKm
     };
   });
 
+  // Filter candidates strictly by active region & distance filter
+  const geofencedUsers = candidateWithCoords.filter((c) => {
+    if (c.state && c.state.toLowerCase() !== activeRegion.toLowerCase()) {
+      return false;
+    }
+
+    const dist = c.calculatedDistanceKm;
+    if (distanceFilter === '2' && dist > 2.5) return false;
+    if (distanceFilter === '5' && dist > 5.5) return false;
+    if (distanceFilter === '10' && dist > 10.5) return false;
+
+    return true;
+  });
+
   // Zoom Controls
-  const handleZoomIn = () => setZoom(prev => Math.min(2.4, Number((prev + 0.3).toFixed(2))));
-  const handleZoomOut = () => setZoom(prev => Math.max(0.65, Number((prev - 0.3).toFixed(2))));
+  const handleZoomIn = () => setZoom(prev => Math.min(2.5, Number((prev + 0.35).toFixed(2))));
+  const handleZoomOut = () => setZoom(prev => Math.max(0.6, Number((prev - 0.35).toFixed(2))));
   const handleResetPosition = () => {
     setZoom(1);
     setPan({ x: 0, y: 0 });
@@ -152,8 +157,8 @@ export default function CampusRadarMap({
 
   const handleMouseMove = (e) => {
     if (!isDragging) return;
-    const newX = Math.max(-140, Math.min(140, e.clientX - dragStartRef.current.x));
-    const newY = Math.max(-140, Math.min(140, e.clientY - dragStartRef.current.y));
+    const newX = Math.max(-150, Math.min(150, e.clientX - dragStartRef.current.x));
+    const newY = Math.max(-150, Math.min(150, e.clientY - dragStartRef.current.y));
     setPan({ x: newX, y: newY });
   };
 
@@ -181,8 +186,8 @@ export default function CampusRadarMap({
 
   const handleTouchMove = (e) => {
     if (e.touches.length === 1 && isDragging) {
-      const newX = Math.max(-140, Math.min(140, e.touches[0].clientX - dragStartRef.current.x));
-      const newY = Math.max(-140, Math.min(140, e.touches[0].clientY - dragStartRef.current.y));
+      const newX = Math.max(-150, Math.min(150, e.touches[0].clientX - dragStartRef.current.x));
+      const newY = Math.max(-150, Math.min(150, e.touches[0].clientY - dragStartRef.current.y));
       setPan({ x: newX, y: newY });
     } else if (e.touches.length === 2 && initialPinchDistRef.current) {
       const dist = Math.hypot(
@@ -318,7 +323,7 @@ export default function CampusRadarMap({
       </div>
 
       {/* ------------------------------------------------------------- */}
-      {/* INTERACTIVE RADAR CANVAS: RADAR MAP WITH COLLEGE PINS & PROFILES */}
+      {/* INTERACTIVE RADAR CANVAS: RADAR MAP WITH VECTOR COUNTER-SCALING */}
       {/* ------------------------------------------------------------- */}
       <div 
         onMouseDown={handleMouseDown}
@@ -332,7 +337,7 @@ export default function CampusRadarMap({
         className="flex-1 relative overflow-hidden cursor-grab active:cursor-grabbing select-none"
       >
         
-        {/* TRANSFORM LAYER: PAN & ZOOM */}
+        {/* TRANSFORM LAYER: GOOGLE MAPS STYLE BACKGROUND MAP ZOOM */}
         <div 
           className="absolute inset-0 w-full h-full"
           style={{
@@ -369,26 +374,36 @@ export default function CampusRadarMap({
             </defs>
           </svg>
 
-          {/* 2. DEFAULT COLLEGE LANDMARK PINS WITH WHITE BADGES (Exact Match to Screenshot) */}
+          {/* 2. DEFAULT COLLEGE LANDMARK PINS WITH GOOGLE-MAPS VECTOR COUNTER-SCALING */}
           <div className="absolute inset-0 pointer-events-none">
             {DEFAULT_LANDMARKS.map((lm, idx) => (
               <div
                 key={idx}
-                className="absolute -translate-x-1/2 -translate-y-1/2 flex items-center gap-1.5 opacity-80"
-                style={{ left: `${lm.x}%`, top: `${lm.y}%` }}
+                className="absolute flex items-center gap-1.5 opacity-85 transition-transform"
+                style={{ 
+                  left: `${lm.x}%`, 
+                  top: `${lm.y}%`,
+                  transform: `translate(-50%, -50%) scale(${1 / zoom})`,
+                  transformOrigin: 'center center'
+                }}
               >
-                <div className="w-2.5 h-2.5 rounded-full bg-[#FF2E79] ring-4 ring-pink-200/50 shadow-sm shrink-0"></div>
-                <span className="text-[9px] font-black uppercase tracking-wider text-slate-800 bg-white/95 backdrop-blur-xs px-2 py-0.5 rounded-md border border-pink-100 shadow-xs whitespace-nowrap">
+                <div className="w-2.5 h-2.5 rounded-full bg-[#FF2E79] ring-4 ring-pink-200/60 shadow-sm shrink-0"></div>
+                <span className="text-[9.5px] font-black uppercase tracking-wider text-slate-800 bg-white/95 backdrop-blur-xs px-2 py-0.5 rounded-md border border-pink-100 shadow-xs whitespace-nowrap">
                   {lm.name}
                 </span>
               </div>
             ))}
           </div>
 
-          {/* 3. CENTER USER AVATAR PIN (Exact Match to Screenshot) */}
+          {/* 3. CENTER USER AVATAR PIN WITH VECTOR COUNTER-SCALING */}
           <div 
-            className="absolute -translate-x-1/2 -translate-y-1/2 z-20 flex flex-col items-center pointer-events-none"
-            style={{ left: `${userCampusX}%`, top: `${userCampusY}%` }}
+            className="absolute z-20 flex flex-col items-center pointer-events-none transition-transform"
+            style={{ 
+              left: `${userCampusX}%`, 
+              top: `${userCampusY}%`,
+              transform: `translate(-50%, -50%) scale(${1 / zoom})`,
+              transformOrigin: 'center center'
+            }}
           >
             {/* Glowing Pulse Rings */}
             <div className="absolute w-28 h-28 -top-7 -left-7 rounded-full bg-[#FF2E79]/20 radar-ping pointer-events-none"></div>
@@ -407,8 +422,8 @@ export default function CampusRadarMap({
             </div>
           </div>
 
-          {/* 4. CANDIDATE PROFILE AVATARS ON RADAR MAP BASED ON THEIR COLLEGE (Matches Screenshot) */}
-          {candidateWithCoords.map((candidate) => {
+          {/* 4. CANDIDATE PROFILE AVATARS ON RADAR MAP WITH VECTOR COUNTER-SCALING */}
+          {geofencedUsers.map((candidate) => {
             const isSelected = selectedUser?.id === candidate.id;
 
             return (
@@ -418,16 +433,21 @@ export default function CampusRadarMap({
                   e.stopPropagation();
                   setSelectedUser(candidate);
                 }}
-                className={`interactive-btn absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-all duration-300 ${
-                  isSelected ? 'scale-125 z-40' : 'hover:scale-110 z-30'
+                className={`interactive-btn absolute cursor-pointer transition-all duration-200 ${
+                  isSelected ? 'z-40' : 'z-30'
                 }`}
-                style={{ left: `${candidate.posX}%`, top: `${candidate.posY}%` }}
+                style={{ 
+                  left: `${candidate.posX}%`, 
+                  top: `${candidate.posY}%`,
+                  transform: `translate(-50%, -50%) scale(${isSelected ? 1.15 / zoom : 1 / zoom})`,
+                  transformOrigin: 'center center'
+                }}
               >
                 <div className="flex flex-col items-center">
                   {/* Candidate DP Avatar Circle */}
                   <div className={`relative w-12 h-12 rounded-full p-[2px] shadow-lg transition-all ${
                     isSelected 
-                      ? 'bg-gradient-to-tr from-slate-900 to-rose-600 ring-4 ring-rose-400/50 scale-110' 
+                      ? 'bg-gradient-to-tr from-slate-900 to-rose-600 ring-4 ring-rose-400/60' 
                       : 'bg-gradient-to-tr from-[#FF2E79] to-rose-300 border-2 border-white hover:ring-3 hover:ring-pink-300'
                   }`}>
                     <img 
@@ -438,8 +458,8 @@ export default function CampusRadarMap({
                     <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-400 border-2 border-white rounded-full"></span>
                   </div>
 
-                  {/* Candidate Name & College Label */}
-                  <div className={`mt-1 px-2.5 py-0.5 rounded-full flex items-center gap-1 backdrop-blur-md shadow-md border transition-all ${
+                  {/* Candidate Name, Distance & Match Label */}
+                  <div className={`mt-1 px-2.5 py-0.5 rounded-full flex items-center gap-1.5 backdrop-blur-md shadow-md border transition-all ${
                     isSelected
                       ? 'bg-slate-900 text-white border-white'
                       : 'bg-white/95 text-slate-900 border-pink-100 hover:bg-white'
@@ -447,7 +467,10 @@ export default function CampusRadarMap({
                     <span className="text-[10px] font-black truncate max-w-[75px]">
                       {candidate.name.split(' ')[0]}
                     </span>
-                    <span className="text-[8.5px] font-bold text-[#FF2E79] bg-rose-50 px-1 py-0.2 rounded">
+                    <span className="text-[8.5px] font-semibold text-slate-400">
+                      {candidate.calculatedDistanceKm}km
+                    </span>
+                    <span className="text-[8.5px] font-black text-[#FF2E79] bg-rose-50 px-1 py-0.2 rounded">
                       {candidate.matchScore || 94}%
                     </span>
                   </div>
@@ -464,7 +487,7 @@ export default function CampusRadarMap({
       {/* 5. SELECTED CANDIDATE PROFILE PREVIEW BOTTOM CARD             */}
       {/* ------------------------------------------------------------- */}
       {selectedUser && (
-        <div className="absolute bottom-20 inset-x-4 bg-white/95 backdrop-blur-2xl p-4 rounded-[28px] border border-pink-100 shadow-2xl z-40 animate-slide-up pointer-events-auto select-none">
+        <div className="absolute bottom-20 inset-x-4 bg-white/98 backdrop-blur-2xl p-4 rounded-[28px] border border-pink-100 shadow-2xl z-40 animate-slide-up pointer-events-auto select-none">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
               <div className="w-13 h-13 rounded-full overflow-hidden border-2 border-white shadow-sm ring-2 ring-[#FF2E79] shrink-0">
@@ -477,7 +500,7 @@ export default function CampusRadarMap({
                   </h4>
                 </div>
                 <p className="text-[11px] text-slate-500 font-semibold mt-0.5">
-                  🎓 {selectedUser.university || 'Campus Student'} • 📍 {selectedUser.distanceKm || 1.8} km away
+                  🎓 {selectedUser.university || 'Campus Student'} • 📍 {selectedUser.calculatedDistanceKm || 1.8} km away
                 </p>
                 <div className="flex items-center gap-1.5 mt-1">
                   <span className="text-[9.5px] font-black text-[#FF2E79] bg-rose-50 px-2 py-0.5 rounded-full border border-rose-100">
