@@ -168,6 +168,11 @@ export const addNotification = (userId, { type, title, message, actionUrl }) => 
   // Trigger system device notification bar alert automatically
   sendDeviceNotification(cleanTitle || title, cleanMessage || message);
 
+  // Dispatch custom event for in-app floating notification toast banner
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('cupid_new_notification', { detail: newNotice }));
+  }
+
   return newNotice;
 };
 

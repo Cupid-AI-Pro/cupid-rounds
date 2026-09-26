@@ -28,6 +28,7 @@ import PermissionModal from './PermissionModal';
 import InteractiveTourGuide from './InteractiveTourGuide';
 import NotificationsModal from './NotificationsModal';
 import ReEntryModal from './ReEntryModal';
+import InAppNotificationToast from './InAppNotificationToast';
 import { getRoundState, ROUND_PHASES, joinRound, getStateUpcomingMins, getStateRoundSchedule } from '../utils/roundManager';
 import { calculateCompatibilityScore } from '../utils/compatibility';
 import { 
@@ -336,6 +337,9 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
           <Heart className="w-12 h-12 fill-rose-300/70 text-rose-300/90 drop-shadow-md transform rotate-12" />
         </div>
       </div>
+
+      {/* Floating In-App Notification Toast */}
+      <InAppNotificationToast onOpenNotifications={() => setShowNotificationsModal(true)} />
 
       {/* Guided Tour */}
       {showTour && (
