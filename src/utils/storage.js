@@ -1,4 +1,4 @@
-import { MOCK_USERS } from '../data/mockData';
+import { MOCK_USERS } from '../data/mockData.js';
 
 const KEYS = {
   USERS: 'cupid_users',
@@ -372,7 +372,7 @@ export const updateUser = (updatedUser) => {
 
     // Async sync to Supabase in background
     if (typeof window !== 'undefined') {
-      import('../services/supabaseClient').then(({ supabase, isSupabaseConfigured }) => {
+      import('../services/supabaseClient.js').then(({ supabase, isSupabaseConfigured }) => {
         if (isSupabaseConfigured()) {
           supabase
             .from('profiles')
@@ -442,7 +442,7 @@ export const createMatch = (userAId, userBId) => {
 
     // Async sync match to Supabase matches table
     if (typeof window !== 'undefined') {
-      import('../services/supabaseClient').then(({ supabase, isSupabaseConfigured }) => {
+      import('../services/supabaseClient.js').then(({ supabase, isSupabaseConfigured }) => {
         if (isSupabaseConfigured()) {
           supabase
             .from('matches')

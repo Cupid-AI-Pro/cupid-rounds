@@ -5,8 +5,8 @@
  * Automatically dispatches system OS notification bar popups on user phones.
  */
 
-import { getUsers, saveUsers } from '../utils/storage';
-import { getStateRoundSchedule } from '../utils/roundManager';
+import { getUsers, saveUsers } from '../utils/storage.js';
+import { getStateRoundSchedule } from '../utils/roundManager.js';
 
 const NOTIFICATIONS_KEY_PREFIX = 'cupid_notifications_';
 const GLOBAL_BROADCASTS_KEY = 'cupid_global_broadcasts';
@@ -127,7 +127,7 @@ export const saveNotifications = (userId, notifications) => {
 
   // Async sync to Supabase if configured
   if (typeof window !== 'undefined') {
-    import('./supabaseClient').then(({ supabase, isSupabaseConfigured }) => {
+    import('./supabaseClient.js').then(({ supabase, isSupabaseConfigured }) => {
       if (isSupabaseConfigured()) {
         const unreadList = notifications.filter(n => !n.read);
         unreadList.forEach(n => {
@@ -215,7 +215,7 @@ export const broadcastNotification = ({ title, message }) => {
 
   // 2. Sync to Supabase if configured
   if (typeof window !== 'undefined') {
-    import('./supabaseClient').then(({ supabase, isSupabaseConfigured }) => {
+    import('./supabaseClient.js').then(({ supabase, isSupabaseConfigured }) => {
       if (isSupabaseConfigured()) {
         supabase
           .from('notifications')
@@ -273,7 +273,7 @@ export const syncBroadcastNotifications = async (userId) => {
   // Check Supabase for remote broadcasts
   if (typeof window !== 'undefined') {
     try {
-      const { supabase, isSupabaseConfigured } = await import('./supabaseClient');
+      const { supabase, isSupabaseConfigured } = await import('./supabaseClient.js');
       if (isSupabaseConfigured()) {
         const { data, error } = await supabase
           .from('notifications')

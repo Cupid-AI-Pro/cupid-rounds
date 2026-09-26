@@ -1,5 +1,5 @@
-import { getUsers, saveUsers, getActiveState, setActiveState, createMatch, getCurrentUser, setCurrentUser, getStatesList } from './storage';
-import { PLANS_INFO } from '../data/mockData';
+import { getUsers, saveUsers, getActiveState, setActiveState, createMatch, getCurrentUser, setCurrentUser, getStatesList } from './storage.js';
+import { PLANS_INFO } from '../data/mockData.js';
 
 // Round State Storage Key
 const ROUND_STATE_KEY = 'cupid_round_state_v2';
@@ -201,7 +201,7 @@ export const getAllStateSchedules = () => {
 /**
  * PHASE TRANSITION LOGIC: Advance round to next phase
  */
-import { calculateCompatibilityScore } from './compatibility';
+import { calculateCompatibilityScore } from './compatibility.js';
 
 export const advanceRoundPhase = () => {
   const current = getRoundState();
