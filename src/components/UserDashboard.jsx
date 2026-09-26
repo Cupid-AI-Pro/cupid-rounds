@@ -28,7 +28,7 @@ import PermissionModal from './PermissionModal';
 import InteractiveTourGuide from './InteractiveTourGuide';
 import NotificationsModal from './NotificationsModal';
 import ReEntryModal from './ReEntryModal';
-import { getRoundState, ROUND_PHASES, joinRound, getStateUpcomingMins } from '../utils/roundManager';
+import { getRoundState, ROUND_PHASES, joinRound, getStateUpcomingMins, getStateRoundSchedule } from '../utils/roundManager';
 import { calculateCompatibilityScore } from '../utils/compatibility';
 import { 
   getNotifications, 
@@ -58,44 +58,48 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
 
   useEffect(() => {
     const updateCountdown = () => {
-      const stateName = user?.state || 'Uttar Pradesh';
-      const upcomingMins = getStateUpcomingMins(stateName);
+      try {
+        const stateName = user?.state || 'Uttar Pradesh';
+        const upcomingMins = typeof getStateUpcomingMins === 'function' ? getStateUpcomingMins(stateName) : 0;
 
-      const roundStartMs = new Date(roundState?.roundStartDate || roundState?.phaseStartedAt || Date.now()).getTime();
-      const nowMs = Date.now();
-      const elapsedMs = Math.max(0, nowMs - roundStartMs);
+        const roundStartMs = new Date(roundState?.roundStartDate || roundState?.phaseStartedAt || Date.now()).getTime();
+        const nowMs = Date.now();
+        const elapsedMs = Math.max(0, nowMs - roundStartMs);
 
-      let totalSecs = 0;
-      if (upcomingMins > 0) {
-        // Compute total seconds remaining until user's state round starts
-        totalSecs = Math.max(0, Math.floor(((upcomingMins * 60 * 1000) - (elapsedMs % (60 * 1000))) / 1000));
-      } else {
-        // Fallback target countdown (8 days, 14 hours, 40 mins) minus elapsed time for live feel
-        const baseTargetSecs = (8 * 24 * 3600) + (14 * 3600) + (40 * 60) + 22;
-        const elapsedSecs = Math.floor(elapsedMs / 1000) % baseTargetSecs;
-        totalSecs = Math.max(0, baseTargetSecs - elapsedSecs);
-      }
-
-      const sched = getStateRoundSchedule(stateName);
-      if (sched && sched.rawDate && sched.daysLeft > 0) {
-        const targetDate = new Date(sched.rawDate).getTime();
-        const diffMs = targetDate - nowMs;
-        if (diffMs > 0) {
-          totalSecs = Math.floor(diffMs / 1000);
+        let totalSecs = 0;
+        if (upcomingMins > 0) {
+          totalSecs = Math.max(0, Math.floor(((upcomingMins * 60 * 1000) - (elapsedMs % (60 * 1000))) / 1000));
+        } else {
+          const baseTargetSecs = (8 * 24 * 3600) + (14 * 3600) + (40 * 60) + 22;
+          const elapsedSecs = Math.floor(elapsedMs / 1000) % baseTargetSecs;
+          totalSecs = Math.max(0, baseTargetSecs - elapsedSecs);
         }
+
+        if (typeof getStateRoundSchedule === 'function') {
+          const sched = getStateRoundSchedule(stateName);
+          if (sched && sched.rawDate && sched.daysLeft > 0) {
+            const targetDate = new Date(sched.rawDate).getTime();
+            const diffMs = targetDate - nowMs;
+            if (diffMs > 0) {
+              totalSecs = Math.floor(diffMs / 1000);
+            }
+          }
+        }
+
+        const d = Math.floor(totalSecs / (3600 * 24));
+        const h = Math.floor((totalSecs % (3600 * 24)) / 3600);
+        const m = Math.floor((totalSecs % 3600) / 60);
+        const s = Math.floor(totalSecs % 60);
+
+        setCountdown({
+          days: String(d).padStart(2, '0'),
+          hours: String(h).padStart(2, '0'),
+          mins: String(m).padStart(2, '0'),
+          secs: String(s).padStart(2, '0')
+        });
+      } catch (err) {
+        console.warn('Countdown update notice:', err);
       }
-
-      const d = Math.floor(totalSecs / (3600 * 24));
-      const h = Math.floor((totalSecs % (3600 * 24)) / 3600);
-      const m = Math.floor((totalSecs % 3600) / 60);
-      const s = Math.floor(totalSecs % 60);
-
-      setCountdown({
-        days: String(d).padStart(2, '0'),
-        hours: String(h).padStart(2, '0'),
-        mins: String(m).padStart(2, '0'),
-        secs: String(s).padStart(2, '0')
-      });
     };
 
     updateCountdown();
