@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { getUsers, saveUsers, setCurrentUser, updateUser, setAdminAuthenticated } from '../utils/storage';
 import { getRoundState, getStateUpcomingMins, forceRotateToNextState } from '../utils/roundManager';
+import { fetchProfilesFromSupabase } from '../services/supabaseService';
 import { STATES_LIST } from '../data/mockData';
 import { 
   Heart, 
@@ -224,7 +225,7 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
   };
 
   // Handle standard login
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -263,28 +264,49 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
       return;
     }
 
-    const users = getUsers();
+    let users = getUsers();
     const cleanQuery = cleanInput.toLowerCase();
     const cleanQueryAlphaNumeric = cleanQuery.replace(/[^a-z0-9]/g, '');
 
-    // Smart flexible lookup across email, id, name, and name prefix/contains
-    const matchedUser = users.find(u => {
+    const findMatch = (list) => list.find(u => {
       if (!u) return false;
       const email = (u.email || '').toLowerCase();
       const name = (u.name || '').toLowerCase();
       const id = (u.id || '').toLowerCase();
+      const phone = (u.phone || '').toLowerCase();
       const nameAlphaNumeric = name.replace(/[^a-z0-9]/g, '');
 
       return (
         email === cleanQuery ||
         id === cleanQuery ||
         name === cleanQuery ||
+        phone === cleanQuery ||
         (cleanQueryAlphaNumeric.length >= 3 && nameAlphaNumeric.includes(cleanQueryAlphaNumeric)) ||
         (cleanQueryAlphaNumeric.length >= 3 && cleanQueryAlphaNumeric.includes(nameAlphaNumeric)) ||
         email.startsWith(cleanQuery) ||
         name.startsWith(cleanQuery)
       );
     });
+
+    let matchedUser = findMatch(users);
+
+    // If not found in local cache, query Supabase cloud profiles
+    if (!matchedUser) {
+      try {
+        const cloudProfiles = await fetchProfilesFromSupabase();
+        if (cloudProfiles && cloudProfiles.length > 0) {
+          const merged = [...cloudProfiles];
+          users.forEach(u => {
+            if (!merged.some(p => p.id === u.id)) merged.push(u);
+          });
+          users = merged;
+          saveUsers(users);
+          matchedUser = findMatch(users);
+        }
+      } catch (err) {
+        console.warn('Cloud login lookup notice:', err);
+      }
+    }
     
     if (matchedUser) {
       // Validate password if set and provided

@@ -6,8 +6,9 @@ import OnboardingForm from './components/OnboardingForm';
 import UserDashboard from './components/UserDashboard';
 import AdminDashboard from './components/AdminDashboard';
 import CinematicLoadingScreen from './components/CinematicLoadingScreen';
-import { initializeStorage, getCurrentUser, getActiveState, logout, setCurrentUser, isAdminAuthenticated } from './utils/storage';
+import { initializeStorage, getCurrentUser, getActiveState, logout, setCurrentUser, isAdminAuthenticated, getUsers, saveUsers } from './utils/storage';
 import { checkAndRotateRoundAutomated, getRoundState, fetchRoundStateFromSupabase, subscribeToRoundChanges } from './utils/roundManager';
+import { fetchProfilesFromSupabase } from './services/supabaseService';
 import { Phone, ShieldCheck, ArrowLeft, Globe } from 'lucide-react';
 
 export default function App() {
@@ -103,6 +104,18 @@ export default function App() {
         setActiveState(rs.activeState);
       }
     });
+
+    // 1b. Fetch real verified profiles from Supabase to prime local cache
+    fetchProfilesFromSupabase().then((realProfiles) => {
+      if (realProfiles && realProfiles.length > 0) {
+        const localUsers = getUsers() || [];
+        const merged = [...realProfiles];
+        localUsers.forEach(u => {
+          if (!merged.some(p => p.id === u.id)) merged.push(u);
+        });
+        saveUsers(merged);
+      }
+    }).catch(() => {});
 
     // 2. Subscribe to Realtime round changes from Supabase
     const unsubscribe = subscribeToRoundChanges((freshRound) => {

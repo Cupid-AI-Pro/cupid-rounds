@@ -39,6 +39,13 @@ import {
   requestDeviceNotificationPermission,
   syncBroadcastNotifications
 } from '../services/notificationManager';
+import { 
+  fetchProfilesFromSupabase, 
+  recordSwipeInSupabase, 
+  fetchLikesForUser, 
+  fetchMatchesForUser, 
+  subscribeToLikesAndMatches 
+} from '../services/supabaseService';
 
 export default function UserDashboard({ user, onUpdateUser, onLogout }) {
   const [candidates, setCandidates] = useState([]);
@@ -137,7 +144,12 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
       });
     }
 
-    // Periodic broadcast notification check every 8 seconds for real-time mobile status bar popups
+    // Real-time subscription for incoming likes, swipes and mutual matches from Supabase
+    const unsubActivity = user?.id ? subscribeToLikesAndMatches(user.id, () => {
+      loadCandidates();
+    }) : () => {};
+
+    // Periodic broadcast notification and cloud sync check
     const notifInterval = setInterval(() => {
       if (user?.id) {
         syncBroadcastNotifications(user.id).then(() => {
@@ -151,7 +163,10 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
       setShowPermissionPrompt(true);
     }
 
-    return () => clearInterval(notifInterval);
+    return () => {
+      if (typeof unsubActivity === 'function') unsubActivity();
+      clearInterval(notifInterval);
+    };
   }, [user?.id, user?.gender, user?.interestedIn, user?.university, activeFilter, roundState?.currentPhase]);
 
   // Render loading placeholder if user object is not available
@@ -194,19 +209,51 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
     }
   };
 
-  const loadCandidates = () => {
+  const loadCandidates = async () => {
     if (!user) return;
-    const allUsers = getUsers() || [];
-    const userLikes = user?.likes || [];
+    let allUsers = getUsers() || [];
+
+    // 1. Fetch real user profiles from Supabase cloud database
+    try {
+      const realProfiles = await fetchProfilesFromSupabase();
+      if (realProfiles && realProfiles.length > 0) {
+        // Merge real profiles into allUsers (real profiles take precedence)
+        const realMap = new Map(realProfiles.map(p => [p.id, p]));
+        const merged = [...realProfiles];
+        allUsers.forEach(u => {
+          if (!realMap.has(u.id) && !realProfiles.some(p => p.email && u.email && p.email.toLowerCase() === u.email.toLowerCase())) {
+            merged.push(u);
+          }
+        });
+        allUsers = merged;
+        saveUsers(allUsers);
+      }
+    } catch (e) {
+      console.warn('Real profiles sync notice:', e);
+    }
+
+    // 2. Fetch cloud likes and matches from Supabase
+    let cloudLikes = [];
+    let cloudMatches = [];
+    try {
+      cloudLikes = await fetchLikesForUser(user.id);
+      cloudMatches = await fetchMatchesForUser(user.id);
+    } catch (e) {}
+
+    const userLikes = Array.from(new Set([...(user?.likes || [])]));
     const userDislikes = user?.dislikes || [];
-    const userMatches = user?.matches || [];
+    const userMatches = Array.from(new Set([...(user?.matches || []), ...cloudMatches]));
     const excludedIds = [user?.id, ...userLikes, ...userDislikes, ...userMatches];
 
-    let stateCandidates = allUsers.filter(u => 
-      u && !excludedIds.includes(u.id) && 
-      u.state === (user?.state || roundState?.activeState) &&
-      u.status === 'active'
-    );
+    // Normalize active state
+    const activeStateClean = normalizeState(roundState?.activeState || user?.state);
+
+    let stateCandidates = allUsers.filter(u => {
+      if (!u || excludedIds.includes(u.id)) return false;
+      const uStateClean = normalizeState(u.state || u.hometown);
+      const matchesState = uStateClean === activeStateClean;
+      return matchesState && u.status === 'active';
+    });
 
     if (user?.interestedIn && user.interestedIn !== 'Everyone') {
       stateCandidates = stateCandidates.filter(u => u.gender === user.interestedIn);
@@ -214,36 +261,67 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
       stateCandidates = stateCandidates.filter(u => u.gender !== user?.gender);
     }
 
-    // Attach real mutual compatibility scores based on Q1-15 details & Q16+ preferences
-    stateCandidates = stateCandidates.map(c => ({
-      ...c,
-      matchScore: calculateCompatibilityScore(user, c)
-    }));
+    // Attach real mutual compatibility scores & cloud like flags
+    stateCandidates = stateCandidates.map(c => {
+      const hasLikedYou = cloudLikes.includes(c.id) || (c.likes && c.likes.includes(user?.id));
+      return {
+        ...c,
+        hasLikedYou: Boolean(hasLikedYou),
+        matchScore: calculateCompatibilityScore(user, c)
+      };
+    });
 
+    // -------------------------------------------------------------
+    // PRIORITY SORTING:
+    // A) If Current User is Female (e.g. Sneha):
+    //    1. Real Elite Male Profiles (e.g. Aditya) are ALWAYS #1 at the TOP!
+    //    2. Other Real Male Profiles are #2
+    //    3. Mock/Demo Profiles are #3
+    // B) If Current User is Male (e.g. Aditya):
+    //    1. Females who already LIKED ME (e.g. Sneha) are ALWAYS #1 at the TOP!
+    //    2. Real Female Profiles are #2
+    //    3. Mock/Demo Profiles are #3
+    // -------------------------------------------------------------
     if (isFemale) {
-      if (roundState?.currentPhase === ROUND_PHASES.ELITE_WINDOW) {
-        const eliteMales = stateCandidates.filter(u => u.plan === 'elite');
-        const otherMales = stateCandidates.filter(u => u.plan !== 'elite');
-        stateCandidates = [...eliteMales, ...otherMales];
-      }
-    } else if (isEliteMale) {
-      const femalesWhoLikedMe = stateCandidates.filter(f => f.likes && f.likes.includes(user?.id));
-      const otherFemales = stateCandidates.filter(f => !f.likes || !f.likes.includes(user?.id));
-      stateCandidates = [...femalesWhoLikedMe, ...otherFemales];
-    } else if (isPremiumMale) {
-      stateCandidates = stateCandidates.filter(f => !f.matches || f.matches.length < 2);
-    }
+      stateCandidates.sort((a, b) => {
+        // Priority 1: Real Elite Male
+        const aIsRealElite = a.isRealUser && a.plan === 'elite';
+        const bIsRealElite = b.isRealUser && b.plan === 'elite';
+        if (aIsRealElite && !bIsRealElite) return -1;
+        if (!aIsRealElite && bIsRealElite) return 1;
 
-    if (activeFilter === 'nearby') {
-      stateCandidates = stateCandidates.sort((a, b) => (a.distanceKm || 2) - (b.distanceKm || 2));
+        // Priority 2: Any Elite Male
+        const aIsElite = a.plan === 'elite';
+        const bIsElite = b.plan === 'elite';
+        if (aIsElite && !bIsElite) return -1;
+        if (!aIsElite && bIsElite) return 1;
+
+        // Priority 3: Real User before Mock
+        if (a.isRealUser && !b.isRealUser) return -1;
+        if (!a.isRealUser && b.isRealUser) return 1;
+
+        // Priority 4: Compatibility Score
+        return (b.matchScore || 0) - (a.matchScore || 0);
+      });
     } else {
-      stateCandidates = stateCandidates.sort((a, b) => b.matchScore - a.matchScore);
+      stateCandidates.sort((a, b) => {
+        // Priority 1: Liked me
+        if (a.hasLikedYou && !b.hasLikedYou) return -1;
+        if (!a.hasLikedYou && b.hasLikedYou) return 1;
+
+        // Priority 2: Real User before Mock
+        if (a.isRealUser && !b.isRealUser) return -1;
+        if (!a.isRealUser && b.isRealUser) return 1;
+
+        // Priority 3: Compatibility Score
+        return (b.matchScore || 0) - (a.matchScore || 0);
+      });
     }
 
     setCandidates(stateCandidates);
   };
 
-  const handleLike = (candidate) => {
+  const handleLike = async (candidate) => {
     const updatedLikes = [...(user.likes || []), candidate.id];
     let isMutualMatch = false;
     let updatedMatches = [...(user.matches || [])];
@@ -256,9 +334,21 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
       actionUrl: 'radar'
     });
 
-    if (candidate.likes && candidate.likes.includes(user.id)) {
+    // Record swipe in Supabase cloud database
+    try {
+      const swipeRes = await recordSwipeInSupabase(user.id, candidate.id, true);
+      if (swipeRes && swipeRes.isMutual) {
+        isMutualMatch = true;
+      }
+    } catch (e) {
+      console.warn('Cloud swipe record warning:', e);
+    }
+
+    if (candidate.hasLikedYou || (candidate.likes && candidate.likes.includes(user.id)) || isMutualMatch) {
       isMutualMatch = true;
-      updatedMatches.push(candidate.id);
+      if (!updatedMatches.includes(candidate.id)) {
+        updatedMatches.push(candidate.id);
+      }
       createMatch(user.id, candidate.id);
 
       // Trigger Mutual Match Notifications for Both Users
@@ -277,8 +367,8 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
       });
       
       confetti({
-        particleCount: 80,
-        spread: 70,
+        particleCount: 90,
+        spread: 75,
         origin: { y: 0.6 },
         colors: ['#FF2E79', '#FF6B8B', '#FF1493', '#FFD166']
       });
@@ -304,6 +394,7 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
     updateUser(updatedUser);
     onUpdateUser(updatedUser);
     setCandidates(prev => prev.filter(c => c.id !== candidate.id));
+    recordSwipeInSupabase(user.id, candidate.id, false);
   };
 
   const handlePermissionsComplete = () => {

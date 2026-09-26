@@ -253,3 +253,200 @@ export const subscribeToMatchChat = (matchId, onNewMessage) => {
   }
   return { unsubscribe: () => {} };
 };
+
+// -----------------------------------------------------------------------------
+// 4. REAL-TIME PROFILES, SWIPES & CLOUD MATCHMAKING
+// -----------------------------------------------------------------------------
+
+/**
+ * Fetch all verified real users from Supabase profiles
+ */
+export const fetchProfilesFromSupabase = async () => {
+  if (!isSupabaseConfigured()) return [];
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('status', 'active')
+      .order('created_at', { ascending: false });
+
+    if (error || !data) return [];
+
+    return data.map(p => ({
+      id: p.id,
+      name: p.name,
+      email: p.email,
+      phone: p.phone,
+      gender: (p.gender || 'male').toLowerCase(),
+      age: Number(p.age) || 21,
+      state: p.state || 'Delhi NCR',
+      hometown: p.hometown || p.state || 'Delhi NCR',
+      university: p.university || 'Bennett University',
+      branch: p.branch || 'Computer Science (CSE)',
+      yearOfStudy: p.year_of_study || '3rd Year',
+      avatar: p.avatar_url || (p.gender === 'female' 
+        ? 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&auto=format&fit=crop&q=80' 
+        : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&auto=format&fit=crop&q=80'),
+      bio: p.bio || '',
+      height: p.height || "5'7\"",
+      religion: p.religion || 'Hindu',
+      drinkingSmoking: p.drinking_smoking || 'Non-drinker',
+      personalityType: p.personality_type || 'Ambivert',
+      datingVibe: p.dating_vibe || 'Cafes & Coffee',
+      relationshipType: p.relationship_type || 'Serious Relationship',
+      qualities: Array.isArray(p.qualities) ? p.qualities : ['Loyal', 'Humorous'],
+      plan: p.plan || ((p.gender || '').toLowerCase() === 'female' ? 'free' : 'basic'),
+      status: p.status || 'active',
+      isRealUser: true,
+      likes: [],
+      matches: []
+    }));
+  } catch (err) {
+    console.warn('[Supabase] fetchProfilesFromSupabase warning:', err);
+    return [];
+  }
+};
+
+/**
+ * Record a swipe (Like or Pass) in Supabase and check for instant mutual match
+ */
+export const recordSwipeInSupabase = async (senderId, targetId, isLike) => {
+  if (!isSupabaseConfigured() || !senderId || !targetId) {
+    return { isMutual: false };
+  }
+
+  const isValidUuid = (str) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+
+  if (!isValidUuid(senderId) || !isValidUuid(targetId)) {
+    return { isMutual: false };
+  }
+
+  try {
+    // 1. Insert swipe record
+    await supabase.from('swipes').insert({
+      sender_id: senderId,
+      target_id: targetId,
+      is_like: Boolean(isLike)
+    });
+
+    // 2. If it's a LIKE, check if the other person has also liked this user
+    if (isLike) {
+      const { data: reciprocalLikes } = await supabase
+        .from('swipes')
+        .select('*')
+        .eq('sender_id', targetId)
+        .eq('target_id', senderId)
+        .eq('is_like', true)
+        .limit(1);
+
+      if (reciprocalLikes && reciprocalLikes.length > 0) {
+        // Form Mutual Match!
+        const { data: matchRecord, error: matchErr } = await supabase
+          .from('matches')
+          .insert({
+            user_a_id: senderId,
+            user_b_id: targetId,
+            matched_tier: 'elite',
+            is_active: true
+          })
+          .select()
+          .single();
+
+        if (!matchErr && matchRecord) {
+          return { isMutual: true, match: matchRecord };
+        }
+        return { isMutual: true };
+      }
+    }
+
+    return { isMutual: false };
+  } catch (err) {
+    console.warn('[Supabase] recordSwipeInSupabase notice:', err);
+    return { isMutual: false };
+  }
+};
+
+/**
+ * Fetch list of user IDs who have liked this user
+ */
+export const fetchLikesForUser = async (userId) => {
+  if (!isSupabaseConfigured() || !userId) return [];
+  const isValidUuid = (str) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+  if (!isValidUuid(userId)) return [];
+
+  try {
+    const { data, error } = await supabase
+      .from('swipes')
+      .select('sender_id')
+      .eq('target_id', userId)
+      .eq('is_like', true);
+
+    if (error || !data) return [];
+    return data.map(d => d.sender_id);
+  } catch (e) {
+    return [];
+  }
+};
+
+/**
+ * Fetch all active match partner IDs for this user
+ */
+export const fetchMatchesForUser = async (userId) => {
+  if (!isSupabaseConfigured() || !userId) return [];
+  const isValidUuid = (str) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+  if (!isValidUuid(userId)) return [];
+
+  try {
+    // Check which users THIS user has actively swiped LIKE on
+    const { data: mySwipes } = await supabase
+      .from('swipes')
+      .select('target_id')
+      .eq('sender_id', userId)
+      .eq('is_like', true);
+
+    const myLikedIds = new Set((mySwipes || []).map(s => s.target_id));
+
+    const { data, error } = await supabase
+      .from('matches')
+      .select('*')
+      .or(`user_a_id.eq.${userId},user_b_id.eq.${userId}`)
+      .eq('is_active', true);
+
+    if (error || !data) return [];
+    
+    // Only treat as an existing match if THIS user has also reciprocally swiped like!
+    // If this user hasn't swiped like yet, the candidate must remain in the deck so they can see & swipe on them!
+    return data
+      .map(m => m.user_a_id === userId ? m.user_b_id : m.user_a_id)
+      .filter(partnerId => myLikedIds.has(partnerId));
+  } catch (e) {
+    return [];
+  }
+};
+
+/**
+ * Realtime subscription for incoming likes and matches
+ */
+export const subscribeToLikesAndMatches = (userId, onUpdate) => {
+  if (!isSupabaseConfigured() || !userId) return () => {};
+  try {
+    const channel = supabase
+      .channel(`cupid_user_activity_${userId}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'swipes' }, () => {
+        if (typeof onUpdate === 'function') onUpdate();
+      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'matches' }, () => {
+        if (typeof onUpdate === 'function') onUpdate();
+      })
+      .subscribe();
+
+    return () => {
+      try {
+        supabase.removeChannel(channel);
+      } catch (e) {}
+    };
+  } catch (e) {
+    return () => {};
+  }
+};
+

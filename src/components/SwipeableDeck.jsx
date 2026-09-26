@@ -8,7 +8,8 @@ import {
   GraduationCap, 
   Navigation, 
   Sun,
-  MoreHorizontal
+  MoreHorizontal,
+  Crown
 } from 'lucide-react';
 
 export default function SwipeableDeck({ 
@@ -195,6 +196,22 @@ export default function SwipeableDeck({
           </button>
         </div>
 
+        {/* Top Highlight Badges: Elite User Badge or Liked You Badge */}
+        <div className="absolute top-13 left-4 z-20 pointer-events-none flex flex-col gap-1.5 items-start">
+          {currentCandidate.plan === 'elite' && (
+            <div className="px-3 py-1 rounded-full bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-slate-950 font-black text-[11px] shadow-lg flex items-center gap-1.5 border border-yellow-200">
+              <Crown className="w-3.5 h-3.5 fill-slate-950 text-slate-950" />
+              <span>👑 ELITE USER • Priority Match</span>
+            </div>
+          )}
+          {currentCandidate.hasLikedYou && (
+            <div className="px-3 py-1 rounded-full bg-gradient-to-r from-[#FF2E79] to-rose-500 text-white font-black text-[11px] shadow-lg flex items-center gap-1.5 border border-rose-300 animate-pulse">
+              <Heart className="w-3.5 h-3.5 fill-white text-white" />
+              <span>💖 LIKED YOUR PROFILE</span>
+            </div>
+          )}
+        </div>
+
         {/* Cursive Decorative Overlay Text on Right */}
         <div className="absolute top-1/4 right-5 z-20 pointer-events-none -rotate-6 text-right">
           <p className="font-cursive text-2xl text-white/90 drop-shadow-[0_2px_10px_rgba(0,0,0,0.7)] font-bold tracking-wide">
@@ -205,11 +222,23 @@ export default function SwipeableDeck({
         {/* Bottom Details Overlay & Action Buttons */}
         <div className="absolute inset-x-0 bottom-0 pt-16 pb-4 px-4 bg-gradient-to-t from-black/95 via-black/55 to-transparent pointer-events-none z-20">
           <div className="space-y-1.5">
-            {/* Name */}
-            <div className="flex items-center gap-2">
+            {/* Name & Badges */}
+            <div className="flex items-center gap-2 flex-wrap">
               <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight drop-shadow-sm">
                 {currentCandidate.name}
               </h2>
+              {currentCandidate.plan === 'elite' && (
+                <span className="px-2 py-0.5 rounded-md bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 text-[10px] font-black uppercase tracking-wider shadow-sm flex items-center gap-1">
+                  <Crown className="w-3 h-3 fill-slate-950" />
+                  Elite
+                </span>
+              )}
+              {currentCandidate.hasLikedYou && (
+                <span className="px-2 py-0.5 rounded-md bg-gradient-to-r from-pink-500 to-rose-500 text-white text-[10px] font-black uppercase tracking-wider shadow-sm flex items-center gap-1">
+                  <Heart className="w-3 h-3 fill-white" />
+                  Liked You
+                </span>
+              )}
             </div>
 
             {/* Subtitle Details */}
