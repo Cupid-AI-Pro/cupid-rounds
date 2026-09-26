@@ -5,25 +5,49 @@ import {
   Heart, 
   Compass, 
   X, 
-  CheckCircle2,
   ArrowUpRight,
-  ShieldCheck,
   Plus,
   Minus,
   LocateFixed,
-  BadgeCheck,
-  Globe
+  Globe,
+  ChevronDown
 } from 'lucide-react';
+import { getStatesList } from '../utils/storage';
 
-const CAMPUS_LANDMARKS = [
-  { name: "Bennett University", area: "Tech Zone II", x: 30, y: 65 },
-  { name: "Knowledge Park III", area: "Sharda Hub", x: 44, y: 35 },
-  { name: "Galgotias Campus", area: "Knowledge Park II", x: 74, y: 58 },
-  { name: "Amity Campus", area: "Noida Expressway", x: 62, y: 22 },
-  { name: "IIT Delhi", area: "Hauz Khas", x: 84, y: 28 },
-  { name: "Pari Chowk Central", area: "Greater Noida", x: 50, y: 48 },
-  { name: "Delhi University North", area: "GTB Nagar", x: 86, y: 15 },
-  { name: "DTU Campus", area: "Rohini Hub", x: 20, y: 20 }
+// College location mapping for Delhi NCR & major hubs
+const COLLEGE_LOCATIONS = {
+  'bennett university': { x: 48, y: 56, label: 'BENNETT UNIVERSITY', area: 'Tech Zone II' },
+  'bennett': { x: 48, y: 56, label: 'BENNETT UNIVERSITY', area: 'Tech Zone II' },
+  'knowledge park iii': { x: 40, y: 45, label: 'KNOWLEDGE PARK III', area: 'Sharda Hub' },
+  'sharda university': { x: 40, y: 45, label: 'KNOWLEDGE PARK III', area: 'Sharda Hub' },
+  'galgotias university': { x: 76, y: 66, label: 'GALGOTIAS CAMPUS', area: 'Knowledge Park II' },
+  'galgotias': { x: 76, y: 66, label: 'GALGOTIAS CAMPUS', area: 'Knowledge Park II' },
+  'amity university': { x: 62, y: 32, label: 'AMITY CAMPUS', area: 'Noida Expressway' },
+  'amity': { x: 62, y: 32, label: 'AMITY CAMPUS', area: 'Noida Expressway' },
+  'iit delhi': { x: 84, y: 44, label: 'IIT DELHI', area: 'Hauz Khas' },
+  'iit': { x: 84, y: 44, label: 'IIT DELHI', area: 'Hauz Khas' },
+  'delhi university (du)': { x: 78, y: 24, label: 'DELHI UNIVERSITY', area: 'GTB Nagar' },
+  'delhi university': { x: 78, y: 24, label: 'DELHI UNIVERSITY', area: 'GTB Nagar' },
+  'du': { x: 78, y: 24, label: 'DELHI UNIVERSITY', area: 'GTB Nagar' },
+  'dtu': { x: 20, y: 28, label: 'DTU CAMPUS', area: 'Rohini Hub' },
+  'delhi technological university': { x: 20, y: 28, label: 'DTU CAMPUS', area: 'Rohini Hub' },
+  'jiit noida': { x: 68, y: 54, label: 'JIIT NOIDA', area: 'Sector 62' },
+  'jiit': { x: 68, y: 54, label: 'JIIT NOIDA', area: 'Sector 62' },
+  'nsut': { x: 26, y: 58, label: 'NSUT DWARKA', area: 'Dwarka Sector 3' },
+  'iiit delhi': { x: 72, y: 48, label: 'IIIT DELHI', area: 'Okhla Phase III' },
+  'ashoka university': { x: 18, y: 16, label: 'ASHOKA CAMPUS', area: 'Sonipat Hub' }
+};
+
+// Fallback college pins for general map display
+const DEFAULT_LANDMARKS = [
+  { name: 'DTU CAMPUS', x: 20, y: 28 },
+  { name: 'AMITY CAMPUS', x: 62, y: 32 },
+  { name: 'DELHI UNIVERSITY', x: 78, y: 24 },
+  { name: 'IIT DELHI', x: 84, y: 44 },
+  { name: 'KNOWLEDGE PARK III', x: 40, y: 45 },
+  { name: 'JIIT NOIDA', x: 68, y: 54 },
+  { name: 'BENNETT UNIVERSITY', x: 48, y: 56 },
+  { name: 'GALGOTIAS CAMPUS', x: 76, y: 66 }
 ];
 
 export default function CampusRadarMap({ 
@@ -35,28 +59,28 @@ export default function CampusRadarMap({
 }) {
   const [selectedUser, setSelectedUser] = useState(null);
   const [distanceFilter, setDistanceFilter] = useState('all'); // 'all', '2', '5', '10'
-  
-  // Interactive Pan & Zoom State
+  const [activeRegion, setActiveRegion] = useState(user?.state || 'Delhi NCR');
+  const [showStateDropdown, setShowStateDropdown] = useState(false);
+
+  // Zoom & Pan State
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const dragStartRef = useRef({ x: 0, y: 0 });
   const initialPinchDistRef = useRef(null);
-  const mapContainerRef = useRef(null);
-
-  const activeRegion = user?.state || 'Delhi NCR';
 
   // User campus position
-  const userCampusX = user?.mapX || 50;
-  const userCampusY = user?.mapY || 50;
+  const userCollegeKey = (user?.university || 'Bennett University').toLowerCase();
+  const userCollegeCoords = COLLEGE_LOCATIONS[userCollegeKey] || { x: 48, y: 56 };
+  const userCampusX = userCollegeCoords.x;
+  const userCampusY = userCollegeCoords.y;
 
-  // Strict Regional Geofencing: Only show candidates from the user's active state/region
+  // Filter candidate profiles for the current active region & distance
   const allMapUsers = [...candidates, ...matchedUsers].filter(
     (u, index, self) => index === self.findIndex((t) => t.id === u.id)
   );
 
   const geofencedUsers = allMapUsers.filter((u) => {
-    // Geofence check: Must belong to same regional state
     if (u.state && u.state.toLowerCase() !== activeRegion.toLowerCase()) {
       return false;
     }
@@ -69,7 +93,49 @@ export default function CampusRadarMap({
     return true;
   });
 
-  // Zoom handlers
+  // Calculate coordinates for candidates based on their college name
+  const candidateWithCoords = geofencedUsers.map((c, idx) => {
+    const key = (c.university || '').toLowerCase();
+    let baseCoords = null;
+    
+    // Find matching college key
+    for (let colKey in COLLEGE_LOCATIONS) {
+      if (key.includes(colKey) || colKey.includes(key)) {
+        baseCoords = COLLEGE_LOCATIONS[colKey];
+        break;
+      }
+    }
+
+    if (!baseCoords) {
+      // Deterministic spread around map based on candidate index
+      const angles = [35, 120, 210, 300, 75, 160, 240, 330];
+      const radius = 18 + ((idx * 7) % 22);
+      const angleRad = (angles[idx % angles.length] * Math.PI) / 180;
+      baseCoords = {
+        x: Math.max(15, Math.min(85, Math.round(userCampusX + radius * Math.cos(angleRad)))),
+        y: Math.max(15, Math.min(85, Math.round(userCampusY + radius * Math.sin(angleRad)))),
+        label: c.university?.toUpperCase() || 'CAMPUS'
+      };
+    } else {
+      // Small offset if multiple students are at the same college
+      const offsetX = (idx % 2 === 0 ? 1 : -1) * (Math.floor(idx / 2) * 4);
+      const offsetY = (idx % 3 === 0 ? 2 : -2) * (Math.floor(idx / 3) * 3);
+      baseCoords = {
+        ...baseCoords,
+        x: Math.max(12, Math.min(88, baseCoords.x + offsetX)),
+        y: Math.max(12, Math.min(88, baseCoords.y + offsetY))
+      };
+    }
+
+    return {
+      ...c,
+      posX: baseCoords.x,
+      posY: baseCoords.y,
+      collegeLabel: baseCoords.label
+    };
+  });
+
+  // Zoom Controls
   const handleZoomIn = () => setZoom(prev => Math.min(2.4, Number((prev + 0.3).toFixed(2))));
   const handleZoomOut = () => setZoom(prev => Math.max(0.65, Number((prev - 0.3).toFixed(2))));
   const handleResetPosition = () => {
@@ -77,7 +143,7 @@ export default function CampusRadarMap({
     setPan({ x: 0, y: 0 });
   };
 
-  // Mouse drag to pan
+  // Mouse / Touch Drag Pan
   const handleMouseDown = (e) => {
     if (e.target.closest('.interactive-btn')) return;
     setIsDragging(true);
@@ -86,21 +152,19 @@ export default function CampusRadarMap({
 
   const handleMouseMove = (e) => {
     if (!isDragging) return;
-    const newX = Math.max(-120, Math.min(120, e.clientX - dragStartRef.current.x));
-    const newY = Math.max(-120, Math.min(120, e.clientY - dragStartRef.current.y));
+    const newX = Math.max(-140, Math.min(140, e.clientX - dragStartRef.current.x));
+    const newY = Math.max(-140, Math.min(140, e.clientY - dragStartRef.current.y));
     setPan({ x: newX, y: newY });
   };
 
   const handleMouseUp = () => setIsDragging(false);
 
-  // Wheel zoom
   const handleWheel = (e) => {
     e.preventDefault();
     if (e.deltaY < 0) handleZoomIn();
     else handleZoomOut();
   };
 
-  // Touch Pinch to Zoom & Pan
   const handleTouchStart = (e) => {
     if (e.target.closest('.interactive-btn')) return;
     if (e.touches.length === 1) {
@@ -117,8 +181,8 @@ export default function CampusRadarMap({
 
   const handleTouchMove = (e) => {
     if (e.touches.length === 1 && isDragging) {
-      const newX = Math.max(-120, Math.min(120, e.touches[0].clientX - dragStartRef.current.x));
-      const newY = Math.max(-120, Math.min(120, e.touches[0].clientY - dragStartRef.current.y));
+      const newX = Math.max(-140, Math.min(140, e.touches[0].clientX - dragStartRef.current.x));
+      const newY = Math.max(-140, Math.min(140, e.touches[0].clientY - dragStartRef.current.y));
       setPan({ x: newX, y: newY });
     } else if (e.touches.length === 2 && initialPinchDistRef.current) {
       const dist = Math.hypot(
@@ -139,52 +203,82 @@ export default function CampusRadarMap({
     initialPinchDistRef.current = null;
   };
 
+  const statesList = typeof getStatesList === 'function' ? getStatesList() : ['Delhi NCR', 'Uttar Pradesh', 'Maharashtra', 'Karnataka', 'Tamil Nadu', 'Telangana', 'West Bengal', 'Punjab', 'Rajasthan', 'Gujarat'];
+
   return (
-    <div className="flex-1 flex flex-col h-full relative select-none overflow-hidden bg-[#FFF6F9]">
+    <div className="flex-1 flex flex-col h-full relative select-none overflow-hidden bg-gradient-to-b from-[#FFF5F8] via-[#FFEBF2] to-[#FFF0F5]">
       
       {/* ------------------------------------------------------------- */}
-      {/* FLOATING TOP APP BAR: Status & Geofence (No Search Bar)       */}
+      {/* 1. TOP HEADER & STATE SELECTOR (Exact Match to Screenshot)    */}
       {/* ------------------------------------------------------------- */}
-      <div className="p-4 z-20 space-y-2 pointer-events-auto">
+      <div className="px-4 pt-3 pb-2 z-20 space-y-3 pointer-events-auto">
         
-        {/* Header Bar */}
-        <div className="flex items-center justify-between bg-white/95 backdrop-blur-xl p-3 px-4 rounded-[26px] border border-white shadow-sm">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-full bg-[#FF2E79] text-white flex items-center justify-center shadow-md shadow-rose-500/25 shrink-0">
-              <Compass className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="font-display text-xs font-black text-slate-900 tracking-tight">Campus Radar</span>
-                <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_6px_#10B981]"></span>
+        {/* Title Bar & State Dropdown */}
+        <div className="flex items-start justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-black text-slate-900 tracking-tight font-display">
+                Campus <span className="text-[#FF2E79]">Radar</span>
+              </h1>
+              <div className="w-7 h-7 rounded-full bg-pink-100/90 text-[#FF2E79] flex items-center justify-center shadow-xs">
+                <Compass className="w-4 h-4 stroke-[2.5]" />
               </div>
-              <span className="text-[10px] text-slate-500 font-semibold block">
-                {geofencedUsers.length} students in {activeRegion}
-              </span>
             </div>
+            <p className="text-xs font-semibold text-slate-400 mt-0.5">
+              Discover people around your campus
+            </p>
           </div>
 
-          <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-rose-50 border border-rose-200/60 text-[#FF2E79]">
-            <Globe className="w-3 h-3" />
-            <span className="text-[10.5px] font-black">{activeRegion}</span>
+          {/* Region State Selector Dropdown Pill */}
+          <div className="relative">
+            <button
+              onClick={() => setShowStateDropdown(!showStateDropdown)}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-pink-200/80 text-[#FF2E79] shadow-xs hover:bg-white transition-all cursor-pointer text-xs font-black"
+            >
+              <Globe className="w-3.5 h-3.5 stroke-[2.5]" />
+              <span>{activeRegion}</span>
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showStateDropdown ? 'rotate-180' : ''}`} />
+            </button>
+
+            {showStateDropdown && (
+              <div className="absolute right-0 top-10 z-50 w-48 bg-white/98 backdrop-blur-xl rounded-2xl border border-pink-100 shadow-xl py-2 max-h-56 overflow-y-auto">
+                <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider px-3 py-1 block">
+                  Select Region
+                </span>
+                {statesList.map((st) => (
+                  <button
+                    key={st}
+                    onClick={() => {
+                      setActiveRegion(st);
+                      setShowStateDropdown(false);
+                    }}
+                    className={`w-full text-left px-3 py-1.5 text-xs font-bold transition-colors cursor-pointer ${
+                      activeRegion === st ? 'bg-pink-50 text-[#FF2E79]' : 'text-slate-700 hover:bg-slate-50'
+                    }`}
+                  >
+                    {st}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Distance Filter Chips */}
-        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar bg-white/80 backdrop-blur-md p-1.5 px-2 rounded-full border border-white shadow-xs">
+        {/* 2. DISTANCE FILTER PILL CAROUSEL (Exact Match to Screenshot) */}
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar bg-white/70 backdrop-blur-md p-1.5 rounded-full border border-pink-100/70 shadow-xs">
           {[
-            { id: 'all', label: 'All Delhi Campuses' },
+            { id: 'all', label: `📍 All ${activeRegion.split(' ')[0]} Campuses` },
             { id: '2', label: '< 2 km' },
             { id: '5', label: '< 5 km' },
-            { id: '10', label: '< 10 km' },
+            { id: '10', label: '< 10 km' }
           ].map((f) => (
             <button
               key={f.id}
               onClick={() => setDistanceFilter(f.id)}
-              className={`px-3.5 py-1 rounded-full text-[11px] font-extrabold whitespace-nowrap transition-all cursor-pointer ${
+              className={`px-4 py-1.5 rounded-full text-xs font-black whitespace-nowrap transition-all cursor-pointer ${
                 distanceFilter === f.id
-                  ? 'bg-[#FF2E79] text-white shadow-xs'
-                  : 'text-slate-600 hover:bg-slate-100/80'
+                  ? 'bg-[#FF2E79] text-white shadow-md shadow-rose-500/25'
+                  : 'text-slate-600 hover:bg-white/80'
               }`}
             >
               {f.label}
@@ -197,21 +291,21 @@ export default function CampusRadarMap({
       {/* ------------------------------------------------------------- */}
       {/* FLOATING ZOOM & CENTER CONTROLS (Right Side)                  */}
       {/* ------------------------------------------------------------- */}
-      <div className="absolute right-4 top-36 z-30 flex flex-col gap-2 pointer-events-auto">
+      <div className="absolute right-4 top-36 z-30 flex flex-col gap-2.5 pointer-events-auto">
         <button
           onClick={handleZoomIn}
           className="interactive-btn w-10 h-10 rounded-full bg-white/95 backdrop-blur-md text-slate-800 flex items-center justify-center shadow-md border border-white hover:bg-white active:scale-95 transition-all cursor-pointer"
           title="Zoom In"
         >
-          <Plus className="w-4 h-4 stroke-[2.5]" />
+          <Plus className="w-4.5 h-4.5 stroke-[2.5]" />
         </button>
 
         <button
           onClick={handleZoomOut}
           className="interactive-btn w-10 h-10 rounded-full bg-white/95 backdrop-blur-md text-slate-800 flex items-center justify-center shadow-md border border-white hover:bg-white active:scale-95 transition-all cursor-pointer"
-          title="Zoom Out (See Wider Region)"
+          title="Zoom Out"
         >
-          <Minus className="w-4 h-4 stroke-[2.5]" />
+          <Minus className="w-4.5 h-4.5 stroke-[2.5]" />
         </button>
 
         <button
@@ -219,15 +313,14 @@ export default function CampusRadarMap({
           className="interactive-btn w-10 h-10 rounded-full bg-white/95 backdrop-blur-md text-[#FF2E79] flex items-center justify-center shadow-md border border-white hover:bg-white active:scale-95 transition-all cursor-pointer"
           title="Recenter On Me"
         >
-          <LocateFixed className="w-4 h-4 stroke-[2.5]" />
+          <LocateFixed className="w-4.5 h-4.5 stroke-[2.5]" />
         </button>
       </div>
 
       {/* ------------------------------------------------------------- */}
-      {/* INTERACTIVE RADAR CANVAS: GEOFENCED, PINCH & DRAG PAN         */}
+      {/* INTERACTIVE RADAR CANVAS: RADAR MAP WITH COLLEGE PINS & PROFILES */}
       {/* ------------------------------------------------------------- */}
       <div 
-        ref={mapContainerRef}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
@@ -236,98 +329,86 @@ export default function CampusRadarMap({
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        className="flex-1 relative overflow-hidden cursor-grab active:cursor-grabbing"
+        className="flex-1 relative overflow-hidden cursor-grab active:cursor-grabbing select-none"
       >
         
         {/* TRANSFORM LAYER: PAN & ZOOM */}
         <div 
-          className="absolute inset-0 w-full h-full transition-transform"
+          className="absolute inset-0 w-full h-full"
           style={{
             transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
             transformOrigin: 'center center',
             transition: isDragging ? 'none' : 'transform 0.25s ease-out'
           }}
         >
-          {/* 1. Pink Grid Background */}
-          <div className="absolute inset-[-50%] w-[200%] h-[200%] map-grid-pattern pointer-events-none"></div>
+          {/* 1. Soft Pink Vector Map Roads & Regions Illustration */}
+          <svg className="absolute inset-0 w-full h-full opacity-60 pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
+            {/* Road Networks */}
+            <path d="M 0,20 Q 40,30 100,15" fill="none" stroke="#FFA3C4" strokeWidth="1.2" strokeDasharray="3 2" />
+            <path d="M 15,0 Q 25,50 35,100" fill="none" stroke="#FFA3C4" strokeWidth="1.2" strokeDasharray="4 2" />
+            <path d="M 65,0 Q 55,60 85,100" fill="none" stroke="#FF85AD" strokeWidth="1.5" />
+            <path d="M 0,75 Q 50,65 100,80" fill="none" stroke="#FF85AD" strokeWidth="1.5" />
+            <path d="M 30,30 C 50,10 70,50 90,70" fill="none" stroke="#FFD0E0" strokeWidth="3" />
 
-          {/* 2. Live Moving Ambient Gradient Orbs */}
-          <div className="absolute top-[10%] left-[5%] w-80 h-80 rounded-full bg-[#FFB8D4]/40 blur-3xl animate-glow-1 pointer-events-none"></div>
-          <div className="absolute bottom-[20%] right-[5%] w-96 h-96 rounded-full bg-[#E9D5FF]/45 blur-3xl animate-glow-2 pointer-events-none"></div>
-          <div className="absolute top-[45%] left-[30%] w-72 h-72 rounded-full bg-white/75 blur-2xl pointer-events-none"></div>
+            {/* Concentric Radar Distance Rings (Matching Screenshot) */}
+            <circle cx={userCampusX} cy={userCampusY} r="16" fill="none" stroke="#FF2E79" strokeOpacity="0.22" strokeWidth="1.2" strokeDasharray="3 3" />
+            <circle cx={userCampusX} cy={userCampusY} r="32" fill="none" stroke="#FF2E79" strokeOpacity="0.18" strokeWidth="1.2" strokeDasharray="4 4" />
+            <circle cx={userCampusX} cy={userCampusY} r="46" fill="none" stroke="#FF2E79" strokeOpacity="0.12" strokeWidth="1.2" strokeDasharray="5 5" />
+            <circle cx={userCampusX} cy={userCampusY} r="60" fill="none" stroke="#FF2E79" strokeOpacity="0.08" strokeWidth="1.2" strokeDasharray="6 6" />
 
-          {/* 3. State Boundary Contour Line (Geofence Visual) */}
-          <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-80" viewBox="0 0 100 100" preserveAspectRatio="none">
-            {/* Delhi NCR State Geofence Ring */}
-            <rect 
-              x="5" y="5" width="90" height="90" rx="15" 
-              fill="none" 
-              stroke="rgba(255, 45, 85, 0.22)" 
-              strokeWidth="1.2" 
-              strokeDasharray="4 3" 
-            />
-
-            {/* River Yamuna Boulevard */}
-            <path 
-              d="M -10,35 Q 30,25 50,45 T 110,35" 
-              fill="none" 
-              stroke="#FFDCE8" 
-              strokeWidth="6" 
-              strokeLinecap="round"
-              className="opacity-70"
-            />
-
-            {/* Arterial Highways */}
-            <line x1="50" y1="0" x2="50" y2="100" stroke="#FFFFFF" strokeWidth="2.5" strokeDasharray="3 2" />
-            <line x1="0" y1="50" x2="100" y2="50" stroke="#FFFFFF" strokeWidth="2.5" strokeDasharray="3 2" />
-            <line x1="15" y1="10" x2="85" y2="90" stroke="rgba(255,255,255,0.7)" strokeWidth="1.8" />
-            <line x1="85" y1="15" x2="15" y2="85" stroke="rgba(255,255,255,0.7)" strokeWidth="1.8" />
-
-            {/* Distance Range Concentric Rings */}
-            <circle cx="50" cy="50" r="18" fill="none" stroke="rgba(255,45,85,0.18)" strokeWidth="0.8" strokeDasharray="2 2" />
-            <circle cx="50" cy="50" r="32" fill="none" stroke="rgba(255,45,85,0.14)" strokeWidth="0.8" strokeDasharray="3 3" />
-            <circle cx="50" cy="50" r="44" fill="none" stroke="rgba(255,45,85,0.10)" strokeWidth="0.8" strokeDasharray="4 4" />
+            {/* Radar Beam Sweep Gradient (Rotating 360 Scan) */}
+            <g transform={`translate(${userCampusX}, ${userCampusY})`}>
+              <circle r="46" fill="url(#radar_sweep_grad)" opacity="0.15" className="animate-spin-slow origin-center" />
+            </g>
+            <defs>
+              <radialGradient id="radar_sweep_grad" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stopColor="#FF2E79" stopOpacity="0.4" />
+                <stop offset="70%" stopColor="#FF6596" stopOpacity="0.1" />
+                <stop offset="100%" stopColor="#FF2E79" stopOpacity="0" />
+              </radialGradient>
+            </defs>
           </svg>
 
-          {/* 4. Campus Landmarks */}
+          {/* 2. DEFAULT COLLEGE LANDMARK PINS WITH WHITE BADGES (Exact Match to Screenshot) */}
           <div className="absolute inset-0 pointer-events-none">
-            {CAMPUS_LANDMARKS.map((landmark, idx) => (
+            {DEFAULT_LANDMARKS.map((lm, idx) => (
               <div
                 key={idx}
-                className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center opacity-65"
-                style={{ left: `${landmark.x}%`, top: `${landmark.y}%` }}
+                className="absolute -translate-x-1/2 -translate-y-1/2 flex items-center gap-1.5 opacity-80"
+                style={{ left: `${lm.x}%`, top: `${lm.y}%` }}
               >
-                <div className="w-1.5 h-1.5 rounded-full bg-[#FF2E79]/60 mb-0.5"></div>
-                <span className="text-[8px] font-extrabold uppercase tracking-wider text-slate-500 whitespace-nowrap bg-white/80 backdrop-blur-xs px-1.5 py-0.5 rounded-md border border-white">
-                  {landmark.name}
+                <div className="w-2.5 h-2.5 rounded-full bg-[#FF2E79] ring-4 ring-pink-200/50 shadow-sm shrink-0"></div>
+                <span className="text-[9px] font-black uppercase tracking-wider text-slate-800 bg-white/95 backdrop-blur-xs px-2 py-0.5 rounded-md border border-pink-100 shadow-xs whitespace-nowrap">
+                  {lm.name}
                 </span>
               </div>
             ))}
           </div>
 
-          {/* 5. USER CENTER RADAR PIN */}
+          {/* 3. CENTER USER AVATAR PIN (Exact Match to Screenshot) */}
           <div 
-            className="absolute -translate-x-1/2 -translate-y-1/2 z-10 flex flex-col items-center pointer-events-none"
+            className="absolute -translate-x-1/2 -translate-y-1/2 z-20 flex flex-col items-center pointer-events-none"
             style={{ left: `${userCampusX}%`, top: `${userCampusY}%` }}
           >
+            {/* Glowing Pulse Rings */}
             <div className="absolute w-28 h-28 -top-7 -left-7 rounded-full bg-[#FF2E79]/20 radar-ping pointer-events-none"></div>
             <div className="absolute w-16 h-16 -top-1 -left-1 rounded-full bg-[#FF2E79]/30 animate-pulse pointer-events-none"></div>
 
-            <div className="relative w-14 h-14 rounded-full p-[2.5px] bg-gradient-to-tr from-[#FF2E79] to-purple-500 shadow-xl z-10 border-2 border-white">
+            {/* Profile Avatar Badge */}
+            <div className="relative w-14 h-14 rounded-full p-[2.5px] bg-gradient-to-tr from-[#FF2E79] to-rose-400 shadow-xl z-10 border-2 border-white">
               <img src={user.avatar} alt="You" className="w-full h-full object-cover rounded-full" />
               <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-400 border-2 border-white rounded-full"></span>
             </div>
 
-            <div className="mt-1.5 px-3 py-1 rounded-full bg-slate-950 text-white text-[10px] font-black tracking-wide flex items-center gap-1 shadow-lg border border-white/20 whitespace-nowrap z-10">
-              <MapPin className="w-2.5 h-2.5 text-[#FF2E79]" />
-              <span>You • {user.university?.split(' ')[0] || 'Bennett'}</span>
+            {/* Dark You Pill Label */}
+            <div className="mt-1 px-3 py-1 rounded-full bg-slate-950 text-white text-[10.5px] font-black tracking-wide flex items-center gap-1 shadow-lg border border-white/20 whitespace-nowrap z-10">
+              <MapPin className="w-3 h-3 text-[#FF2E79] fill-current" />
+              <span>You • {user.university?.split(' ')[0] || 'Bennett'} &gt;</span>
             </div>
           </div>
 
-          {/* 6. GEOFENCED CANDIDATE PINS */}
-          {geofencedUsers.map((candidate, idx) => {
-            const posX = candidate.mapX || (20 + ((idx * 27) % 65));
-            const posY = candidate.mapY || (18 + ((idx * 31) % 62));
+          {/* 4. CANDIDATE PROFILE AVATARS ON RADAR MAP BASED ON THEIR COLLEGE (Matches Screenshot) */}
+          {candidateWithCoords.map((candidate) => {
             const isSelected = selectedUser?.id === candidate.id;
 
             return (
@@ -338,31 +419,38 @@ export default function CampusRadarMap({
                   setSelectedUser(candidate);
                 }}
                 className={`interactive-btn absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-all duration-300 ${
-                  isSelected ? 'scale-115 z-30' : 'hover:scale-108 z-10'
+                  isSelected ? 'scale-125 z-40' : 'hover:scale-110 z-30'
                 }`}
-                style={{ left: `${posX}%`, top: `${posY}%` }}
+                style={{ left: `${candidate.posX}%`, top: `${candidate.posY}%` }}
               >
-                <div className={`p-1.5 pr-3 rounded-full flex items-center gap-2 backdrop-blur-md shadow-md border transition-all ${
-                  isSelected 
-                    ? 'bg-slate-900 text-white border-white shadow-xl shadow-slate-900/30' 
-                    : 'bg-white/95 text-slate-800 border-white hover:border-rose-200'
-                }`}>
-                  <div className="relative w-8 h-8 rounded-full overflow-hidden border border-white shrink-0">
-                    <img src={candidate.avatar} alt={candidate.name} className="w-full h-full object-cover" />
+                <div className="flex flex-col items-center">
+                  {/* Candidate DP Avatar Circle */}
+                  <div className={`relative w-12 h-12 rounded-full p-[2px] shadow-lg transition-all ${
+                    isSelected 
+                      ? 'bg-gradient-to-tr from-slate-900 to-rose-600 ring-4 ring-rose-400/50 scale-110' 
+                      : 'bg-gradient-to-tr from-[#FF2E79] to-rose-300 border-2 border-white hover:ring-3 hover:ring-pink-300'
+                  }`}>
+                    <img 
+                      src={candidate.avatar} 
+                      alt={candidate.name} 
+                      className="w-full h-full object-cover rounded-full" 
+                    />
+                    <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-400 border-2 border-white rounded-full"></span>
                   </div>
 
-                  <div className="flex flex-col leading-tight">
-                    <span className={`text-[11px] font-extrabold truncate max-w-[70px] ${isSelected ? 'text-white' : 'text-slate-900'}`}>
+                  {/* Candidate Name & College Label */}
+                  <div className={`mt-1 px-2.5 py-0.5 rounded-full flex items-center gap-1 backdrop-blur-md shadow-md border transition-all ${
+                    isSelected
+                      ? 'bg-slate-900 text-white border-white'
+                      : 'bg-white/95 text-slate-900 border-pink-100 hover:bg-white'
+                  }`}>
+                    <span className="text-[10px] font-black truncate max-w-[75px]">
                       {candidate.name.split(' ')[0]}
                     </span>
-                    <span className={`text-[9px] font-semibold ${isSelected ? 'text-slate-300' : 'text-slate-400'}`}>
-                      {candidate.distanceKm || 1.8} km
+                    <span className="text-[8.5px] font-bold text-[#FF2E79] bg-rose-50 px-1 py-0.2 rounded">
+                      {candidate.matchScore || 94}%
                     </span>
                   </div>
-
-                  <span className="text-[9.5px] font-black text-[#FF2E79] bg-rose-50 px-1.5 py-0.5 rounded-full border border-rose-100 shrink-0">
-                    {candidate.matchScore || 94}%
-                  </span>
                 </div>
               </div>
             );
@@ -373,25 +461,25 @@ export default function CampusRadarMap({
       </div>
 
       {/* ------------------------------------------------------------- */}
-      {/* SELECTED CANDIDATE QUICK PREVIEW BOTTOM SHEET                 */}
+      {/* 5. SELECTED CANDIDATE PROFILE PREVIEW BOTTOM CARD             */}
       {/* ------------------------------------------------------------- */}
       {selectedUser && (
-        <div className="absolute bottom-20 inset-x-4 bg-white/95 backdrop-blur-2xl p-4 rounded-[28px] border border-white shadow-2xl z-30 animate-slide-up pointer-events-auto">
+        <div className="absolute bottom-20 inset-x-4 bg-white/95 backdrop-blur-2xl p-4 rounded-[28px] border border-pink-100 shadow-2xl z-40 animate-slide-up pointer-events-auto select-none">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
-              <div className="w-13 h-13 rounded-full overflow-hidden border-2 border-white shadow-sm ring-2 ring-[#FF2E79]/80 shrink-0">
+              <div className="w-13 h-13 rounded-full overflow-hidden border-2 border-white shadow-sm ring-2 ring-[#FF2E79] shrink-0">
                 <img src={selectedUser.avatar} alt={selectedUser.name} className="w-full h-full object-cover" />
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <h4 className="font-extrabold text-sm text-slate-900 font-display">
-                    {selectedUser.name}, {selectedUser.age}
+                  <h4 className="font-black text-sm text-slate-900 font-display">
+                    {selectedUser.name}, {selectedUser.age || 21}
                   </h4>
                 </div>
-                <p className="text-[11px] text-slate-500 font-semibold">
-                  {selectedUser.university || 'Campus Student'} • {selectedUser.distanceKm || 1.8} km
+                <p className="text-[11px] text-slate-500 font-semibold mt-0.5">
+                  🎓 {selectedUser.university || 'Campus Student'} • 📍 {selectedUser.distanceKm || 1.8} km away
                 </p>
-                <div className="flex items-center gap-1 mt-1">
+                <div className="flex items-center gap-1.5 mt-1">
                   <span className="text-[9.5px] font-black text-[#FF2E79] bg-rose-50 px-2 py-0.5 rounded-full border border-rose-100">
                     {selectedUser.matchScore || 95}% Match
                   </span>
@@ -404,13 +492,13 @@ export default function CampusRadarMap({
 
             <button 
               onClick={() => setSelectedUser(null)}
-              className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-700 cursor-pointer"
+              className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-700 cursor-pointer transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
 
-          <div className="flex items-center gap-2 pt-1 border-t border-slate-100">
+          <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
             <button
               onClick={() => {
                 onSelectCandidate(selectedUser);
@@ -418,7 +506,7 @@ export default function CampusRadarMap({
               }}
               className="flex-1 h-10 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
             >
-              <span>View Profile</span>
+              <span>View Full Profile</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
             </button>
 
