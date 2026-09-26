@@ -42,6 +42,8 @@ export const requestDeviceNotificationPermission = async () => {
   }
 };
 
+const recentSentNotices = new Map();
+
 /**
  * Dispatch system OS / Phone notification bar alert
  */
@@ -51,9 +53,21 @@ export const sendDeviceNotification = (title, message) => {
   const cleanTitle = (title || '').replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
   const cleanMessage = (message || '').replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
 
+  // Deduplication guard: ignore exact duplicate title+message sent within 4 seconds
+  const key = `${cleanTitle}___${cleanMessage}`;
+  const now = Date.now();
+  if (recentSentNotices.has(key) && (now - recentSentNotices.get(key)) < 4000) {
+    return;
+  }
+  recentSentNotices.set(key, now);
+  if (recentSentNotices.size > 20) {
+    recentSentNotices.clear();
+  }
+
   if (Notification.permission === 'granted') {
     try {
-      // 1. Prefer Service Worker showNotification for mobile Chrome / Android notification shade
+      const stableTag = `cupid_alert_${(cleanTitle || 'notice').toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
+
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.ready.then((reg) => {
           if (reg && typeof reg.showNotification === 'function') {
@@ -62,14 +76,14 @@ export const sendDeviceNotification = (title, message) => {
               icon: '/favicon.svg',
               badge: '/favicon.svg',
               vibrate: [200, 100, 200],
-              tag: `cupid_alert_${Date.now()}`
+              tag: stableTag
             });
           } else {
             new Notification(cleanTitle || title, {
               body: cleanMessage || message,
               icon: '/favicon.svg',
               badge: '/favicon.svg',
-              tag: `cupid_alert_${Date.now()}`
+              tag: stableTag
             });
           }
         }).catch(() => {
@@ -77,7 +91,7 @@ export const sendDeviceNotification = (title, message) => {
             body: cleanMessage || message,
             icon: '/favicon.svg',
             badge: '/favicon.svg',
-            tag: `cupid_alert_${Date.now()}`
+            tag: stableTag
           });
         });
       } else {
@@ -85,7 +99,7 @@ export const sendDeviceNotification = (title, message) => {
           body: cleanMessage || message,
           icon: '/favicon.svg',
           badge: '/favicon.svg',
-          tag: `cupid_alert_${Date.now()}`
+          tag: stableTag
         });
       }
     } catch (e) {
@@ -298,8 +312,6 @@ export const syncBroadcastNotifications = async (userId) => {
       message: b.message,
       actionUrl: 'explore'
     });
-    // Trigger OS / Phone notification bar popup!
-    sendDeviceNotification(b.title, b.message);
     receivedIds.push(b.id);
   });
 

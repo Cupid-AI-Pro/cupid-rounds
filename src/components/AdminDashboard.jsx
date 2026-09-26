@@ -1657,12 +1657,11 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                 const msg = e.target.msg.value;
                 if (!title || !msg) return;
                 
-                import('../services/notificationManager').then(({ broadcastNotification, sendDeviceNotification }) => {
+                import('../services/notificationManager').then(({ broadcastNotification }) => {
                   broadcastNotification({
                     title: title,
                     message: msg
                   });
-                  sendDeviceNotification(title, msg);
                 });
 
                 const allUsers = getUsers();

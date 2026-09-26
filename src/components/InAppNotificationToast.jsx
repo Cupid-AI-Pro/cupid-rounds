@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, X, Sparkles, Heart } from 'lucide-react';
-import CupidLogo from './CupidLogo';
+import { Bell, X, Heart } from 'lucide-react';
 
 export default function InAppNotificationToast({ onOpenNotifications }) {
   const [toast, setToast] = useState(null);
@@ -51,23 +50,23 @@ export default function InAppNotificationToast({ onOpenNotifications }) {
           setToast(null);
           if (onOpenNotifications) onOpenNotifications();
         }}
-        className="bg-white/95 backdrop-blur-2xl border border-pink-200 shadow-[0_15px_40px_rgba(255,46,121,0.22)] rounded-2xl p-3.5 flex items-center gap-3 cursor-pointer hover:scale-[1.02] transition-all duration-200"
+        className="bg-white/98 backdrop-blur-2xl border border-pink-200 shadow-[0_15px_40px_rgba(255,46,121,0.22)] rounded-2xl p-3.5 flex items-center gap-3 cursor-pointer hover:scale-[1.02] transition-all duration-200"
       >
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#FF5C93] to-[#FF2E79] flex items-center justify-center text-white shadow-md flex-shrink-0">
-          <CupidLogo className="w-6 h-6 fill-current text-white" />
+        <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#FF5C93] to-[#FF2E79] flex items-center justify-center text-white shadow-md shrink-0">
+          <Heart className="w-5.5 h-5.5 fill-white text-white drop-shadow-sm" />
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5 mb-0.5">
-            <span className="text-[10px] font-black uppercase tracking-wider text-[#FF2E79] bg-pink-50 px-1.5 py-0.5 rounded-md">
+          <div className="flex items-center gap-1.5 mb-1">
+            <span className="text-[9.5px] font-black uppercase tracking-wider text-[#FF2E79] bg-pink-50 border border-pink-100 px-2 py-0.5 rounded-md">
               LIVE ALERT
             </span>
-            <span className="text-[10px] font-medium text-slate-400">Just now</span>
+            <span className="text-[10px] font-semibold text-slate-400">Just now</span>
           </div>
-          <h4 className="text-xs font-black text-slate-900 truncate leading-tight">
+          <h4 className="text-xs font-black text-slate-900 truncate leading-snug">
             {toast.title}
           </h4>
-          <p className="text-[11px] font-medium text-slate-600 truncate leading-tight mt-0.5">
+          <p className="text-[11px] font-medium text-slate-600 truncate leading-snug mt-0.5">
             {toast.message}
           </p>
         </div>
@@ -77,7 +76,7 @@ export default function InAppNotificationToast({ onOpenNotifications }) {
             e.stopPropagation();
             setToast(null);
           }}
-          className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors flex-shrink-0"
+          className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors shrink-0 ml-1"
         >
           <X className="w-3.5 h-3.5" />
         </button>
