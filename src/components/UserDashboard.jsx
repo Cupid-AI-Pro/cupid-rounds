@@ -54,6 +54,30 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
   const [roundState, setRoundState] = useState(getRoundState());
   const [showReEntryModal, setShowReEntryModal] = useState(false);
   const [reEntryPlan, setReEntryPlan] = useState('elite');
+  const [countdown, setCountdown] = useState({ days: '08', hours: '14', mins: '40', secs: '22' });
+
+  useEffect(() => {
+    const updateCountdown = () => {
+      const targetMins = getStateUpcomingMins(user?.state || 'Uttar Pradesh');
+      let totalSecs = Math.max(0, targetMins * 60);
+
+      const d = Math.floor(totalSecs / (3600 * 24));
+      const h = Math.floor((totalSecs % (3600 * 24)) / 3600);
+      const m = Math.floor((totalSecs % 3600) / 60);
+      const s = Math.floor(totalSecs % 60);
+
+      setCountdown({
+        days: String(d).padStart(2, '0'),
+        hours: String(h).padStart(2, '0'),
+        mins: String(m).padStart(2, '0'),
+        secs: String(s).padStart(2, '0')
+      });
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, [user?.state, roundState]);
 
   useEffect(() => {
     const handleSync = () => {
