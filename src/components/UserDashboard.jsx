@@ -171,7 +171,21 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
   const isPremiumMale = (user?.gender || '').toLowerCase() === 'male' && user?.plan === 'premium';
   const femaleMatchesCount = user?.matches?.length || 0;
   const isFemaleLimitReached = isFemale && femaleMatchesCount >= (roundState?.femaleMaxMatches || 2);
-  const isUserInActiveState = (user?.state || '').toLowerCase() === (roundState?.activeState || '').toLowerCase();
+
+  const normalizeState = (s) => {
+    if (!s) return '';
+    const clean = String(s).toLowerCase().trim();
+    if (clean.includes('delhi') || clean.includes('ncr') || clean.includes('noida') || clean.includes('gurgaon')) return 'delhi ncr';
+    if (clean.includes('uttar pradesh') || clean === 'up') return 'uttar pradesh';
+    if (clean.includes('maharashtra') || clean.includes('mumbai') || clean.includes('pune')) return 'maharashtra';
+    if (clean.includes('karnataka') || clean.includes('bangalore') || clean.includes('bengaluru')) return 'karnataka';
+    return clean;
+  };
+
+  const userStateClean = normalizeState(user?.state || user?.hometown);
+  const activeStateClean = normalizeState(roundState?.activeState);
+  const isUserInActiveState = userStateClean && activeStateClean ? userStateClean === activeStateClean : true;
+  const isUserParticipating = user?.roundParticipating !== false && user?.status !== 'round_pending' && user?.status !== 'inactive';
   const upcomingMins = getStateUpcomingMins(user?.state);
 
   const refreshNotifications = () => {
@@ -588,7 +602,7 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
               </p>
 
             </div>
-          ) : (!user?.roundParticipating || user?.status === 'round_pending') ? (
+          ) : (!isUserParticipating) ? (
 
             /* CASE 2: USER'S STATE ROUND IS LIVE NOW -> RE-ENTER PROMPT (EXACT MATCH TO IMAGE 2) */
             <div className="flex-1 flex flex-col items-center justify-center text-center px-4 py-6 animate-fade-in relative z-20 my-auto select-none">

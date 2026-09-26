@@ -345,7 +345,8 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
     if (!customRoundDate) return;
     updateStateScheduleDate(scheduleStateSelect, customRoundDate, customRoundNum);
     setStateSchedules(getAllStateSchedules());
-    alert(`Round date for ${scheduleStateSelect} updated to ${customRoundDate}`);
+    // Also immediately activate this state as live active round across Supabase & all mobile phones
+    handleActiveStateChange(scheduleStateSelect);
   };
 
   // Phase transition & Next round

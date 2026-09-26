@@ -445,6 +445,7 @@ export default function OnboardingForm({ user, onComplete, onCancel }) {
       password: password || user.password || '123456',
       instaId,
       hometown,
+      state: user?.state || hometown || 'Delhi NCR',
       avatar: userPhotos[0] || selectedAvatar3D,
       avatar3D: selectedAvatar3D,
       photos: userPhotos,
