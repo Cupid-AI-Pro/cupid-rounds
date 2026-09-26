@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getUsers, updateUser, createMatch } from '../utils/storage';
+import { getUsers, saveUsers, updateUser, createMatch } from '../utils/storage';
 import { 
   Heart, 
   X, 
@@ -29,7 +29,7 @@ import InteractiveTourGuide from './InteractiveTourGuide';
 import NotificationsModal from './NotificationsModal';
 import ReEntryModal from './ReEntryModal';
 import InAppNotificationToast from './InAppNotificationToast';
-import { getRoundState, ROUND_PHASES, joinRound, getStateUpcomingMins, getStateRoundSchedule } from '../utils/roundManager';
+import { getRoundState, ROUND_PHASES, joinRound, getStateUpcomingMins, getStateRoundSchedule, fetchRoundStateFromSupabase } from '../utils/roundManager';
 import { calculateCompatibilityScore } from '../utils/compatibility';
 import { 
   getNotifications, 
@@ -136,7 +136,14 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
 
   useEffect(() => {
     requestDeviceNotificationPermission();
-    loadCandidates();
+    fetchRoundStateFromSupabase().then((rs) => {
+      if (rs && rs.activeState) {
+        setRoundState(rs);
+      }
+      loadCandidates();
+    }).catch(() => {
+      loadCandidates();
+    });
     if (user && user.id) {
       checkAndTriggerRoundNotifications(user);
       syncBroadcastNotifications(user.id).then(() => {
