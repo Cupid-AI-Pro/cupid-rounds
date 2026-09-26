@@ -633,7 +633,13 @@ export const checkAndRotateRoundAutomated = () => {
   const totalRoundElapsedMins = Math.max(0, (now.getTime() - roundStart.getTime()) / (1000 * 60));
 
   const isFastDemo = typeof window !== 'undefined' && localStorage.getItem('cupid_demo_rotation_speed') === 'fast';
+  const isAutoRotationEnabled = typeof window !== 'undefined' && localStorage.getItem('cupid_auto_rotation_enabled') === 'true';
   const maxRoundDurationMins = isFastDemo ? 4 : 60; // 60 mins total per state round
+
+  // If automated rotation is not explicitly enabled, keep activeState pinned to what Admin configured!
+  if (!isAutoRotationEnabled && !isFastDemo) {
+    return;
+  }
 
   // 1. If 60+ minutes have elapsed, auto-rotate state round to NEXT state!
   if (totalRoundElapsedMins >= maxRoundDurationMins) {

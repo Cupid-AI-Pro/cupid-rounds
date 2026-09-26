@@ -275,6 +275,7 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
     const updated = { 
       ...current, 
       activeState: newState,
+      roundStartDate: new Date().toISOString(),
       phaseStartedAt: new Date().toISOString()
     };
     saveRoundState(updated);
