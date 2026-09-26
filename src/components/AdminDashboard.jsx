@@ -1657,18 +1657,16 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                 const msg = e.target.msg.value;
                 if (!title || !msg) return;
                 
-                const allUsers = getUsers();
-                allUsers.forEach(u => {
-                  import('../services/notificationManager').then(({ addNotification }) => {
-                    addNotification(u.id, {
-                      type: 'system',
-                      title: title,
-                      message: msg,
-                      linkTab: 'explore'
-                    });
+                import('../services/notificationManager').then(({ broadcastNotification, sendDeviceNotification }) => {
+                  broadcastNotification({
+                    title: title,
+                    message: msg
                   });
+                  sendDeviceNotification(title, msg);
                 });
-                alert(`Broadcast notification sent to all ${allUsers.length} users!`);
+
+                const allUsers = getUsers();
+                alert(`Broadcast notification successfully dispatched to all ${allUsers.length} users' phones!`);
                 e.target.reset();
               }} className="space-y-3">
                 <div>

@@ -35,7 +35,8 @@ import {
   addNotification, 
   getUnreadCount, 
   checkAndTriggerRoundNotifications,
-  requestDeviceNotificationPermission 
+  requestDeviceNotificationPermission,
+  syncBroadcastNotifications
 } from '../services/notificationManager';
 
 export default function UserDashboard({ user, onUpdateUser, onLogout }) {
@@ -111,7 +112,11 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
     const handleSync = () => {
       setRoundState(getRoundState());
       loadCandidates();
-      if (user?.id) setNotifications(getNotifications(user.id));
+      if (user?.id) {
+        syncBroadcastNotifications(user.id).then(() => {
+          setNotifications(getNotifications(user.id));
+        });
+      }
     };
     window.addEventListener('cupid_round_state_changed', handleSync);
     window.addEventListener('cupid_data_changed', handleSync);
@@ -126,12 +131,26 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
     loadCandidates();
     if (user && user.id) {
       checkAndTriggerRoundNotifications(user);
-      setNotifications(getNotifications(user.id));
+      syncBroadcastNotifications(user.id).then(() => {
+        setNotifications(getNotifications(user.id));
+      });
     }
+
+    // Periodic broadcast notification check every 8 seconds for real-time mobile status bar popups
+    const notifInterval = setInterval(() => {
+      if (user?.id) {
+        syncBroadcastNotifications(user.id).then(() => {
+          setNotifications(getNotifications(user.id));
+        });
+      }
+    }, 8000);
+
     const hasPrompted = user?.id ? localStorage.getItem(`perm_prompted_${user.id}`) : true;
     if (!hasPrompted) {
       setShowPermissionPrompt(true);
     }
+
+    return () => clearInterval(notifInterval);
   }, [user?.id, user?.gender, user?.interestedIn, user?.university, activeFilter, roundState?.currentPhase]);
 
   // Render loading placeholder if user object is not available

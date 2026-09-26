@@ -1,26 +1,43 @@
 /**
  * notificationManager.js
  * In-App & Native Device Notification System for Cupid Rounds
- * Handles Likes, Mutual Matches, 1-Day Prior Round Reminders, Round Day Live Alerts, and Refund Updates.
- * Automatically dispatches system notification bar popups without emojis.
+ * Handles Likes, Mutual Matches, Broadcasts, 1-Day Prior Round Reminders, Round Day Live Alerts, and Refund Updates.
+ * Automatically dispatches system OS notification bar popups on user phones.
  */
 
 import { getUsers, saveUsers } from '../utils/storage';
 import { getStateRoundSchedule } from '../utils/roundManager';
 
 const NOTIFICATIONS_KEY_PREFIX = 'cupid_notifications_';
+const GLOBAL_BROADCASTS_KEY = 'cupid_global_broadcasts';
+const RECEIVED_BROADCASTS_PREFIX = 'cupid_received_broadcasts_';
 
 /**
- * Request device notification permission for system notification bar alerts
+ * Request device notification permission for system notification bar alerts & register service worker
  */
 export const requestDeviceNotificationPermission = async () => {
   if (typeof window !== 'undefined' && 'Notification' in window) {
     if (Notification.permission === 'default') {
       try {
-        await Notification.requestPermission();
+        const perm = await Notification.requestPermission();
+        if (perm === 'granted') {
+          sendDeviceNotification('Notifications Enabled', 'You will now receive live match and round updates on your phone!');
+        }
       } catch (e) {
         console.warn('Device notification permission request failed:', e);
       }
+    }
+  }
+
+  // Ensure Service Worker is active for mobile phone status bar notifications
+  if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+    try {
+      const reg = await navigator.serviceWorker.getRegistration();
+      if (!reg) {
+        await navigator.serviceWorker.register('/sw.js');
+      }
+    } catch (e) {
+      console.warn('Service worker registration notice:', e);
     }
   }
 };
@@ -29,14 +46,48 @@ export const requestDeviceNotificationPermission = async () => {
  * Dispatch system OS / Phone notification bar alert
  */
 export const sendDeviceNotification = (title, message) => {
-  if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+  if (typeof window === 'undefined' || !('Notification' in window)) return;
+
+  const cleanTitle = (title || '').replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
+  const cleanMessage = (message || '').replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
+
+  if (Notification.permission === 'granted') {
     try {
-      new Notification(title, {
-        body: message,
-        icon: '/favicon.ico',
-        badge: '/favicon.ico',
-        tag: 'cupid_round_alert'
-      });
+      // 1. Prefer Service Worker showNotification for mobile Chrome / Android notification shade
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.ready.then((reg) => {
+          if (reg && typeof reg.showNotification === 'function') {
+            reg.showNotification(cleanTitle || title, {
+              body: cleanMessage || message,
+              icon: '/favicon.svg',
+              badge: '/favicon.svg',
+              vibrate: [200, 100, 200],
+              tag: `cupid_alert_${Date.now()}`
+            });
+          } else {
+            new Notification(cleanTitle || title, {
+              body: cleanMessage || message,
+              icon: '/favicon.svg',
+              badge: '/favicon.svg',
+              tag: `cupid_alert_${Date.now()}`
+            });
+          }
+        }).catch(() => {
+          new Notification(cleanTitle || title, {
+            body: cleanMessage || message,
+            icon: '/favicon.svg',
+            badge: '/favicon.svg',
+            tag: `cupid_alert_${Date.now()}`
+          });
+        });
+      } else {
+        new Notification(cleanTitle || title, {
+          body: cleanMessage || message,
+          icon: '/favicon.svg',
+          badge: '/favicon.svg',
+          tag: `cupid_alert_${Date.now()}`
+        });
+      }
     } catch (e) {
       console.warn('Device notification bar popup error:', e);
     }
@@ -89,7 +140,6 @@ export const saveNotifications = (userId, notifications) => {
 export const addNotification = (userId, { type, title, message, actionUrl }) => {
   if (!userId) return;
 
-  // Clean title & message from any emojis
   const cleanTitle = (title || '').replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
   const cleanMessage = (message || '').replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
 
@@ -104,7 +154,7 @@ export const addNotification = (userId, { type, title, message, actionUrl }) => 
 
   const newNotice = {
     id: `notif_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-    type, // 'like' | 'match' | 'round_1day' | 'round_today' | 'payment' | 'refund'
+    type, 
     title: cleanTitle || title,
     message: cleanMessage || message,
     actionUrl: actionUrl || null,
@@ -119,6 +169,138 @@ export const addNotification = (userId, { type, title, message, actionUrl }) => 
   sendDeviceNotification(cleanTitle || title, cleanMessage || message);
 
   return newNotice;
+};
+
+/**
+ * Send a broadcast notification from Admin to all users
+ */
+export const broadcastNotification = ({ title, message }) => {
+  const cleanTitle = (title || '').replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
+  const cleanMessage = (message || '').replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
+
+  const broadcastItem = {
+    id: `broadcast_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+    title: cleanTitle || title,
+    message: cleanMessage || message,
+    timestamp: new Date().toISOString()
+  };
+
+  // 1. Save locally in global broadcasts storage
+  try {
+    const existing = JSON.parse(localStorage.getItem(GLOBAL_BROADCASTS_KEY) || '[]');
+    const updated = [broadcastItem, ...existing].slice(0, 50);
+    localStorage.setItem(GLOBAL_BROADCASTS_KEY, JSON.stringify(updated));
+  } catch (e) {
+    console.warn('Failed to save global broadcast:', e);
+  }
+
+  // 2. Sync to Supabase if configured
+  if (typeof window !== 'undefined') {
+    import('./supabaseClient').then(({ supabase, isSupabaseConfigured }) => {
+      if (isSupabaseConfigured()) {
+        supabase
+          .from('notifications')
+          .insert({
+            id: broadcastItem.id,
+            user_id: 'BROADCAST_ALL',
+            type: 'system',
+            title: broadcastItem.title,
+            message: broadcastItem.message,
+            read: false,
+            created_at: broadcastItem.timestamp
+          })
+          .then(({ error }) => {
+            if (error) console.warn('Supabase broadcast sync notice:', error.message);
+          });
+      }
+    });
+  }
+
+  // 3. Deliver to all registered users on current device immediately
+  const allUsers = getUsers();
+  allUsers.forEach(u => {
+    addNotification(u.id, {
+      type: 'system',
+      title: broadcastItem.title,
+      message: broadcastItem.message,
+      actionUrl: 'explore'
+    });
+  });
+
+  return broadcastItem;
+};
+
+/**
+ * Sync global & Supabase broadcasts to a specific user's notification list and trigger phone status bar notification popups
+ */
+export const syncBroadcastNotifications = async (userId) => {
+  if (!userId) return;
+
+  const receivedKey = `${RECEIVED_BROADCASTS_PREFIX}${userId}`;
+  let receivedIds = [];
+  try {
+    receivedIds = JSON.parse(localStorage.getItem(receivedKey) || '[]');
+  } catch (e) {
+    receivedIds = [];
+  }
+
+  let broadcasts = [];
+  try {
+    broadcasts = JSON.parse(localStorage.getItem(GLOBAL_BROADCASTS_KEY) || '[]');
+  } catch (e) {
+    broadcasts = [];
+  }
+
+  // Check Supabase for remote broadcasts
+  if (typeof window !== 'undefined') {
+    try {
+      const { supabase, isSupabaseConfigured } = await import('./supabaseClient');
+      if (isSupabaseConfigured()) {
+        const { data, error } = await supabase
+          .from('notifications')
+          .select('*')
+          .eq('user_id', 'BROADCAST_ALL')
+          .order('created_at', { ascending: false })
+          .limit(20);
+        if (!error && data) {
+          const supabaseBroadcasts = data.map(d => ({
+            id: d.id,
+            title: d.title,
+            message: d.message,
+            timestamp: d.created_at
+          }));
+          const merged = [...broadcasts];
+          supabaseBroadcasts.forEach(sb => {
+            if (!merged.some(m => m.id === sb.id)) {
+              merged.push(sb);
+            }
+          });
+          broadcasts = merged;
+          localStorage.setItem(GLOBAL_BROADCASTS_KEY, JSON.stringify(broadcasts));
+        }
+      }
+    } catch (e) {
+      // Graceful fallback to local broadcasts
+    }
+  }
+
+  const unreceived = broadcasts.filter(b => !receivedIds.includes(b.id));
+
+  unreceived.forEach(b => {
+    addNotification(userId, {
+      type: 'system',
+      title: b.title,
+      message: b.message,
+      actionUrl: 'explore'
+    });
+    // Trigger OS / Phone notification bar popup!
+    sendDeviceNotification(b.title, b.message);
+    receivedIds.push(b.id);
+  });
+
+  if (unreceived.length > 0) {
+    localStorage.setItem(receivedKey, JSON.stringify(receivedIds));
+  }
 };
 
 export const markNotificationAsRead = (userId, notificationId) => {
@@ -165,4 +347,3 @@ export const checkAndTriggerRoundNotifications = (user) => {
     });
   }
 };
-

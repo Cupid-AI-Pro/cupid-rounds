@@ -19,19 +19,14 @@
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-      // Clear browser cache & unregister old Service Workers to ensure instant live updates
+      // Register Service Worker for native device scroll-down notification alerts
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then((registrations) => {
-          for (let registration of registrations) {
-            registration.unregister();
-          }
-        });
-      }
-      if ('caches' in window) {
-        caches.keys().then((names) => {
-          for (let name of names) {
-            caches.delete(name);
-          }
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').then((reg) => {
+            console.log('[SW] Service Worker registered for device notifications:', reg.scope);
+          }).catch((err) => {
+            console.warn('[SW] Service Worker registration notice:', err);
+          });
         });
       }
     </script>

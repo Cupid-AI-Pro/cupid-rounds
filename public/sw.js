@@ -1,8 +1,7 @@
 // Cupid Rounds — Live Over-The-Air (OTA) Instant Auto-Update Service Worker
-const CACHE_NAME = 'cupid-rounds-live-v10';
+const CACHE_NAME = 'cupid-rounds-live-v11';
 
 self.addEventListener('install', (event) => {
-  // Immediately take over and purge all previous caches
   self.skipWaiting();
   event.waitUntil(
     caches.keys().then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
@@ -24,8 +23,7 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Network-First Strategy with Cache Bypassing:
-// Always fetch fresh code directly from server without HTTP caching.
+// Network-First Strategy with Cache Bypassing
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
@@ -43,6 +41,41 @@ self.addEventListener('fetch', (event) => {
       .catch(() => {
         return caches.match(event.request);
       })
+  );
+});
+
+// ── NATIVE DEVICE PUSH & STATUS BAR NOTIFICATION HANDLERS ─────────────────────
+self.addEventListener('push', (event) => {
+  let data = { title: 'Cupid Rounds Alert', body: 'You have a new live round update in Cupid Rounds!' };
+  if (event.data) {
+    try { 
+      data = event.data.json(); 
+    } catch(e) { 
+      data.body = event.data.text(); 
+    }
+  }
+
+  const options = {
+    body: data.body || data.message || 'Check Cupid Rounds app for new updates.',
+    icon: '/favicon.svg',
+    badge: '/favicon.svg',
+    vibrate: [200, 100, 200],
+    data: { url: data.url || '/' },
+    tag: `cupid_push_${Date.now()}`
+  };
+
+  event.waitUntil(self.registration.showNotification(data.title || 'Cupid Rounds', options));
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (let client of clientList) {
+        if (client.url && 'focus' in client) return client.focus();
+      }
+      if (clients.openWindow) return clients.openWindow(event.notification.data?.url || '/');
+    })
   );
 });
 
