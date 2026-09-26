@@ -29,6 +29,51 @@ export default function App() {
         status: 'onboarding'
       };
     }
+    const loginParam = params.get('login');
+    if (loginParam) {
+      initializeStorage();
+      const clean = loginParam.toLowerCase();
+      const users = getUsers();
+      let match = users.find(u => 
+        (u.name && u.name.toLowerCase() === clean) || 
+        (u.email && u.email.toLowerCase().includes(clean))
+      );
+      if (!match) {
+        if (clean === 'aditya') {
+          match = {
+            id: '799a36ac-4895-4d6b-9fbb-ad6e7c205d39',
+            name: 'Aditya',
+            email: 'aditya@gmail.com',
+            gender: 'male',
+            state: 'Delhi NCR',
+            plan: 'elite',
+            status: 'active',
+            university: 'Bennett University',
+            avatar: '/avatars/aarav.jpg',
+            likes: [],
+            matches: []
+          };
+        } else if (clean === 'sneha') {
+          match = {
+            id: 'c04bce5a-9e61-4450-8580-3057ff95a548',
+            name: 'Sneha',
+            email: 'sneha@gmail.com',
+            gender: 'female',
+            state: 'Delhi NCR',
+            plan: 'free',
+            status: 'active',
+            university: 'Bennett University',
+            avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&auto=format&fit=crop&q=80',
+            likes: [],
+            matches: []
+          };
+        }
+      }
+      if (match) {
+        setCurrentUser(match);
+        return match;
+      }
+    }
     return getCurrentUser();
   });
 

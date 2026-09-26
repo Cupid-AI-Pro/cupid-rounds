@@ -62,7 +62,10 @@ export default function CinematicLoadingScreen({ onComplete, activeState, durati
   }, []);
 
   return (
-    <div className="fixed inset-0 w-full h-[100dvh] min-h-screen flex flex-col justify-between p-8 select-none overflow-hidden bg-slate-950 text-white font-sans z-50">
+    <div 
+      onClick={() => onComplete && onComplete()}
+      className="fixed inset-0 w-full h-[100dvh] min-h-screen flex flex-col justify-between p-8 select-none overflow-hidden bg-slate-950 text-white font-sans z-50 cursor-pointer"
+    >
       
       {/* 1. Couple Photos with Slow Ken-Burns Cinematic Movement */}
       {COUPLE_EDITORIAL_PHOTOS.map((slide, idx) => (
@@ -93,11 +96,21 @@ export default function CinematicLoadingScreen({ onComplete, activeState, durati
         }}
       ></div>
 
-      {/* 3. Top Minimal Location Header */}
-      <div className="relative z-10 flex justify-center pt-4">
+      {/* 3. Top Minimal Location Header & Skip Button */}
+      <div className="relative z-10 flex items-center justify-between pt-4">
         <span className="text-[10px] font-bold tracking-[0.25em] text-white/70 uppercase">
           {displayState} • ROUND {String(roundNum).padStart(2, '0')}
         </span>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (onComplete) onComplete();
+          }}
+          className="text-[11px] font-semibold text-white/80 hover:text-white bg-white/10 hover:bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/20 transition-all"
+        >
+          Skip &rarr;
+        </button>
       </div>
 
       {/* 4. Center Brand Identity (Hinge-Inspired Minimalist Typography) */}
