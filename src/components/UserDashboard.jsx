@@ -440,43 +440,89 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
 
               {/* 3D Hourglass Graphic Container */}
               <div className="relative w-48 h-48 mx-auto mb-5 flex items-center justify-center select-none">
-                <div className="absolute inset-0 rounded-full bg-pink-100/50 blur-2xl animate-pulse" />
+                <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-pink-200/50 via-rose-100/60 to-pink-50/30 blur-2xl animate-pulse" />
                 <div className="w-40 h-40 rounded-full bg-white/90 backdrop-blur-md border border-pink-100 shadow-[0_12px_35px_rgba(255,182,193,0.35)] flex items-center justify-center relative z-10">
-                  <svg width="84" height="84" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-md">
-                    <rect x="18" y="10" width="44" height="7" rx="3.5" fill="url(#wood_top_3d)" />
-                    <rect x="20" y="15" width="40" height="2" fill="#EFA2B5" opacity="0.6" />
-                    <rect x="18" y="63" width="44" height="7" rx="3.5" fill="url(#wood_bottom_3d)" />
-                    <rect x="20" y="63" width="40" height="2" fill="#EFA2B5" opacity="0.6" />
-                    <path d="M24 17H56L43 37.5C41.5 39.5 41.5 40.5 43 42.5L56 63H24L37 42.5C38.5 40.5 38.5 39.5 37 37.5L24 17Z" fill="url(#glass_3d)" fillOpacity="0.8" stroke="#F4A6BF" strokeWidth="2.5" strokeLinejoin="round" />
-                    <path d="M27 20H32L40 33C38 34 38 35 37 37L27 20Z" fill="white" fillOpacity="0.45" />
-                    <path d="M27 21H53L44 34.5C42 37.5 38 37.5 36 34.5L27 21Z" fill="url(#sand_pink_3d)" />
-                    <line x1="40" y1="36" x2="40" y2="58" stroke="#FF2E79" strokeWidth="2.5" strokeDasharray="3 3" className="animate-pulse" />
-                    <path d="M26 60C31 54 49 54 54 60V62H26V60Z" fill="url(#sand_pink_3d)" />
+                  <svg width="96" height="96" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-xl">
                     <defs>
-                      <linearGradient id="wood_top_3d" x1="18" y1="10" x2="62" y2="17" gradientUnits="userSpaceOnUse">
-                        <stop stopColor="#F2B5C4" />
-                        <stop offset="0.5" stopColor="#E2899F" />
-                        <stop offset="1" stopColor="#C96881" />
+                      {/* Top & Bottom Metallic Cap Gradients */}
+                      <linearGradient id="hg_cap_top" x1="15" y1="10" x2="85" y2="24" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stopColor="#FAD0C4" />
+                        <stop offset="35%" stopColor="#FF9A9E" />
+                        <stop offset="70%" stopColor="#F472B6" />
+                        <stop offset="100%" stopColor="#BE185D" />
                       </linearGradient>
-                      <linearGradient id="wood_bottom_3d" x1="18" y1="63" x2="62" y2="70" gradientUnits="userSpaceOnUse">
-                        <stop stopColor="#F2B5C4" />
-                        <stop offset="0.5" stopColor="#E2899F" />
-                        <stop offset="1" stopColor="#C96881" />
+                      <linearGradient id="hg_cap_bottom" x1="15" y1="76" x2="85" y2="90" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stopColor="#FAD0C4" />
+                        <stop offset="35%" stopColor="#FF9A9E" />
+                        <stop offset="70%" stopColor="#F472B6" />
+                        <stop offset="100%" stopColor="#BE185D" />
                       </linearGradient>
-                      <linearGradient id="glass_3d" x1="24" y1="17" x2="56" y2="63" gradientUnits="userSpaceOnUse">
-                        <stop stopColor="#FFF5F8" stopOpacity="0.95" />
-                        <stop offset="0.5" stopColor="#FFE4ED" stopOpacity="0.5" />
-                        <stop offset="1" stopColor="#FFCCD9" stopOpacity="0.8" />
+                      {/* Metallic Pillar Gradient */}
+                      <linearGradient id="hg_pillar" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stopColor="#DB2777" />
+                        <stop offset="30%" stopColor="#FCE7F3" />
+                        <stop offset="70%" stopColor="#F472B6" />
+                        <stop offset="100%" stopColor="#9D174D" />
                       </linearGradient>
-                      <linearGradient id="sand_pink_3d" x1="24" y1="21" x2="56" y2="62" gradientUnits="userSpaceOnUse">
-                        <stop stopColor="#FF4785" />
-                        <stop offset="0.6" stopColor="#FF2E79" />
-                        <stop offset="1" stopColor="#D91656" />
+                      {/* Glass Vessel Translucent Gradient */}
+                      <linearGradient id="hg_glass" x1="25" y1="20" x2="75" y2="80" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.9" />
+                        <stop offset="40%" stopColor="#FFF0F5" stopOpacity="0.4" />
+                        <stop offset="70%" stopColor="#FBCFE8" stopOpacity="0.5" />
+                        <stop offset="100%" stopColor="#F472B6" stopOpacity="0.8" />
                       </linearGradient>
+                      {/* Sand Gradients */}
+                      <linearGradient id="hg_sand" x1="25" y1="20" x2="75" y2="80" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stopColor="#FF6596" />
+                        <stop offset="50%" stopColor="#FF2E79" />
+                        <stop offset="100%" stopColor="#C2185B" />
+                      </linearGradient>
+                      {/* Drop Shadow Filter */}
+                      <filter id="hg_shadow" x="-20%" y="-20%" width="140%" height="140%">
+                        <feDropShadow dx="0" dy="6" stdDeviation="4" floodColor="#FF2E79" floodOpacity="0.25" />
+                      </filter>
                     </defs>
+
+                    {/* Ground Ambient Shadow */}
+                    <ellipse cx="50" cy="89" rx="34" ry="4.5" fill="#FF2E79" opacity="0.2" filter="blur(2px)" />
+
+                    {/* 3D Bottom Base Cap */}
+                    <rect x="14" y="79" width="72" height="8" rx="4" fill="url(#hg_cap_bottom)" />
+                    <ellipse cx="50" cy="79" rx="36" ry="4.5" fill="#FFE4E6" opacity="0.8" />
+                    <ellipse cx="50" cy="79" rx="34" ry="3.5" fill="url(#hg_cap_bottom)" />
+
+                    {/* 3D Top Base Cap */}
+                    <rect x="14" y="13" width="72" height="8" rx="4" fill="url(#hg_cap_top)" />
+                    <ellipse cx="50" cy="13" rx="36" ry="4.5" fill="#FFE4E6" opacity="0.9" />
+                    <ellipse cx="50" cy="13" rx="34" ry="3.5" fill="url(#hg_cap_top)" />
+
+                    {/* Side Support Pillars (3D Brass/Rose-Gold Columns) */}
+                    <rect x="17" y="19" width="6" height="62" rx="3" fill="url(#hg_pillar)" />
+                    <rect x="77" y="19" width="6" height="62" rx="3" fill="url(#hg_pillar)" />
+
+                    {/* Glass Body Double Chamber Outer Silhouette */}
+                    <path d="M 27 21 C 27 36 43 45 47 49 C 48.5 50.5 48.5 50.5 47 52 C 43 56 27 65 27 79 H 73 C 73 65 57 56 53 52 C 51.5 50.5 51.5 50.5 53 49 C 57 45 73 36 73 21 Z" 
+                          fill="url(#hg_glass)" 
+                          stroke="#F472B6" 
+                          strokeWidth="2" 
+                          strokeLinejoin="round" 
+                          filter="url(#hg_shadow)" />
+
+                    {/* Top Chamber Sand */}
+                    <path d="M 30 30 C 30 38 43 45 48 49 C 49 50 49 50 48 50 C 43 45 30 38 30 30 Z" fill="url(#hg_sand)" />
+                    <ellipse cx="50" cy="30" rx="20" ry="3" fill="#FF85AD" opacity="0.9" />
+
+                    {/* Animated Falling Sand Stream */}
+                    <line x1="50" y1="49" x2="50" y2="74" stroke="#FF2E79" strokeWidth="2.5" strokeDasharray="3 3" strokeLinecap="round" className="animate-pulse" />
+
+                    {/* Bottom Chamber Accumulated Sand Mound */}
+                    <path d="M 30 79 C 34 71 66 71 70 79 Z" fill="url(#hg_sand)" />
+                    <ellipse cx="50" cy="79" rx="20" ry="3" fill="#D91656" opacity="0.6" />
+
+                    {/* Glossy Glass Specular Highlights */}
+                    <path d="M 30 24 C 30 32 38 38 42 42" stroke="white" strokeWidth="2.5" strokeLinecap="round" opacity="0.75" />
+                    <path d="M 70 58 C 70 66 62 72 58 76" stroke="white" strokeWidth="2.5" strokeLinecap="round" opacity="0.5" />
                   </svg>
-                  <span className="absolute -top-1 -right-1 text-pink-400 text-sm animate-bounce">✦</span>
-                  <span className="absolute bottom-3 -left-3 text-pink-300 text-sm animate-pulse">✦</span>
                 </div>
               </div>
 
@@ -546,8 +592,6 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
                       </linearGradient>
                     </defs>
                   </svg>
-                  <span className="absolute -top-1 right-2 text-pink-400 text-xs animate-bounce">✦</span>
-                  <span className="absolute bottom-4 left-0 text-pink-300 text-xs animate-pulse">✦</span>
                 </div>
               </div>
 
