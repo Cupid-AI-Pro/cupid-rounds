@@ -783,15 +783,17 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
 
             /* CASE 3: USER IS PARTICIPATING IN ACTIVE LIVE ROUND -> SHOW CANDIDATE DECK */
             <>
-              {/* Segmented Filter Pills Bar */}
-              <div className="flex items-center justify-between gap-2 mb-2.5 select-none">
-                <div className="bg-white/90 backdrop-blur-md rounded-full p-1 border border-white/90 shadow-2xs flex items-center gap-1 flex-1">
+              {/* Segmented Filter Pills Bar (Clean 1-Line Layout without wrapping) */}
+              <div className="flex items-center justify-between gap-1.5 sm:gap-2 mb-2.5 select-none">
+                {/* Left: Nearby / For You segmented toggle pill */}
+                <div className="bg-white/95 backdrop-blur-md rounded-full p-1 border border-pink-100 shadow-2xs flex items-center shrink-0">
                   <button
+                    type="button"
                     onClick={() => setActiveFilter('nearby')}
-                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-full text-xs transition-all cursor-pointer ${
+                    className={`flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-full text-xs whitespace-nowrap transition-all cursor-pointer ${
                       activeFilter === 'nearby'
-                        ? 'bg-gradient-to-r from-[#FF2E79] to-pink-600 text-white font-black shadow-md shadow-pink-300/40'
-                        : 'text-slate-600 font-bold hover:bg-slate-50'
+                        ? 'bg-gradient-to-r from-[#FF2E79] to-pink-600 text-white font-black shadow-sm shadow-pink-300/40'
+                        : 'text-slate-600 font-bold hover:text-slate-900'
                     }`}
                   >
                     <MapPin className="w-3.5 h-3.5" />
@@ -799,26 +801,32 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
                   </button>
 
                   <button
+                    type="button"
                     onClick={() => setActiveFilter('forYou')}
-                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-full text-xs transition-all cursor-pointer ${
+                    className={`flex items-center justify-center gap-1.5 py-1.5 px-3.5 rounded-full text-xs whitespace-nowrap transition-all cursor-pointer ${
                       activeFilter === 'forYou'
-                        ? 'bg-gradient-to-r from-[#FF2E79] to-pink-600 text-white font-black shadow-md shadow-pink-300/40'
-                        : 'text-slate-600 font-bold hover:bg-slate-50'
+                        ? 'bg-gradient-to-r from-[#FF2E79] to-pink-600 text-white font-black shadow-sm shadow-pink-300/40'
+                        : 'text-slate-600 font-bold hover:text-slate-900'
                     }`}
                   >
                     <Heart className="w-3.5 h-3.5 fill-current" />
                     <span>For You</span>
                   </button>
-
-                  <button
-                    onClick={() => setCurrentTab('radar')}
-                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-full text-xs text-[#FF2E79] font-black bg-pink-50/80 hover:bg-pink-100/80 transition-all cursor-pointer shrink-0"
-                  >
-                    <Users className="w-3.5 h-3.5 text-[#FF2E79]" />
-                    <span>{roundState?.activeState || user?.state || 'Delhi NCR'} Round #{roundState?.roundNumber || 1}</span>
-                    <span className="w-2 h-2 rounded-full bg-[#FF2E79] animate-ping" />
-                  </button>
                 </div>
+
+                {/* Right: Round & State Live Badge */}
+                <button
+                  type="button"
+                  onClick={() => setCurrentTab('radar')}
+                  className="bg-white/95 backdrop-blur-md border border-pink-100 hover:border-pink-200 rounded-full py-1.5 px-2.5 sm:px-3 shadow-2xs flex items-center gap-1.5 text-xs text-[#FF2E79] font-black cursor-pointer transition-all active:scale-95 shrink-0"
+                  title="View Campus Radar"
+                >
+                  <Users className="w-3.5 h-3.5 text-[#FF2E79] shrink-0" />
+                  <span className="whitespace-nowrap truncate max-w-[110px] sm:max-w-none">
+                    {roundState?.activeState || user?.state || 'Delhi NCR'} #{roundState?.roundNumber || 1}
+                  </span>
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0 inline-block" />
+                </button>
               </div>
 
               {/* Card Deck Container */}
