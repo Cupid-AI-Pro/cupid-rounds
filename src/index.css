@@ -592,6 +592,192 @@ select option:checked {
   will-change: transform, opacity;
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════════
+   SAAS-LEVEL LUXURY TRANSITIONS & KEYFRAMES (HINGE / TINDER SPRING PHYSICS)
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* 1. Silky Screen / Tab Entrance Animation */
+@keyframes screenEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-1px) scale(1.002);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-screen-enter {
+  animation: screenEnter 0.34s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+/* 2. Slide In From Bottom (Native Sheet Transition like Hinge/Tinder Full Profile) */
+@keyframes slideUpNative {
+  0% {
+    opacity: 0.6;
+    transform: translateY(100%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slideUpNative 0.36s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+/* 3. Slide Out To Bottom */
+@keyframes slideDownNative {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+}
+
+.animate-slide-down {
+  animation: slideDownNative 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+/* 4. Slide In From Right (Direct Chat Push Transition) */
+@keyframes slideInRight {
+  0% {
+    opacity: 0.5;
+    transform: translateX(100%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+/* 5. Slide Out To Right (Direct Chat Pop Transition) */
+@keyframes slideOutRight {
+  0% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+.animate-slide-out-right {
+  animation: slideOutRight 0.26s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+/* 6. Smooth Modal Scale Pop (Bumble/Tinder Match Dialogs) */
+@keyframes scaleInSpring {
+  0% {
+    opacity: 0;
+    transform: scale(0.9) translateY(10px);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.02) translateY(-2px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-scale-in,
+.animate-scale-up {
+  animation: scaleInSpring 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  will-change: transform, opacity;
+}
+
+/* 7. Modal Scale Out */
+@keyframes scaleOutSpring {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.92) translateY(8px);
+  }
+}
+
+.animate-scale-out {
+  animation: scaleOutSpring 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+/* 8. Silky Fade In & Fade Out */
+@keyframes fadeInSmooth {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeInSmooth 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: opacity;
+}
+
+@keyframes fadeOutSmooth {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.animate-fade-out {
+  animation: fadeOutSmooth 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: opacity;
+}
+
+/* 9. Tactile SaaS Button Tap Feedback (Hinge/Tinder active spring) */
+.saas-tap {
+  transition: transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.16s ease !important;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.saas-tap:active {
+  transform: scale(0.92) !important;
+  filter: brightness(0.96) !important;
+}
+
+/* 10. Pulse Glow for Active Match and Action Badges */
+@keyframes pulseGlowPink {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(255, 46, 121, 0.45);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(255, 46, 121, 0);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlowPink 2.4s infinite cubic-bezier(0.24, 0, 0.38, 1);
+}
+
 
 
 

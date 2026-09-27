@@ -353,7 +353,7 @@ export default function ChatView({
 
     return (
       <div 
-        className="fixed md:absolute inset-0 z-50 flex flex-col bg-[#FFF5F8] overflow-hidden select-none md:rounded-[44px]"
+        className="fixed md:absolute inset-0 z-50 flex flex-col bg-[#FFF5F8] overflow-hidden select-none md:rounded-[44px] animate-slide-in-right"
         style={{
           height: (isMobile && viewportHeight) ? `${viewportHeight}px` : '100%',
           maxHeight: (isMobile && viewportHeight) ? `${viewportHeight}px` : '100%',
@@ -726,7 +726,7 @@ export default function ChatView({
   // VIEW 2: MATCHES & ACTIVE CONVERSATIONS LIST
   // ═══════════════════════════════════════════════════════════════════════════
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#FFF5F8] relative select-none p-4 pb-24 overflow-y-auto overscroll-contain">
+    <div className="flex-1 flex flex-col h-full bg-[#FFF5F8] relative select-none p-4 pb-24 overflow-y-auto overscroll-contain animate-screen-enter">
       
       {/* Toast Notification */}
       {toastMessage && (
@@ -760,7 +760,7 @@ export default function ChatView({
           {onGoToDeck && (
             <button
               onClick={onGoToDeck}
-              className="mt-4 px-6 py-2.5 rounded-full bg-gradient-to-r from-[#FF2E79] to-rose-500 text-white font-extrabold text-xs shadow-md shadow-pink-300 active:scale-95 transition-all cursor-pointer"
+              className="mt-4 px-6 py-2.5 rounded-full bg-gradient-to-r from-[#FF2E79] to-rose-500 text-white font-extrabold text-xs shadow-md shadow-pink-300 saas-tap transition-all cursor-pointer"
             >
               Go to Swipe Deck
             </button>
@@ -781,7 +781,7 @@ export default function ChatView({
                     setActiveChatUser(m);
                     if (onActiveChatChange) onActiveChatChange(m);
                   }}
-                  className="flex flex-col items-center gap-1 cursor-pointer shrink-0 group"
+                  className="flex flex-col items-center gap-1 cursor-pointer shrink-0 group saas-tap"
                 >
                   <div className="relative w-14 h-14 rounded-full p-0.5 bg-gradient-to-tr from-[#FF2E79] to-pink-500 shadow-md ring-2 ring-white group-hover:scale-105 transition-transform">
                     <img src={m.avatar} alt={m.name} className="w-full h-full object-cover rounded-full" />
@@ -824,7 +824,7 @@ export default function ChatView({
                     setActiveChatUser(m);
                     if (onActiveChatChange) onActiveChatChange(m);
                   }}
-                  className="p-3 bg-white hover:bg-pink-50/60 rounded-2xl border border-pink-100/70 shadow-2xs flex items-center justify-between cursor-pointer transition-all active:scale-[0.99]"
+                  className="p-3 bg-white hover:bg-pink-50/60 rounded-2xl border border-pink-100/70 shadow-2xs flex items-center justify-between cursor-pointer transition-all saas-tap"
                 >
                   <div className="flex items-center gap-3">
                     <div className="relative w-11 h-11 rounded-full overflow-hidden border-2 border-pink-300 shrink-0">

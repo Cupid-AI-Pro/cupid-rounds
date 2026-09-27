@@ -84,11 +84,18 @@ export default function EditProfileModal({ user, onClose, onSave }) {
       datingVibe
     };
     onSave(updatedUser);
-    onClose();
+    handleClose();
+  };
+
+  const [isClosing, setIsClosing] = useState(false);
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(onClose, 250);
   };
 
   return (
-    <div className="absolute inset-0 z-50 bg-white flex flex-col animate-slide-up select-none overflow-hidden">
+    <div className={`absolute inset-0 z-50 bg-white flex flex-col ${isClosing ? 'animate-slide-down' : 'animate-slide-up'} select-none overflow-hidden`}>
       
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-slate-100 bg-white/95 backdrop-blur-xl z-20">
@@ -96,8 +103,8 @@ export default function EditProfileModal({ user, onClose, onSave }) {
           <h3 className="font-black text-base text-slate-900 font-display">Edit Profile & Preferences</h3>
         </div>
         <button
-          onClick={onClose}
-          className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200 cursor-pointer"
+          onClick={handleClose}
+          className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200 cursor-pointer saas-tap"
         >
           <X className="w-4 h-4" />
         </button>
@@ -264,7 +271,7 @@ export default function EditProfileModal({ user, onClose, onSave }) {
         <div className="pt-2">
           <button
             type="submit"
-            className="w-full h-12 rounded-full bg-[#FF2E79] hover:bg-[#E02447] text-white font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-rose-500/25 cursor-pointer"
+            className="w-full h-12 rounded-full bg-[#FF2E79] hover:bg-[#E02447] text-white font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-rose-500/25 cursor-pointer saas-tap"
           >
             <CheckCircle2 className="w-5 h-5 fill-white text-[#FF2E79]" />
             <span>Save & Update Preferences</span>

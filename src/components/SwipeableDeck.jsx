@@ -271,7 +271,7 @@ export default function SwipeableDeck({
                   e.stopPropagation();
                   handleNextCard();
                 }}
-                className="w-12 h-12 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-md border border-white/25 text-white flex items-center justify-center shadow-lg active:scale-90 transition-all cursor-pointer"
+                className="w-12 h-12 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-md border border-white/25 text-white flex items-center justify-center shadow-lg saas-tap transition-all cursor-pointer"
                 title="Next Profile"
               >
                 <X className="w-5 h-5 stroke-[2.5]" />
@@ -280,7 +280,7 @@ export default function SwipeableDeck({
               <button
                 type="button"
                 onClick={handleHeartClick}
-                className="w-14 h-14 rounded-full bg-gradient-to-r from-[#FF2E79] to-[#FF4B93] text-white flex items-center justify-center shadow-[0_6px_25px_rgba(255,46,121,0.6)] border border-white/40 active:scale-90 transition-all cursor-pointer"
+                className="w-14 h-14 rounded-full bg-gradient-to-r from-[#FF2E79] to-[#FF4B93] text-white flex items-center justify-center shadow-[0_6px_25px_rgba(255,46,121,0.6)] border border-white/40 saas-tap transition-all cursor-pointer animate-pulse-glow"
                 title="Select Match / Like Profile"
               >
                 <Heart className="w-7 h-7 fill-white text-white" />
@@ -292,7 +292,7 @@ export default function SwipeableDeck({
                   e.stopPropagation();
                   onOpenDetail(currentCandidate);
                 }}
-                className="w-12 h-12 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-md border border-white/25 text-white flex items-center justify-center shadow-lg active:scale-90 transition-all cursor-pointer"
+                className="w-12 h-12 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-md border border-white/25 text-white flex items-center justify-center shadow-lg saas-tap transition-all cursor-pointer"
                 title="View Full Profile"
               >
                 <Send className="w-4.5 h-4.5 stroke-[2] -rotate-12 translate-x-0.5" />

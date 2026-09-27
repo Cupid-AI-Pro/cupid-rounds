@@ -27,6 +27,14 @@ import {
 
 export default function FullProfileModal({ candidate, onClose, onLike, onDecline, onOpenChat }) {
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
+  const [isClosing, setIsClosing] = useState(false);
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      onClose();
+    }, 250);
+  };
 
   if (!candidate) return null;
 
@@ -59,15 +67,15 @@ export default function FullProfileModal({ candidate, onClose, onLike, onDecline
   ];
 
   return (
-    <div className="absolute inset-0 z-50 flex flex-col animate-slide-up select-none bg-[#FDF8FA] overflow-hidden">
+    <div className={`absolute inset-0 z-50 flex flex-col ${isClosing ? 'animate-slide-down' : 'animate-slide-up'} select-none bg-[#FDF8FA] overflow-hidden`}>
       
       {/* ----------------------------------------------------------------- */}
       {/* SCREEN 3 TOP BAR: Back button, Name, Avatar ring                  */}
       {/* ----------------------------------------------------------------- */}
       <div className="flex items-center justify-between px-5 pt-3 pb-2 z-30 bg-white/90 backdrop-blur-xl border-b border-slate-100">
         <button
-          onClick={onClose}
-          className="w-10 h-10 rounded-full bg-white hover:bg-slate-50 flex items-center justify-center text-slate-800 transition-all active:scale-95 border border-slate-200/80 shadow-xs cursor-pointer"
+          onClick={handleClose}
+          className="w-10 h-10 rounded-full bg-white hover:bg-slate-50 flex items-center justify-center text-slate-800 transition-all saas-tap border border-slate-200/80 shadow-xs cursor-pointer"
           title="Back"
         >
           <ChevronLeft className="w-5 h-5 stroke-[2.4]" />
@@ -311,9 +319,9 @@ export default function FullProfileModal({ candidate, onClose, onLike, onDecline
           <button
             onClick={() => { 
               onDecline(candidate); 
-              onClose(); 
+              handleClose(); 
             }}
-            className="w-12 h-12 rounded-full bg-slate-100/90 hover:bg-slate-200 text-slate-700 flex items-center justify-center shadow-xs transition-all active:scale-95 cursor-pointer shrink-0 border border-slate-200/60"
+            className="w-12 h-12 rounded-full bg-slate-100/90 hover:bg-slate-200 text-slate-700 flex items-center justify-center shadow-xs transition-all saas-tap cursor-pointer shrink-0 border border-slate-200/60"
             title="Pass"
           >
             <X className="w-5 h-5 stroke-[2.2]" />
@@ -323,9 +331,9 @@ export default function FullProfileModal({ candidate, onClose, onLike, onDecline
           <button
             onClick={() => { 
               onLike(candidate); 
-              onClose(); 
+              handleClose(); 
             }}
-            className="w-12 h-12 rounded-full bg-white border border-pink-100 hover:border-pink-200 text-[#FF2E79] flex items-center justify-center shadow-xs transition-all active:scale-95 cursor-pointer shrink-0"
+            className="w-12 h-12 rounded-full bg-white border border-pink-100 hover:border-pink-200 text-[#FF2E79] flex items-center justify-center shadow-xs transition-all saas-tap cursor-pointer shrink-0"
             title="Like Profile"
           >
             <Heart className="w-5 h-5 fill-[#FF2E79]" />
@@ -338,10 +346,10 @@ export default function FullProfileModal({ candidate, onClose, onLike, onDecline
                 onOpenChat(candidate);
               } else {
                 onLike(candidate);
-                onClose();
+                handleClose(); 
               }
             }}
-            className="flex-1 h-12 rounded-full bg-black hover:bg-slate-900 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-sm transition-all active:scale-98 cursor-pointer"
+            className="flex-1 h-12 rounded-full bg-black hover:bg-slate-900 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-sm transition-all saas-tap cursor-pointer"
             title="Message"
           >
             <MessageCircle className="w-4 h-4 fill-white text-white" />

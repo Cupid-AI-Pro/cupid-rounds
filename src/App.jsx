@@ -298,24 +298,30 @@ export default function App() {
               duration={3800} 
             />
           ) : !currentUser ? (
-            <AuthPage 
-              onLoginSuccess={handleLoginSuccess} 
-              activeState={activeState}
-              showLoginInPhone={showLoginInPhone}
-              setShowLoginInPhone={setShowLoginInPhone}
-            />
+            <div className="flex-1 flex flex-col h-full overflow-hidden animate-screen-enter">
+              <AuthPage 
+                onLoginSuccess={handleLoginSuccess} 
+                activeState={activeState}
+                showLoginInPhone={showLoginInPhone}
+                setShowLoginInPhone={setShowLoginInPhone}
+              />
+            </div>
           ) : currentUser.status === 'onboarding' ? (
-            <OnboardingForm 
-              user={currentUser} 
-              onComplete={handleOnboardingComplete}
-              onCancel={handleLogout}
-            />
+            <div className="flex-1 flex flex-col h-full overflow-hidden animate-screen-enter">
+              <OnboardingForm 
+                user={currentUser} 
+                onComplete={handleOnboardingComplete}
+                onCancel={handleLogout}
+              />
+            </div>
           ) : (
-            <UserDashboard 
-              user={currentUser} 
-              onUpdateUser={handleUpdateUser}
-              onLogout={handleLogout}
-            />
+            <div className="flex-1 flex flex-col h-full overflow-hidden animate-screen-enter">
+              <UserDashboard 
+                user={currentUser} 
+                onUpdateUser={handleUpdateUser}
+                onLogout={handleLogout}
+              />
+            </div>
           )}
         </div>
 

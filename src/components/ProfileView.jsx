@@ -164,7 +164,7 @@ export default function ProfileView({ user, onLogout, onRequestRefund, onOpenPer
         {/* Action Button to Edit or View */}
         <button
           onClick={handleEditClick}
-          className={`w-full h-10 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
+          className={`w-full h-10 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer saas-tap ${
             isRoundActive 
               ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200' 
               : 'bg-[#FF2E79] hover:bg-[#E02447] text-white shadow-md shadow-rose-500/20'
@@ -278,7 +278,7 @@ export default function ProfileView({ user, onLogout, onRequestRefund, onOpenPer
       <div className="pt-2">
         <button
           onClick={onLogout}
-          className="w-full h-11 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs rounded-full flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
+          className="w-full h-11 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs rounded-full flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer saas-tap"
         >
           <LogOut className="w-4 h-4" />
           <span>Log Out of Profile</span>

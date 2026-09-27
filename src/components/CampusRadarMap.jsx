@@ -611,7 +611,7 @@ export default function CampusRadarMap({
                 onSelectCandidate(selectedUser);
                 setSelectedUser(null);
               }}
-              className="flex-1 h-10 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+              className="flex-1 h-10 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer saas-tap"
             >
               <span>View Full Profile</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
@@ -622,7 +622,7 @@ export default function CampusRadarMap({
                 onLikeCandidate(selectedUser);
                 setSelectedUser(null);
               }}
-              className="flex-1 h-10 rounded-full bg-[#FF2E79] hover:bg-[#E02447] text-white font-black text-xs flex items-center justify-center gap-1.5 shadow-md shadow-rose-500/25 transition-all cursor-pointer"
+              className="flex-1 h-10 rounded-full bg-[#FF2E79] hover:bg-[#E02447] text-white font-black text-xs flex items-center justify-center gap-1.5 shadow-md shadow-rose-500/25 transition-all cursor-pointer saas-tap"
             >
               <Heart className="w-3.5 h-3.5 fill-white" />
               <span>Confirm Match</span>

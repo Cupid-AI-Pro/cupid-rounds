@@ -511,14 +511,14 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
       {/* TAB 1: EXPLORE / HOME FEED (Matching Image 1)                     */}
       {/* ----------------------------------------------------------------- */}
       {currentTab === 'explore' && (
-        <div className="flex-1 flex flex-col px-4 pt-2 pb-2 h-full overflow-hidden z-10">
+        <div className="flex-1 flex flex-col px-4 pt-2 pb-2 h-full overflow-hidden z-10 animate-screen-enter">
           
           {/* Top Header Row (Exact Match to Image 1) */}
           <div className="flex items-center justify-between select-none mb-3">
             <div className="flex items-center gap-3">
               <div 
                 onClick={() => setCurrentTab('profile')}
-                className="w-12 h-12 rounded-full p-[2px] bg-gradient-to-tr from-[#FF2E79] via-pink-400 to-rose-300 shadow-md ring-2 ring-pink-100/60 cursor-pointer hover:scale-105 transition-transform shrink-0"
+                className="w-12 h-12 rounded-full p-[2px] bg-gradient-to-tr from-[#FF2E79] via-pink-400 to-rose-300 shadow-md ring-2 ring-pink-100/60 cursor-pointer hover:scale-105 transition-transform shrink-0 saas-tap"
               >
                 <img src={user?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400'} alt={user?.name || 'User'} className="w-full h-full object-cover rounded-full bg-white" />
               </div>
@@ -540,14 +540,14 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
               <div className="flex items-center gap-2">
                 <button 
                   onClick={() => setCurrentTab('radar')}
-                  className="w-10 h-10 rounded-full bg-white/95 backdrop-blur-md flex items-center justify-center cursor-pointer shadow-[0_4px_14px_rgba(255,182,193,0.35)] border border-white hover:bg-slate-50 transition-all active:scale-95"
+                  className="w-10 h-10 rounded-full bg-white/95 backdrop-blur-md flex items-center justify-center cursor-pointer shadow-[0_4px_14px_rgba(255,182,193,0.35)] border border-white hover:bg-slate-50 transition-all saas-tap"
                   title="Search"
                 >
                   <Search className="w-4.5 h-4.5 text-slate-800 stroke-[2.2]" />
                 </button>
                 <button 
                   onClick={() => setShowNotificationsModal(true)}
-                  className="w-10 h-10 rounded-full bg-white/95 backdrop-blur-md flex items-center justify-center cursor-pointer shadow-[0_4px_14px_rgba(255,182,193,0.35)] border border-white hover:bg-slate-50 transition-all active:scale-95 relative"
+                  className="w-10 h-10 rounded-full bg-white/95 backdrop-blur-md flex items-center justify-center cursor-pointer shadow-[0_4px_14px_rgba(255,182,193,0.35)] border border-white hover:bg-slate-50 transition-all relative saas-tap"
                   title="Notifications"
                 >
                   <Bell className="w-4.5 h-4.5 text-slate-800 stroke-[2.2]" />
@@ -946,52 +946,58 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
 
       {/* TAB 2: DISCOVER */}
       {currentTab === 'radar' && (
-        <CampusRadarMap
-          user={user}
-          candidates={candidates}
-          matchedUsers={matchedUsers}
-          onSelectCandidate={(c) => setExpandedCandidate(c)}
-          onLikeCandidate={handleLike}
-        />
+        <div className="flex-1 flex flex-col h-full overflow-hidden animate-screen-enter">
+          <CampusRadarMap
+            user={user}
+            candidates={candidates}
+            matchedUsers={matchedUsers}
+            onSelectCandidate={(c) => setExpandedCandidate(c)}
+            onLikeCandidate={handleLike}
+          />
+        </div>
       )}
 
       {/* TAB 3: CHATS */}
       {currentTab === 'chat' && (
-        <ChatView
-          user={user}
-          matchedUsers={matchedUsers}
-          initialChatUser={activeDirectChatUser}
-          onOpenMatchProfile={(m) => setExpandedCandidate(m)}
-          onActiveChatChange={(chatPartner) => {
-            setIsDirectChatActive(Boolean(chatPartner));
-            setActiveDirectChatUser(chatPartner);
-          }}
-          onGoToDeck={() => {
-            setActiveDirectChatUser(null);
-            setIsDirectChatActive(false);
-            setCurrentTab('explore');
-          }}
-          onUnmatch={(partnerId) => {
-            unmatchUser(user.id, partnerId);
-            loadMatches();
-            loadCandidates();
-          }}
-        />
+        <div className="flex-1 flex flex-col h-full overflow-hidden animate-screen-enter">
+          <ChatView
+            user={user}
+            matchedUsers={matchedUsers}
+            initialChatUser={activeDirectChatUser}
+            onOpenMatchProfile={(m) => setExpandedCandidate(m)}
+            onActiveChatChange={(chatPartner) => {
+              setIsDirectChatActive(Boolean(chatPartner));
+              setActiveDirectChatUser(chatPartner);
+            }}
+            onGoToDeck={() => {
+              setActiveDirectChatUser(null);
+              setIsDirectChatActive(false);
+              setCurrentTab('explore');
+            }}
+            onUnmatch={(partnerId) => {
+              unmatchUser(user.id, partnerId);
+              loadMatches();
+              loadCandidates();
+            }}
+          />
+        </div>
       )}
 
       {/* TAB 4: PROFILE */}
       {currentTab === 'profile' && (
-        <ProfileView
-          user={user}
-          onLogout={onLogout}
-          onRequestRefund={handleRequestRefund}
-          onOpenPermissions={() => setShowPermissionPrompt(true)}
-          onUpdateUser={onUpdateUser}
-          onReplayTour={() => {
-            setCurrentTab('explore');
-            setShowTour(true);
-          }}
-        />
+        <div className="flex-1 flex flex-col h-full overflow-hidden animate-screen-enter">
+          <ProfileView
+            user={user}
+            onLogout={onLogout}
+            onRequestRefund={handleRequestRefund}
+            onOpenPermissions={() => setShowPermissionPrompt(true)}
+            onUpdateUser={onUpdateUser}
+            onReplayTour={() => {
+              setCurrentTab('explore');
+              setShowTour(true);
+            }}
+          />
+        </div>
       )}
 
       {/* BOTTOM FLOATING NAVIGATION BAR (Exact Match to Image 1) - Hidden during direct chat to eliminate bottom gap */}
@@ -1004,7 +1010,7 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
               setIsDirectChatActive(false);
               setCurrentTab('explore');
             }}
-            className={`transition-all cursor-pointer ${
+            className={`transition-all cursor-pointer saas-tap ${
               currentTab === 'explore' 
                 ? 'bg-[#FFEBF2] text-[#FF2E79] rounded-[22px] px-5 py-2 flex flex-col items-center justify-center gap-0.5 shadow-2xs font-black' 
                 : 'flex flex-col items-center justify-center gap-0.5 px-4 py-1.5 text-slate-700 font-extrabold hover:text-black'
@@ -1021,7 +1027,7 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
               setIsDirectChatActive(false);
               setCurrentTab('radar');
             }}
-            className={`transition-all cursor-pointer ${
+            className={`transition-all cursor-pointer saas-tap ${
               currentTab === 'radar' 
                 ? 'bg-[#FFEBF2] text-[#FF2E79] rounded-[22px] px-5 py-2 flex flex-col items-center justify-center gap-0.5 shadow-2xs font-black' 
                 : 'flex flex-col items-center justify-center gap-0.5 px-4 py-1.5 text-slate-700 font-extrabold hover:text-black'
@@ -1039,7 +1045,7 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
               setCurrentTab('chat');
               loadMatches();
             }}
-            className={`transition-all cursor-pointer relative ${
+            className={`transition-all cursor-pointer relative saas-tap ${
               currentTab === 'chat' 
                 ? 'bg-[#FFEBF2] text-[#FF2E79] rounded-[22px] px-5 py-2 flex flex-col items-center justify-center gap-0.5 shadow-2xs font-black' 
                 : 'flex flex-col items-center justify-center gap-0.5 px-4 py-1.5 text-slate-700 font-extrabold hover:text-black'
@@ -1059,7 +1065,7 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
               setIsDirectChatActive(false);
               setCurrentTab('profile');
             }}
-            className={`transition-all cursor-pointer ${
+            className={`transition-all cursor-pointer saas-tap ${
               currentTab === 'profile' 
                 ? 'bg-[#FFEBF2] text-[#FF2E79] rounded-[22px] px-5 py-2 flex flex-col items-center justify-center gap-0.5 shadow-2xs font-black' 
                 : 'flex flex-col items-center justify-center gap-0.5 px-4 py-1.5 text-slate-700 font-extrabold hover:text-black'

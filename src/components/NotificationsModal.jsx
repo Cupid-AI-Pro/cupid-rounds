@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Bell, 
   X, 
@@ -6,18 +6,25 @@ import {
   Calendar, 
   Flame, 
   CheckCheck, 
-  ChevronRight,
+  ChevronRight, 
   ShieldCheck
 } from 'lucide-react';
 import { markNotificationAsRead, markAllNotificationsAsRead } from '../services/notificationManager';
 
 export default function NotificationsModal({ user, notifications, onClose, onRefresh, onNavigateTab }) {
+  const [isClosing, setIsClosing] = useState(false);
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(onClose, 220);
+  };
+
   const handleItemClick = (notif) => {
     markNotificationAsRead(user.id, notif.id);
     onRefresh();
     if (notif.actionUrl && onNavigateTab) {
       onNavigateTab(notif.actionUrl);
-      onClose();
+      handleClose();
     }
   };
 
@@ -29,8 +36,14 @@ export default function NotificationsModal({ user, notifications, onClose, onRef
   const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in select-none">
-      <div className="bg-white rounded-[28px] max-w-md w-full shadow-2xl border border-rose-100 overflow-hidden flex flex-col max-h-[85vh] animate-scale-up">
+    <div 
+      onClick={handleClose}
+      className={`fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 ${isClosing ? 'animate-fade-out' : 'animate-fade-in'} select-none`}
+    >
+      <div 
+        onClick={(e) => e.stopPropagation()}
+        className={`bg-white rounded-[28px] max-w-md w-full shadow-2xl border border-rose-100 overflow-hidden flex flex-col max-h-[85vh] ${isClosing ? 'animate-scale-out' : 'animate-scale-in'}`}
+      >
         
         {/* Header Bar */}
         <div className="p-4 sm:p-5 bg-gradient-to-r from-[#FFF0F4] via-[#FFEBEF] to-[#FFF5F8] border-b border-rose-100 flex items-center justify-between shrink-0">
@@ -54,8 +67,8 @@ export default function NotificationsModal({ user, notifications, onClose, onRef
           </div>
 
           <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white text-slate-400 hover:text-slate-600 border border-slate-200 flex items-center justify-center cursor-pointer transition-colors shadow-2xs"
+            onClick={handleClose}
+            className="w-8 h-8 rounded-full bg-white text-slate-400 hover:text-slate-600 border border-slate-200 flex items-center justify-center cursor-pointer transition-colors shadow-2xs saas-tap"
           >
             <X className="w-4 h-4" />
           </button>
