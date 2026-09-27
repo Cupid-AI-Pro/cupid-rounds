@@ -15,7 +15,6 @@ import {
   UserX,
   Flag,
   User,
-  Sparkles,
   X,
   CheckCheck,
   HeartCrack,
@@ -36,7 +35,7 @@ import { addNotification } from '../services/notificationManager';
 const ICEBREAKERS = [
   { emoji: '☕', text: "Coffee date this weekend?" },
   { emoji: '🎓', text: "What's your major at university?" },
-  { emoji: '✨', text: "Let's plan something fun!" },
+  { emoji: '🥂', text: "Let's plan something fun!" },
   { emoji: '🎵', text: "What's your current Spotify anthem?" },
   { emoji: '📍', text: "Favorite late-night hangout spot?" }
 ];
@@ -49,7 +48,7 @@ const CUTE_STICKERS = [
   { emoji: '🦋', label: 'Butterflies', tag: 'Love' },
   { emoji: '🍦', label: 'Ice cream run?', tag: 'Date' },
   { emoji: '🍕', label: 'Pizza cravings', tag: 'Food' },
-  { emoji: '✨', label: 'Starstruck', tag: 'Compliment' },
+  { emoji: '🔥', label: 'Great vibe', tag: 'Compliment' },
   { emoji: '🎧', label: 'Listening to you', tag: 'Vibe' },
   { emoji: '🥺', label: 'So sweet', tag: 'Cute' },
   { emoji: '💃', label: 'Weekend plans?', tag: 'Party' },
@@ -57,9 +56,9 @@ const CUTE_STICKERS = [
 ];
 
 const QUICK_EMOJIS = [
-  '❤️', '🥰', '😍', '✨', '🔥', '🥺', '☕', '🌸', 
-  '🦋', '🍕', '🥂', '💃', '🎸', '🎓', '🎉', '💌', 
-  '🌙', '🍿', '🧸', '🍩', '🥑', '🌺', '🍓', '🍦'
+  '❤️', '🥰', '😍', '🔥', '🥺', '☕', '🌸', '🦋', 
+  '🍕', '🥂', '💃', '🎸', '🎓', '🎉', '💌', '🌙', 
+  '🍿', '🧸', '🍩', '🥑', '🌺', '🍓', '🍦', '😊'
 ];
 
 export default function ChatView({ 
@@ -249,7 +248,7 @@ export default function ChatView({
               { 
                 id: 'dialogue_1', 
                 sender: 'them', 
-                text: `Hey ${myFirst}! We matched on Cupid's ${roundName} round ✨`, 
+                text: `Hey ${myFirst}! We matched on Cupid's ${roundName} round`, 
                 time: '4:24 PM' 
               },
               {
@@ -411,7 +410,7 @@ export default function ChatView({
             {
               id: `reply_photo_${Date.now()}`,
               sender: 'them',
-              text: "Omg this is such a great picture! 😍✨",
+              text: "Omg this is such a great picture! 😍",
               time: 'Just now'
             }
           ]
@@ -452,7 +451,7 @@ export default function ChatView({
           {
             id: `reply_stk_${Date.now()}`,
             sender: 'them',
-            text: `Aww, total vibe! 🥰✨`,
+            text: `Aww, total vibe! 🥰`,
             time: 'Just now'
           }
         ]
@@ -668,30 +667,6 @@ export default function ChatView({
           </div>
         </div>
 
-        {/* Mutual Connection Card (Exact from Screenshot) */}
-        <div className="mx-4 mt-2.5 mb-1 px-4 py-2.5 bg-white/95 rounded-[22px] shadow-[0_2px_12px_rgba(255,46,121,0.06)] border border-pink-100/90 flex items-center justify-between z-10 shrink-0 animate-fade-in">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-full bg-[#FFEBF2] text-[#FF2E79] flex items-center justify-center shrink-0">
-              <Heart className="w-4.5 h-4.5 fill-[#FF2E79]" />
-            </div>
-            <div>
-              <div className="text-xs font-bold text-slate-900 leading-tight">Mutual Yes Match</div>
-              <div className="text-[10px] text-slate-400 font-medium">You both liked each other</div>
-            </div>
-          </div>
-
-          <div className="h-7 w-[1px] bg-pink-100 mx-1 shrink-0"></div>
-
-          <button
-            onClick={() => onOpenMatchProfile && onOpenMatchProfile(activeChatUser)}
-            className="flex items-center gap-1.5 text-xs font-bold text-[#FF2E79] hover:opacity-80 transition-opacity cursor-pointer saas-tap"
-          >
-            <ShieldCheck className="w-4 h-4 fill-[#FF2E79] text-white" />
-            <span>Verified Profile</span>
-            <ChevronRight className="w-3.5 h-3.5 stroke-[2.5]" />
-          </button>
-        </div>
-
         {/* Message Stream (Contained Scrolling, Luxury Bubbles & Reactions) */}
         <div 
           ref={messagesContainerRef}
@@ -818,26 +793,26 @@ export default function ChatView({
           ))}
         </div>
 
-        {/* Bottom Message Input Bar (Exact Layout from Screenshot) */}
-        <div className={`px-3.5 py-2.5 ${isKeyboardOpen ? 'pb-2.5' : 'pb-[max(0.75rem,env(safe-area-inset-bottom))]'} bg-white/95 backdrop-blur-xl border-t border-pink-100/50 flex items-center gap-2 shrink-0 z-20 shadow-lg relative`}>
+        {/* Bottom Message Input Bar (Minimal, Elegant, Fits All Screens) */}
+        <div className={`w-full max-w-full px-3 py-2 ${isKeyboardOpen ? 'pb-2' : 'pb-[max(0.6rem,env(safe-area-inset-bottom))]'} bg-white/95 backdrop-blur-xl border-t border-pink-100/60 flex items-center gap-2 shrink-0 z-20 shadow-md box-border relative`}>
           
-          {/* Plus button on left */}
+          {/* Plus button on left (for photo, stickers, campus spot) */}
           <button
             type="button"
             onClick={() => {
               setShowActionSheet(!showActionSheet);
               setShowEmojiPicker(false);
             }}
-            className={`w-11 h-11 rounded-full bg-white border border-slate-200/80 shadow-xs flex items-center justify-center text-slate-700 hover:bg-slate-50 active:scale-90 transition-all shrink-0 cursor-pointer saas-tap ${
+            className={`w-10 h-10 rounded-full bg-slate-50 hover:bg-slate-100 border border-slate-200/90 shadow-xs flex items-center justify-center text-slate-700 active:scale-90 transition-all shrink-0 cursor-pointer saas-tap ${
               showActionSheet ? 'rotate-45 text-[#FF2E79] border-[#FF2E79]' : ''
             }`}
-            title="More Actions"
+            title="More Options"
           >
-            <Plus className="w-5 h-5 stroke-[2]" />
+            <Plus className="w-5 h-5 stroke-[2.2]" />
           </button>
 
           {/* Center Pill Input Bar */}
-          <div className="flex-1 h-11 px-3.5 bg-white border border-slate-200/80 rounded-full flex items-center gap-2 shadow-xs focus-within:border-[#FF2E79] focus-within:shadow-[0_0_0_2px_rgba(255,46,121,0.12)] transition-all">
+          <div className="flex-1 min-w-0 h-10 px-3.5 bg-slate-50/90 border border-slate-200/90 rounded-full flex items-center gap-1.5 focus-within:bg-white focus-within:border-[#FF2E79] focus-within:shadow-[0_0_0_2px_rgba(255,46,121,0.12)] transition-all">
             <input
               ref={inputRef}
               type="text"
@@ -851,10 +826,10 @@ export default function ChatView({
                 }
               }}
               placeholder={`Message ${activeChatUser.name.split(' ')[0]}...`}
-              className="flex-1 bg-transparent text-[13px] text-slate-800 placeholder:text-slate-400 font-medium outline-none"
+              className="flex-1 min-w-0 bg-transparent text-[13px] text-slate-800 placeholder:text-slate-400 font-medium outline-none"
             />
 
-            {/* Smile Emoji Button */}
+            {/* Smile Emoji / Stickers Button */}
             <button
               type="button"
               onMouseDown={(e) => e.preventDefault()}
@@ -862,25 +837,14 @@ export default function ChatView({
                 setShowEmojiPicker(!showEmojiPicker);
                 setShowActionSheet(false);
               }}
-              className="p-1 text-slate-500 hover:text-[#FF2E79] transition-colors cursor-pointer saas-tap"
-              title="Emojis & Stickers"
+              className="p-1 text-slate-400 hover:text-[#FF2E79] transition-colors cursor-pointer saas-tap shrink-0"
+              title="Stickers & Emojis"
             >
               <Smile className={`w-5 h-5 ${showEmojiPicker ? 'text-[#FF2E79]' : ''}`} />
             </button>
-
-            {/* Gallery Photo Button */}
-            <button
-              type="button"
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={handlePhotoClick}
-              className="p-1 text-slate-500 hover:text-[#FF2E79] transition-colors cursor-pointer saas-tap"
-              title="Share Photo"
-            >
-              <ImageIcon className="w-5 h-5" />
-            </button>
           </div>
 
-          {/* Send Button on Right (Hot Pink Circle) */}
+          {/* Send Button on Right (Hot Pink Circle, Guaranteed to Fit) */}
           <button
             type="button"
             onMouseDown={(e) => e.preventDefault()}
@@ -890,10 +854,10 @@ export default function ChatView({
             }}
             onClick={() => handleSendMessage()}
             disabled={!inputMessage.trim()}
-            className="w-11 h-11 rounded-full bg-gradient-to-r from-[#FF2E79] to-[#FF4B8B] text-white flex items-center justify-center shadow-[0_4px_14px_rgba(255,46,121,0.35)] active:scale-90 transition-all shrink-0 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed saas-tap"
+            className="w-10 h-10 rounded-full bg-gradient-to-r from-[#FF2E79] to-[#FF4B8B] text-white flex items-center justify-center shadow-md shadow-pink-300 active:scale-90 transition-all shrink-0 cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed saas-tap"
             title="Send"
           >
-            <Send className="w-4.5 h-4.5 -rotate-12 translate-x-0.5 fill-white" />
+            <Send className="w-4 h-4 -rotate-12 translate-x-0.5 fill-white" />
           </button>
         </div>
 
@@ -906,35 +870,35 @@ export default function ChatView({
           className="hidden"
         />
 
-        {/* ─── EMOJI & STICKER DRAWER (Popup above input) ─── */}
+        {/* ─── EMOJI & STICKER DRAWER (Minimal, Elegant, No AI Symbols) ─── */}
         {showEmojiPicker && (
-          <div className="absolute bottom-[72px] left-3 right-3 bg-white rounded-[24px] shadow-2xl border border-pink-100 p-3 z-30 animate-scale-up">
+          <div className="absolute bottom-[64px] left-3 right-3 bg-white rounded-[24px] shadow-2xl border border-pink-100 p-3 z-30 animate-scale-up">
             <div className="flex items-center justify-between border-b border-pink-100/70 pb-2 mb-2">
               <div className="flex gap-2">
                 <button
                   onClick={() => setEmojiTab('stickers')}
-                  className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all ${
                     emojiTab === 'stickers'
                       ? 'bg-[#FF2E79] text-white shadow-xs'
-                      : 'text-slate-500 hover:bg-pink-50'
+                      : 'text-slate-600 hover:bg-pink-50'
                   }`}
                 >
-                  ✨ Cute Stickers
+                  Stickers
                 </button>
                 <button
                   onClick={() => setEmojiTab('emojis')}
-                  className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all ${
                     emojiTab === 'emojis'
                       ? 'bg-[#FF2E79] text-white shadow-xs'
-                      : 'text-slate-500 hover:bg-pink-50'
+                      : 'text-slate-600 hover:bg-pink-50'
                   }`}
                 >
-                  😊 Emojis
+                  Emojis
                 </button>
               </div>
               <button
                 onClick={() => setShowEmojiPicker(false)}
-                className="w-6 h-6 rounded-full hover:bg-slate-100 text-slate-400 flex items-center justify-center"
+                className="w-6 h-6 rounded-full hover:bg-slate-100 text-slate-400 flex items-center justify-center cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -969,9 +933,9 @@ export default function ChatView({
           </div>
         )}
 
-        {/* ─── ACTION SHEET POPUP (above + button) ─── */}
+        {/* ─── ACTION SHEET POPUP (Clean & Human Icons, No Sparkles) ─── */}
         {showActionSheet && (
-          <div className="absolute bottom-[72px] left-3 w-56 bg-white rounded-[24px] shadow-2xl border border-pink-100 p-2 z-30 animate-scale-up space-y-1">
+          <div className="absolute bottom-[64px] left-3 w-56 bg-white rounded-[24px] shadow-2xl border border-pink-100 p-2 z-30 animate-scale-up space-y-1">
             <button
               onClick={handlePhotoClick}
               className="w-full px-3 py-2.5 rounded-xl hover:bg-pink-50 flex items-center gap-3 text-xs font-bold text-slate-700 transition-colors text-left cursor-pointer saas-tap"
@@ -993,11 +957,11 @@ export default function ChatView({
               }}
               className="w-full px-3 py-2.5 rounded-xl hover:bg-pink-50 flex items-center gap-3 text-xs font-bold text-slate-700 transition-colors text-left cursor-pointer saas-tap"
             >
-              <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center shrink-0">
-                <Sparkles className="w-4 h-4" />
+              <div className="w-8 h-8 rounded-full bg-rose-100 text-[#FF2E79] flex items-center justify-center shrink-0">
+                <Smile className="w-4 h-4" />
               </div>
               <div>
-                <div>Cute Stickers</div>
+                <div>Stickers & Emojis</div>
                 <div className="text-[10px] text-slate-400 font-normal">Express your vibe</div>
               </div>
             </button>
@@ -1021,11 +985,11 @@ export default function ChatView({
             <button
               onClick={() => {
                 setShowActionSheet(false);
-                handleSendMessage("🎵 Currently on loop: 'Kasoor' by Prateek Kuhad ✨ What's your jam?");
+                handleSendMessage("🎵 Currently on loop: 'Kasoor' by Prateek Kuhad. What's your jam?");
               }}
               className="w-full px-3 py-2.5 rounded-xl hover:bg-pink-50 flex items-center gap-3 text-xs font-bold text-slate-700 transition-colors text-left cursor-pointer saas-tap"
             >
-              <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center shrink-0">
                 <Music className="w-4 h-4" />
               </div>
               <div>
