@@ -24,7 +24,8 @@ import {
   getCollegesByState,
   addCollege,
   updateCollege,
-  deleteCollege
+  deleteCollege,
+  recommendCandidatesToUser
 } from '../utils/storage';
 import { 
   getRoundState, 
@@ -203,9 +204,13 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
   const [matchmakerUserA, setMatchmakerUserA] = useState('');
   const [matchmakerSelectedTargets, setMatchmakerSelectedTargets] = useState([]);
   const [matchmakerScore, setMatchmakerScore] = useState(96);
+  const [matchmakerUserAFilter, setMatchmakerUserAFilter] = useState('elite'); // 'elite' | 'all' | 'male' | 'female'
+  const [matchmakerUserASearch, setMatchmakerUserASearch] = useState('');
   const [matchmakerSearchQuery, setMatchmakerSearchQuery] = useState('');
   const [matchmakerGenderFilter, setMatchmakerGenderFilter] = useState('all');
-  const [matchmakerStateFilter, setMatchmakerStateFilter] = useState('All');
+  const [matchmakerStateFilter, setMatchmakerStateFilter] = useState('all');
+  const [matchmakerSortBy, setMatchmakerSortBy] = useState('score'); // 'score' | 'elite' | 'campus'
+  const [matchmakerActionFeedback, setMatchmakerActionFeedback] = useState(null);
 
   // Round Alteration States
   const [showPauseModal, setShowPauseModal] = useState(false);
@@ -639,8 +644,35 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
     if (success) {
       confetti({ particleCount: 120, spread: 80, origin: { y: 0.5 } });
       loadAdminData();
-      alert(`🎉 Successfully assigned ${matchmakerSelectedTargets.length} match(es)! The mutual match is now live in both users' profiles & chat.`);
+      setMatchmakerActionFeedback({
+        type: 'success',
+        message: `💖 Confirmed ${matchmakerSelectedTargets.length} mutual match(es)! Both profiles are instantly linked and direct chat is unlocked.`
+      });
       setMatchmakerSelectedTargets([]);
+      setTimeout(() => setMatchmakerActionFeedback(null), 6000);
+    }
+  };
+
+  const handleRecommendToFeed = () => {
+    if (!matchmakerUserA) {
+      alert('Please select the primary user first.');
+      return;
+    }
+    if (matchmakerSelectedTargets.length === 0) {
+      alert('Please select at least 1 candidate profile to recommend.');
+      return;
+    }
+
+    const success = recommendCandidatesToUser(matchmakerUserA, matchmakerSelectedTargets, Number(matchmakerScore) || 95);
+    if (success) {
+      confetti({ particleCount: 90, spread: 70, origin: { y: 0.5 } });
+      loadAdminData();
+      setMatchmakerActionFeedback({
+        type: 'success',
+        message: `🎯 Sent ${matchmakerSelectedTargets.length} recommended candidate(s) to user's Explore feed! They will see them at the top of their dashboard to review and like.`
+      });
+      setMatchmakerSelectedTargets([]);
+      setTimeout(() => setMatchmakerActionFeedback(null), 6000);
     }
   };
 
@@ -2716,267 +2748,514 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
 
             {/* 1. SUPER ADMIN MANUAL MATCHMAKER WIDGET */}
             {(() => {
+              // Calculate compatibility helper
+              const calculateAdminCompatibility = (primary, cand) => {
+                if (!primary || !cand) return { score: 85, tags: ['Potential Match'] };
+                let score = 72;
+                const tags = [];
+
+                if (primary.university && cand.university && primary.university.toLowerCase() === cand.university.toLowerCase()) {
+                  score += 13;
+                  tags.push('Same College');
+                }
+
+                if (primary.state && cand.state && primary.state.toLowerCase() === cand.state.toLowerCase()) {
+                  score += 9;
+                  tags.push('Same City');
+                }
+
+                if (primary.gender && cand.gender && primary.gender.toLowerCase() !== cand.gender.toLowerCase()) {
+                  score += 4;
+                }
+
+                if (cand.plan === 'elite') {
+                  score += 5;
+                  tags.push('Elite');
+                } else if (cand.plan === 'premium') {
+                  score += 3;
+                }
+
+                if (cand.status === 'active' || cand.verified) {
+                  tags.push('Verified');
+                }
+
+                return { score: Math.min(99, Math.max(70, score)), tags };
+              };
+
+              // Filter User A (Primary candidate)
+              const primaryUserPool = users.filter(u => {
+                if (!u) return false;
+                if (matchmakerUserAFilter === 'elite' && u.plan !== 'elite' && u.plan !== 'premium') return false;
+                if (matchmakerUserAFilter === 'male' && (u.gender || '').toLowerCase() !== 'male') return false;
+                if (matchmakerUserAFilter === 'female' && (u.gender || '').toLowerCase() !== 'female') return false;
+                if (matchmakerUserASearch.trim()) {
+                  const q = matchmakerUserASearch.toLowerCase();
+                  return (u.name || '').toLowerCase().includes(q) || (u.university || '').toLowerCase().includes(q);
+                }
+                return true;
+              }).sort((a, b) => {
+                if (a.plan === 'elite' && b.plan !== 'elite') return -1;
+                if (b.plan === 'elite' && a.plan !== 'elite') return 1;
+                return (a.name || '').localeCompare(b.name || '');
+              });
+
+              // Current selected User A
               const selectedUserAObj = users.find(u => u.id === matchmakerUserA);
+
+              // Auto-rank and filter candidate pool (Step 2)
               const candidatePool = users.filter(u => {
+                if (!u) return false;
                 if (matchmakerUserA && u.id === matchmakerUserA) return false;
-                if (matchmakerGenderFilter !== 'all' && u.gender !== matchmakerGenderFilter) return false;
-                if (matchmakerStateFilter !== 'all' && (u.state || '').toLowerCase() !== matchmakerStateFilter.toLowerCase()) return false;
+                
+                // Case-insensitive gender filter
+                if (matchmakerGenderFilter.toLowerCase() !== 'all' && (u.gender || '').toLowerCase() !== matchmakerGenderFilter.toLowerCase()) {
+                  return false;
+                }
+
+                // Case-insensitive state filter
+                if (matchmakerStateFilter.toLowerCase() !== 'all' && (u.state || '').toLowerCase() !== matchmakerStateFilter.toLowerCase()) {
+                  return false;
+                }
+
                 if (matchmakerSearchQuery.trim()) {
                   const q = matchmakerSearchQuery.toLowerCase();
                   return (u.name || '').toLowerCase().includes(q) || (u.university || '').toLowerCase().includes(q);
                 }
                 return true;
+              }).map(cand => {
+                const compat = calculateAdminCompatibility(selectedUserAObj, cand);
+                const isAlreadyMatched = selectedUserAObj?.matches?.includes(cand.id);
+                return {
+                  ...cand,
+                  compatScore: compat.score,
+                  compatTags: compat.tags,
+                  isAlreadyMatched
+                };
+              }).sort((a, b) => {
+                // Highest compatibility first, then Elite
+                if (b.compatScore !== a.compatScore) return b.compatScore - a.compatScore;
+                if (a.plan === 'elite' && b.plan !== 'elite') return -1;
+                if (b.plan === 'elite' && a.plan !== 'elite') return 1;
+                return 0;
               });
 
               return (
                 <div className="bg-gradient-to-br from-white via-rose-50/20 to-pink-50/30 rounded-3xl p-5 sm:p-6 border-2 border-pink-200 shadow-sm space-y-6">
+                  
+                  {/* Top Header */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-pink-100 pb-3">
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-xl bg-pink-100 text-[#FF2E79] flex items-center justify-center">
                         <Sparkles className="w-4 h-4 fill-current" />
                       </div>
                       <div>
-                        <h3 className="text-base font-black text-slate-900">Super Admin Manual Matchmaker</h3>
-                        <p className="text-[11px] text-slate-500 font-medium">Assign any profile (or multiple profiles) directly to a user</p>
+                        <h3 className="text-base font-black text-slate-900">Super Admin Manual Matchmaker & Recommendation Studio</h3>
+                        <p className="text-[11px] text-slate-500 font-medium">
+                          Select a primary profile (Elite/Male/Female), auto-rank compatible partners by preference, and either direct match or send to Explore feed.
+                        </p>
                       </div>
                     </div>
                     {matchmakerSelectedTargets.length > 0 && (
-                      <span className="px-3 py-1 rounded-full bg-[#FF2E79] text-white text-xs font-black animate-pulse">
-                        {matchmakerSelectedTargets.length} Profile(s) Selected
+                      <span className="px-3.5 py-1 rounded-full bg-[#FF2E79] text-white text-xs font-black shadow-xs animate-pulse">
+                        {matchmakerSelectedTargets.length} Candidate(s) Picked
                       </span>
                     )}
                   </div>
 
-                  {/* 3 Step Matchmaker Columns */}
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-                    
-                    {/* Step 1: Select Primary User (4 Cols) */}
-                    <div className="lg:col-span-4 space-y-3 p-4 rounded-2xl bg-white border border-[#FFE1EB] shadow-2xs">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-black uppercase tracking-wider text-[#FF2E79] bg-pink-50 px-2 py-0.5 rounded-md">
-                          Step 1
-                        </span>
-                        <span className="text-xs font-bold text-slate-700">Primary Candidate (User A)</span>
+                  {/* Feedback Banner */}
+                  {matchmakerActionFeedback && (
+                    <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center justify-between animate-fade-in">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <span>{matchmakerActionFeedback.message}</span>
                       </div>
-
-                      <div>
-                        <label className="text-[11px] font-bold text-slate-600 block mb-1">Select Candidate:</label>
-                        <select
-                          value={matchmakerUserA}
-                          onChange={(e) => {
-                            setMatchmakerUserA(e.target.value);
-                            setMatchmakerSelectedTargets([]);
-                          }}
-                          className="w-full h-10 px-3 rounded-xl border border-slate-200 text-xs text-slate-800 font-medium bg-white focus:outline-none focus:border-[#FF2E79] cursor-pointer"
-                        >
-                          <option value="">-- Choose User to Match --</option>
-                          {users.map(u => (
-                            <option key={u.id} value={u.id}>
-                              {u.name} ({u.gender || 'N/A'}, {u.state || 'Delhi NCR'}) - {u.plan ? u.plan.toUpperCase() : 'BASIC'}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      {/* Selected Primary User Card Preview */}
-                      {selectedUserAObj ? (
-                        <div className="p-3.5 rounded-xl bg-pink-50/60 border border-pink-200 space-y-2">
-                          <div className="flex items-center gap-3">
-                            <img
-                              src={selectedUserAObj.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120'}
-                              alt=""
-                              className="w-12 h-12 rounded-full object-cover border-2 border-[#FF2E79] shadow-xs shrink-0"
-                            />
-                            <div className="min-w-0">
-                              <h4 className="text-sm font-black text-slate-900 truncate">{selectedUserAObj.name}</h4>
-                              <p className="text-[11px] text-slate-500 truncate">{selectedUserAObj.university || 'University'} • {selectedUserAObj.state || 'Delhi NCR'}</p>
-                              <div className="flex items-center gap-1.5 mt-1">
-                                <span className="px-2 py-0.5 rounded-md bg-white text-[10px] font-black uppercase text-purple-700 border border-purple-200">
-                                  {selectedUserAObj.plan || 'basic'}
-                                </span>
-                                <span className="text-[10px] font-bold text-slate-500">
-                                  {selectedUserAObj.matches?.length || 0} Existing Matches
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="p-6 rounded-xl border border-dashed border-slate-200 text-center text-slate-400 text-xs">
-                          Pick a candidate from the dropdown above to start matching.
-                        </div>
-                      )}
-
-                      {/* Compatibility Score Slider */}
-                      <div className="pt-2 border-t border-slate-100 space-y-1.5">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="font-bold text-slate-700">Match Compatibility Score:</span>
-                          <span className="font-black text-[#FF2E79] text-sm">{matchmakerScore}%</span>
-                        </div>
-                        <input
-                          type="range"
-                          min="70"
-                          max="99"
-                          value={matchmakerScore}
-                          onChange={(e) => setMatchmakerScore(e.target.value)}
-                          className="w-full accent-[#FF2E79] cursor-pointer"
-                        />
-                        <div className="flex justify-between text-[10px] text-slate-400">
-                          <span>70% (Good)</span>
-                          <span>85% (Great)</span>
-                          <span>99% (Perfect)</span>
-                        </div>
-                      </div>
-
-                      {/* Action Button */}
-                      <button
-                        type="button"
-                        onClick={handleAssignManualMatches}
-                        disabled={!matchmakerUserA || matchmakerSelectedTargets.length === 0}
-                        className={`w-full py-2.5 rounded-xl text-xs font-black flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer ${
-                          !matchmakerUserA || matchmakerSelectedTargets.length === 0
-                            ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
-                            : 'bg-gradient-to-r from-[#FF2E79] to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white shadow-pink-200 active:scale-98'
-                        }`}
-                      >
-                        <Heart className="w-4 h-4 fill-current" />
-                        <span>
-                          {matchmakerSelectedTargets.length > 1
-                            ? `Assign ${matchmakerSelectedTargets.length} Mutual Matches Now`
-                            : 'Assign Mutual Match Now'}
-                        </span>
+                      <button onClick={() => setMatchmakerActionFeedback(null)} className="text-emerald-500 hover:text-emerald-700">
+                        <X className="w-4 h-4" />
                       </button>
                     </div>
+                  )}
 
-                    {/* Step 2: Select Candidate Profiles (8 Cols - Multi Select!) */}
-                    <div className="lg:col-span-8 space-y-3 p-4 rounded-2xl bg-white border border-[#FFE1EB] shadow-2xs">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-black uppercase tracking-wider text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md">
-                            Step 2
+                  {/* 2-Column Matchmaker Studio */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                    
+                    {/* ═══════════════════════════════════════════════════════════
+                        COLUMN 1: SELECT PRIMARY CANDIDATE (5 COLS)
+                       ═══════════════════════════════════════════════════════════ */}
+                    <div className="lg:col-span-5 space-y-3.5 p-4 rounded-2xl bg-white border border-[#FFE1EB] shadow-2xs flex flex-col justify-between">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-black uppercase tracking-wider text-[#FF2E79] bg-pink-50 px-2 py-0.5 rounded-md">
+                            Step 1: Primary User
                           </span>
                           <span className="text-xs font-bold text-slate-700">
-                            Select Matching Candidate(s) (Multi-Select Allowed)
+                            {selectedUserAObj ? selectedUserAObj.name : 'Choose Candidate A'}
                           </span>
                         </div>
-                        {matchmakerSelectedTargets.length > 0 && (
-                          <button
-                            type="button"
-                            onClick={() => setMatchmakerSelectedTargets([])}
-                            className="text-[11px] font-bold text-rose-500 hover:underline"
-                          >
-                            Clear Selection ({matchmakerSelectedTargets.length})
-                          </button>
-                        )}
-                      </div>
 
-                      {/* Filters & Search Row */}
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                        <div className="relative">
-                          <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400" />
-                          <input
-                            type="text"
-                            placeholder="Search name, college..."
-                            value={matchmakerSearchQuery}
-                            onChange={(e) => setMatchmakerSearchQuery(e.target.value)}
-                            className="w-full h-9 pl-9 pr-3 rounded-xl border border-slate-200 text-xs text-slate-700 focus:outline-none focus:border-[#FF2E79]"
-                          />
-                        </div>
-
-                        {/* Gender Filter Buttons */}
-                        <div className="flex rounded-xl border border-slate-200 overflow-hidden bg-slate-50 p-0.5 text-[11px] font-bold">
-                          {['all', 'female', 'male'].map(g => (
+                        {/* User A Quick Filters */}
+                        <div className="flex flex-wrap gap-1">
+                          {[
+                            { id: 'elite', label: '👑 Elite First' },
+                            { id: 'all', label: 'All' },
+                            { id: 'male', label: '👨 Males' },
+                            { id: 'female', label: '👩 Females' }
+                          ].map(f => (
                             <button
-                              key={g}
+                              key={f.id}
                               type="button"
-                              onClick={() => setMatchmakerGenderFilter(g)}
-                              className={`flex-1 py-1 rounded-lg capitalize transition-colors ${
-                                matchmakerGenderFilter === g ? 'bg-white text-[#FF2E79] shadow-2xs font-black' : 'text-slate-500 hover:text-slate-800'
+                              onClick={() => setMatchmakerUserAFilter(f.id)}
+                              className={`px-2.5 py-1 rounded-lg text-[10.5px] font-extrabold transition-all cursor-pointer ${
+                                matchmakerUserAFilter === f.id
+                                  ? 'bg-[#FF2E79] text-white shadow-2xs'
+                                  : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200/80'
                               }`}
                             >
-                              {g}
+                              {f.label}
                             </button>
                           ))}
                         </div>
 
-                        {/* State Filter */}
-                        <select
-                          value={matchmakerStateFilter}
-                          onChange={(e) => setMatchmakerStateFilter(e.target.value)}
-                          className="h-9 px-3 rounded-xl border border-slate-200 text-xs text-slate-700 bg-white focus:outline-none focus:border-[#FF2E79]"
-                        >
-                          <option value="all">All States</option>
-                          <option value="delhi ncr">Delhi NCR</option>
-                          <option value="maharashtra">Maharashtra</option>
-                          <option value="karnataka">Karnataka</option>
-                          <option value="uttar pradesh">Uttar Pradesh</option>
-                        </select>
-                      </div>
+                        {/* Search Input for User A */}
+                        <div className="relative">
+                          <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400" />
+                          <input
+                            type="text"
+                            placeholder="Filter user by name, campus..."
+                            value={matchmakerUserASearch}
+                            onChange={(e) => setMatchmakerUserASearch(e.target.value)}
+                            className="w-full h-8 pl-8 pr-3 rounded-xl border border-slate-200 text-xs text-slate-700 focus:outline-none focus:border-[#FF2E79] bg-slate-50/50"
+                          />
+                        </div>
 
-                      {/* Candidates Multi-Select Scrollable Grid */}
-                      <div className="max-h-[320px] overflow-y-auto pr-1 space-y-2">
-                        {candidatePool.length === 0 ? (
-                          <div className="p-8 text-center text-slate-400 text-xs font-medium">
-                            No candidates match your filters.
-                          </div>
-                        ) : (
-                          candidatePool.map(candidate => {
-                            const isSelected = matchmakerSelectedTargets.includes(candidate.id);
-                            return (
-                              <div
-                                key={candidate.id}
-                                onClick={() => handleToggleTargetCandidate(candidate.id)}
-                                className={`p-3 rounded-xl border-2 transition-all flex items-center justify-between gap-3 cursor-pointer ${
-                                  isSelected
-                                    ? 'bg-rose-50/70 border-[#FF2E79] shadow-xs'
-                                    : 'bg-white border-slate-100 hover:border-pink-200 hover:bg-slate-50/50'
-                                }`}
-                              >
-                                <div className="flex items-center gap-3 min-w-0">
-                                  <div className="text-[#FF2E79]">
-                                    {isSelected ? (
-                                      <CheckSquare className="w-5 h-5 fill-rose-100" />
-                                    ) : (
-                                      <Square className="w-5 h-5 text-slate-300" />
+                        {/* Selectable Primary User Cards List */}
+                        <div className="max-h-[220px] overflow-y-auto space-y-1.5 pr-1 no-scrollbar">
+                          {primaryUserPool.length === 0 ? (
+                            <p className="text-xs text-slate-400 text-center py-4">No users match this filter.</p>
+                          ) : (
+                            primaryUserPool.map(u => {
+                              const isSelected = matchmakerUserA === u.id;
+                              return (
+                                <div
+                                  key={u.id}
+                                  onClick={() => {
+                                    setMatchmakerUserA(u.id);
+                                    setMatchmakerSelectedTargets([]);
+                                    // Auto switch candidate pool gender to opposite gender!
+                                    if ((u.gender || '').toLowerCase() === 'male') {
+                                      setMatchmakerGenderFilter('female');
+                                    } else if ((u.gender || '').toLowerCase() === 'female') {
+                                      setMatchmakerGenderFilter('male');
+                                    }
+                                  }}
+                                  className={`p-2.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-2.5 ${
+                                    isSelected
+                                      ? 'bg-rose-50 border-[#FF2E79] ring-2 ring-[#FF2E79]/20 shadow-xs'
+                                      : 'bg-white border-slate-100 hover:border-pink-200 hover:bg-slate-50/70'
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-2.5 min-w-0">
+                                    <img
+                                      src={u.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'}
+                                      alt=""
+                                      className="w-9 h-9 rounded-full object-cover border border-slate-200 shrink-0"
+                                    />
+                                    <div className="min-w-0">
+                                      <div className="flex items-center gap-1.5">
+                                        <span className="text-xs font-black text-slate-900 truncate">{u.name}</span>
+                                        <span className="text-[10px] text-slate-400 font-bold capitalize">({u.gender || 'N/A'})</span>
+                                      </div>
+                                      <p className="text-[10px] text-slate-500 truncate">
+                                        {u.university || 'Campus'} • {u.state || 'Delhi NCR'}
+                                      </p>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-center gap-1.5 shrink-0">
+                                    <span className={`px-2 py-0.5 rounded-md text-[9.5px] font-black uppercase ${
+                                      u.plan === 'elite' ? 'bg-purple-100 text-purple-700' :
+                                      u.plan === 'premium' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600'
+                                    }`}>
+                                      {u.plan || 'basic'}
+                                    </span>
+                                    {isSelected && (
+                                      <span className="w-5 h-5 rounded-full bg-[#FF2E79] text-white flex items-center justify-center">
+                                        <Check className="w-3 h-3 stroke-[3]" />
+                                      </span>
                                     )}
                                   </div>
-                                  <img
-                                    src={candidate.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'}
-                                    alt=""
-                                    className="w-10 h-10 rounded-full object-cover border border-slate-200 shrink-0"
-                                  />
-                                  <div className="min-w-0">
-                                    <div className="flex items-center gap-1.5">
-                                      <span className="text-xs font-black text-slate-900 truncate">{candidate.name}</span>
-                                      <span className="text-[10px] text-slate-400 font-bold capitalize">({candidate.gender || 'N/A'})</span>
+                                </div>
+                              );
+                            })
+                          )}
+                        </div>
+
+                        {/* Active Selected Card Preview Banner */}
+                        {selectedUserAObj && (
+                          <div className="p-3 rounded-xl bg-gradient-to-r from-pink-50/80 to-rose-50/60 border border-pink-200 space-y-1.5">
+                            <div className="flex items-center justify-between text-[11px] font-extrabold text-slate-700">
+                              <span>Selected Candidate A:</span>
+                              <span className="text-[#FF2E79]">{selectedUserAObj.matches?.length || 0} Existing Matches</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <img src={selectedUserAObj.avatar} alt="" className="w-8 h-8 rounded-full object-cover border border-[#FF2E79]" />
+                              <div className="min-w-0 text-xs">
+                                <span className="font-black text-slate-900 truncate block">{selectedUserAObj.name} ({selectedUserAObj.gender})</span>
+                                <span className="text-[10px] text-slate-500 truncate block">{selectedUserAObj.university} • {selectedUserAObj.state}</span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Compatibility Score Slider */}
+                        <div className="pt-2 border-t border-slate-100 space-y-1">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="font-bold text-slate-700">Custom Match Score:</span>
+                            <span className="font-black text-[#FF2E79]">{matchmakerScore}%</span>
+                          </div>
+                          <input
+                            type="range"
+                            min="70"
+                            max="99"
+                            value={matchmakerScore}
+                            onChange={(e) => setMatchmakerScore(e.target.value)}
+                            className="w-full accent-[#FF2E79] cursor-pointer"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* ═══════════════════════════════════════════════════════════
+                        COLUMN 2: SMART RANKED CANDIDATE POOL (7 COLS)
+                       ═══════════════════════════════════════════════════════════ */}
+                    <div className="lg:col-span-7 space-y-3.5 p-4 rounded-2xl bg-white border border-[#FFE1EB] shadow-2xs flex flex-col justify-between">
+                      <div className="space-y-3">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-black uppercase tracking-wider text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md">
+                              Step 2: Candidate Pool
+                            </span>
+                            <span className="text-xs font-bold text-slate-700">
+                              Ranked by Compatibility ({candidatePool.length} Found)
+                            </span>
+                          </div>
+
+                          {/* Quick Multi-Select Shortcuts */}
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (candidatePool.length > 0) {
+                                  setMatchmakerSelectedTargets([candidatePool[0].id]);
+                                }
+                              }}
+                              className="px-2 py-0.5 rounded-lg text-[10px] font-extrabold bg-pink-50 text-[#FF2E79] hover:bg-pink-100 border border-pink-200 transition-colors cursor-pointer"
+                            >
+                              ⚡ Pick #1 Match
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const top3 = candidatePool.slice(0, 3).map(c => c.id);
+                                setMatchmakerSelectedTargets(top3);
+                              }}
+                              className="px-2 py-0.5 rounded-lg text-[10px] font-extrabold bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200 transition-colors cursor-pointer"
+                            >
+                              ✨ Pick Top 3
+                            </button>
+                            {matchmakerSelectedTargets.length > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => setMatchmakerSelectedTargets([])}
+                                className="text-[10px] font-bold text-rose-500 hover:underline px-1"
+                              >
+                                Clear ({matchmakerSelectedTargets.length})
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Search & Filters */}
+                        <div className="grid grid-cols-1 sm:grid-cols-12 gap-2">
+                          <div className="sm:col-span-5 relative">
+                            <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400" />
+                            <input
+                              type="text"
+                              placeholder="Search candidate, campus..."
+                              value={matchmakerSearchQuery}
+                              onChange={(e) => setMatchmakerSearchQuery(e.target.value)}
+                              className="w-full h-8 pl-8 pr-3 rounded-xl border border-slate-200 text-xs text-slate-700 focus:outline-none focus:border-[#FF2E79] bg-slate-50/50"
+                            />
+                          </div>
+
+                          {/* Gender Filter Buttons */}
+                          <div className="sm:col-span-4 flex rounded-xl border border-slate-200 overflow-hidden bg-slate-50 p-0.5 text-[11px] font-bold">
+                            {['all', 'female', 'male'].map(g => (
+                              <button
+                                key={g}
+                                type="button"
+                                onClick={() => setMatchmakerGenderFilter(g)}
+                                className={`flex-1 py-0.5 rounded-lg capitalize transition-colors ${
+                                  matchmakerGenderFilter.toLowerCase() === g.toLowerCase()
+                                    ? 'bg-white text-[#FF2E79] shadow-2xs font-black' 
+                                    : 'text-slate-500 hover:text-slate-800'
+                                }`}
+                              >
+                                {g}
+                              </button>
+                            ))}
+                          </div>
+
+                          {/* State Filter */}
+                          <select
+                            value={matchmakerStateFilter}
+                            onChange={(e) => setMatchmakerStateFilter(e.target.value)}
+                            className="sm:col-span-3 h-8 px-2.5 rounded-xl border border-slate-200 text-[11px] font-medium text-slate-700 bg-white focus:outline-none focus:border-[#FF2E79]"
+                          >
+                            <option value="all">All States</option>
+                            <option value="delhi ncr">Delhi NCR</option>
+                            <option value="maharashtra">Maharashtra</option>
+                            <option value="karnataka">Karnataka</option>
+                            <option value="uttar pradesh">Uttar Pradesh</option>
+                          </select>
+                        </div>
+
+                        {/* Candidates Multi-Select Scrollable List */}
+                        <div className="max-h-[300px] overflow-y-auto pr-1 space-y-2 no-scrollbar">
+                          {candidatePool.length === 0 ? (
+                            <div className="p-8 text-center text-slate-400 text-xs font-medium space-y-1">
+                              <p>No candidates match your current gender/state filters.</p>
+                              <p className="text-[11px] text-slate-400">Try switching Gender to "All" or State to "All States".</p>
+                            </div>
+                          ) : (
+                            candidatePool.map(candidate => {
+                              const isSelected = matchmakerSelectedTargets.includes(candidate.id);
+                              return (
+                                <div
+                                  key={candidate.id}
+                                  onClick={() => handleToggleTargetCandidate(candidate.id)}
+                                  className={`p-3 rounded-2xl border-2 transition-all flex items-center justify-between gap-3 cursor-pointer ${
+                                    isSelected
+                                      ? 'bg-rose-50/80 border-[#FF2E79] shadow-xs'
+                                      : 'bg-white border-slate-100 hover:border-pink-200 hover:bg-slate-50/50'
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-3 min-w-0">
+                                    <div className="text-[#FF2E79] shrink-0">
+                                      {isSelected ? (
+                                        <CheckSquare className="w-5 h-5 fill-rose-100" />
+                                      ) : (
+                                        <Square className="w-5 h-5 text-slate-300" />
+                                      )}
                                     </div>
-                                    <p className="text-[10px] text-slate-500 truncate">
-                                      {candidate.university || 'College'} • {candidate.state || 'Delhi NCR'}
-                                    </p>
+
+                                    <img
+                                      src={candidate.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'}
+                                      alt=""
+                                      className="w-10 h-10 rounded-full object-cover border border-slate-200 shrink-0"
+                                    />
+
+                                    <div className="min-w-0">
+                                      <div className="flex items-center gap-1.5 flex-wrap">
+                                        <span className="text-xs font-black text-slate-900 truncate">{candidate.name}</span>
+                                        <span className="text-[10px] text-slate-400 font-bold capitalize">({candidate.gender || 'N/A'})</span>
+                                        {candidate.isAlreadyMatched && (
+                                          <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-emerald-100 text-emerald-700">
+                                            Matched
+                                          </span>
+                                        )}
+                                      </div>
+
+                                      <p className="text-[10px] text-slate-500 truncate">
+                                        {candidate.university || 'College'} • {candidate.state || 'Delhi NCR'}
+                                      </p>
+
+                                      {/* Smart Recommendation Tags */}
+                                      <div className="flex items-center gap-1 mt-1 flex-wrap">
+                                        <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                          🔥 {candidate.compatScore}% Match
+                                        </span>
+                                        {candidate.compatTags.map((tag, tIdx) => (
+                                          <span key={tIdx} className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-600">
+                                            {tag}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex flex-col items-end gap-1 shrink-0">
+                                    <span className={`px-2 py-0.5 rounded-md text-[9.5px] font-black uppercase ${
+                                      candidate.plan === 'elite' ? 'bg-purple-100 text-purple-700 border border-purple-200' :
+                                      candidate.plan === 'premium' ? 'bg-amber-100 text-amber-800 border border-amber-200' : 'bg-slate-100 text-slate-600'
+                                    }`}>
+                                      {candidate.plan || 'basic'}
+                                    </span>
+                                    {isSelected && (
+                                      <span className="px-2 py-0.5 rounded-full bg-[#FF2E79] text-white text-[9.5px] font-black">
+                                        Picked
+                                      </span>
+                                    )}
                                   </div>
                                 </div>
-
-                                <div className="flex items-center gap-2 shrink-0">
-                                  <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase ${
-                                    candidate.plan === 'elite' ? 'bg-purple-100 text-purple-700' :
-                                    candidate.plan === 'premium' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600'
-                                  }`}>
-                                    {candidate.plan || 'basic'}
-                                  </span>
-                                  {isSelected && (
-                                    <span className="px-2 py-0.5 rounded-full bg-[#FF2E79] text-white text-[10px] font-black">
-                                      Selected
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                            );
-                          })
-                        )}
+                              );
+                            })
+                          )}
+                        </div>
                       </div>
                     </div>
 
                   </div>
+
+                  {/* ═══════════════════════════════════════════════════════════
+                      DUAL DISPATCH ACTION CONTROLS (BOTTOM BAR)
+                     ═══════════════════════════════════════════════════════════ */}
+                  <div className="p-4 rounded-2xl bg-white border border-[#FFE1EB] shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div>
+                      <h4 className="text-xs font-black text-slate-900">
+                        {matchmakerSelectedTargets.length === 0
+                          ? 'Select candidate(s) above to assign or push to dashboard'
+                          : `${matchmakerSelectedTargets.length} Profile(s) Selected for ${selectedUserAObj?.name || 'Primary User'}`}
+                      </h4>
+                      <p className="text-[11px] text-slate-500 font-medium">
+                        Choose whether to directly unlock mutual match & chat now, or send as top recommendations to the user's phone dashboard.
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2.5 w-full sm:w-auto">
+                      {/* ACTION 1: SEND AS RECOMMENDATION TO FEED */}
+                      <button
+                        type="button"
+                        onClick={handleRecommendToFeed}
+                        disabled={!matchmakerUserA || matchmakerSelectedTargets.length === 0}
+                        className={`flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all shadow-md cursor-pointer ${
+                          !matchmakerUserA || matchmakerSelectedTargets.length === 0
+                            ? 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none'
+                            : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-indigo-100 active:scale-98'
+                        }`}
+                        title="Pushes profiles directly into user's Explore feed so they can view and like on their phone"
+                      >
+                        <Zap className="w-4 h-4 fill-current text-amber-300" />
+                        <span>Send to User Dashboard ({matchmakerSelectedTargets.length})</span>
+                      </button>
+
+                      {/* ACTION 2: DIRECT MUTUAL MATCH */}
+                      <button
+                        type="button"
+                        onClick={handleAssignManualMatches}
+                        disabled={!matchmakerUserA || matchmakerSelectedTargets.length === 0}
+                        className={`flex-1 sm:flex-none px-5 py-2.5 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all shadow-md cursor-pointer ${
+                          !matchmakerUserA || matchmakerSelectedTargets.length === 0
+                            ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
+                            : 'bg-gradient-to-r from-[#FF2E79] to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white shadow-pink-200 active:scale-98'
+                        }`}
+                        title="Immediately forms mutual match and unlocks chat in both users' profiles"
+                      >
+                        <Heart className="w-4 h-4 fill-current" />
+                        <span>Direct Confirm Mutual Match</span>
+                      </button>
+                    </div>
+                  </div>
+
                 </div>
               );
             })()}

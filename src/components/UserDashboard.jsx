@@ -337,18 +337,23 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
     // Attach real mutual compatibility scores & cloud like flags
     stateCandidates = stateCandidates.map(c => {
       const hasLikedYou = cloudLikes.includes(c.id) || (c.likes && c.likes.includes(user?.id));
+      const isRecommended = Boolean(user?.suggestedMatches && user.suggestedMatches.includes(c.id));
       return {
         ...c,
-        hasLikedYou: Boolean(hasLikedYou),
+        hasLikedYou: Boolean(hasLikedYou || isRecommended),
+        isRecommended,
         matchScore: calculateCompatibilityScore(user, c)
       };
     });
 
     // Sort strictly by genuine priority:
-    // 1. Candidate who already liked current user (instant match potential)
+    // 1. Handpicked recommendation / Candidate who already liked current user (instant match potential)
     // 2. Elite Tier candidates
     // 3. Match Compatibility Score
     stateCandidates.sort((a, b) => {
+      if (a.isRecommended && !b.isRecommended) return -1;
+      if (!a.isRecommended && b.isRecommended) return 1;
+
       if (a.hasLikedYou && !b.hasLikedYou) return -1;
       if (!a.hasLikedYou && b.hasLikedYou) return 1;
 

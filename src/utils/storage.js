@@ -759,6 +759,23 @@ export const assignManualMatch = (primaryUserId, targetUserIds = [], customScore
       });
     }).catch(() => {});
 
+    // Supabase cloud matches table sync
+    if (typeof window !== 'undefined') {
+      import('../services/supabaseClient.js').then(({ supabase, isSupabaseConfigured }) => {
+        if (isSupabaseConfigured()) {
+          supabase
+            .from('matches')
+            .upsert({
+              user_a_id: primaryUserId,
+              user_b_id: targetId,
+              matched_at: new Date().toISOString(),
+              is_active: true
+            }, { onConflict: 'user_a_id,user_b_id' })
+            .then(() => {});
+        }
+      }).catch(() => {});
+    }
+
     assignedCount++;
   });
 
@@ -774,4 +791,70 @@ export const assignManualMatch = (primaryUserId, targetUserIds = [], customScore
   notifyDataChanged();
   return assignedCount > 0;
 };
+
+/**
+ * Push candidate profiles directly to a user's dashboard Explore feed
+ * (Allows user to see handpicked profiles on their phone and decide to like/match)
+ */
+export const recommendCandidatesToUser = (primaryUserId, targetUserIds = [], customScore = 95) => {
+  if (!primaryUserId) return false;
+  const targetIds = Array.isArray(targetUserIds) ? targetUserIds : [targetUserIds];
+  if (targetIds.length === 0) return false;
+
+  const users = getUsers();
+  const primaryUser = users.find(u => u.id === primaryUserId);
+  if (!primaryUser) return false;
+
+  let recommendedCount = 0;
+
+  targetIds.forEach(targetId => {
+    const targetUser = users.find(u => u.id === targetId);
+    if (!targetUser || targetId === primaryUserId) return;
+
+    // Un-dislike if previously disliked
+    primaryUser.dislikes = (primaryUser.dislikes || []).filter(id => id !== targetId);
+    
+    // Add to targetUser's likes of primaryUser so primaryUser gets the "Liked You / Top Priority" flag
+    if (!targetUser.likes) targetUser.likes = [];
+    if (!targetUser.likes.includes(primaryUserId)) {
+      targetUser.likes.push(primaryUserId);
+    }
+
+    // Add to primaryUser suggested candidates list
+    if (!primaryUser.suggestedMatches) primaryUser.suggestedMatches = [];
+    if (!primaryUser.suggestedMatches.includes(targetId)) {
+      primaryUser.suggestedMatches.push(targetId);
+    }
+
+    // Record like in Supabase
+    if (typeof window !== 'undefined') {
+      import('../services/supabaseService.js').then(({ recordSwipeInSupabase }) => {
+        recordSwipeInSupabase(targetId, primaryUserId, true);
+      }).catch(() => {});
+    }
+
+    // Send push & in-app notification to primaryUser
+    import('../services/notificationManager.js').then(({ addNotification }) => {
+      addNotification(primaryUserId, {
+        type: 'like',
+        title: 'New Recommended Match! ✨',
+        message: `${targetUser.name} (${targetUser.university || 'Campus'}) was handpicked for your round! Check your Explore feed now.`,
+        actionUrl: 'explore'
+      });
+    }).catch(() => {});
+
+    recommendedCount++;
+  });
+
+  saveUsers(users);
+
+  const currentUser = getCurrentUser();
+  if (currentUser && currentUser.id === primaryUserId) {
+    setCurrentUser(primaryUser);
+  }
+
+  notifyDataChanged();
+  return recommendedCount > 0;
+};
+
 
