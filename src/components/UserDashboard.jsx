@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getUsers, saveUsers, updateUser, createMatch } from '../utils/storage';
+import { getUsers, saveUsers, updateUser, createMatch, unmatchUser } from '../utils/storage';
 import { 
   Heart, 
   X, 
@@ -21,6 +21,7 @@ import {
 import confetti from 'canvas-confetti';
 import SwipeableDeck from './SwipeableDeck';
 import FullProfileModal from './FullProfileModal';
+import MatchCelebrationModal from './MatchCelebrationModal';
 import CampusRadarMap from './CampusRadarMap';
 import ChatView from './ChatView';
 import ProfileView from './ProfileView';
@@ -29,7 +30,7 @@ import InteractiveTourGuide from './InteractiveTourGuide';
 import NotificationsModal from './NotificationsModal';
 import ReEntryModal from './ReEntryModal';
 import InAppNotificationToast from './InAppNotificationToast';
-import { getRoundState, ROUND_PHASES, joinRound, getStateUpcomingMins, getStateRoundSchedule, fetchRoundStateFromSupabase } from '../utils/roundManager';
+import { getRoundState, ROUND_PHASES, joinRound, getStateUpcomingMins, getStateRoundSchedule, fetchRoundStateFromSupabase, isStateEnabled, getEnabledStates } from '../utils/roundManager';
 import { calculateCompatibilityScore } from '../utils/compatibility';
 import { 
   getNotifications, 
@@ -50,6 +51,9 @@ import {
 export default function UserDashboard({ user, onUpdateUser, onLogout }) {
   const [candidates, setCandidates] = useState([]);
   const [selectedMatch, setSelectedMatch] = useState(null);
+  const [cloudMatchedUsers, setCloudMatchedUsers] = useState([]);
+  const [activeDirectChatUser, setActiveDirectChatUser] = useState(null);
+  const [isDirectChatActive, setIsDirectChatActive] = useState(false);
   const [expandedCandidate, setExpandedCandidate] = useState(null);
   const [activeFilter, setActiveFilter] = useState('forYou'); // 'nearby' | 'forYou'
   const [currentTab, setCurrentTab] = useState('explore'); // 'explore' | 'radar' | 'chat' | 'profile'
@@ -120,6 +124,7 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
     const handleSync = () => {
       setRoundState(getRoundState());
       loadCandidates();
+      loadMatches();
       if (user?.id) {
         syncBroadcastNotifications(user.id).then(() => {
           setNotifications(getNotifications(user.id));
@@ -141,8 +146,10 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
         setRoundState(rs);
       }
       loadCandidates();
+      loadMatches();
     }).catch(() => {
       loadCandidates();
+      loadMatches();
     });
     if (user && user.id) {
       checkAndTriggerRoundNotifications(user);
@@ -154,6 +161,7 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
     // Real-time subscription for incoming likes, swipes and mutual matches from Supabase
     const unsubActivity = user?.id ? subscribeToLikesAndMatches(user.id, () => {
       loadCandidates();
+      loadMatches();
     }) : () => {};
 
     // Periodic broadcast notification and cloud sync check
@@ -216,6 +224,43 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
     }
   };
 
+  const loadMatches = async () => {
+    if (!user?.id) return;
+    try {
+      const matchIds = await fetchMatchesForUser(user.id);
+      let allUsers = getUsers() || [];
+      const realProfiles = await fetchProfilesFromSupabase();
+      if (realProfiles && realProfiles.length > 0) {
+        const map = new Map(allUsers.map(u => [u.id, u]));
+        realProfiles.forEach(p => map.set(p.id, { ...map.get(p.id), ...p }));
+        allUsers = Array.from(map.values());
+      }
+      
+      const allMatchIds = Array.from(new Set([...(user?.matches || []), ...matchIds]));
+      let resolvedMatches = allUsers.filter(u => u && allMatchIds.includes(u.id));
+
+      // Fallback for any matchId not found in local allUsers
+      const foundIds = new Set(resolvedMatches.map(m => m.id));
+      matchIds.forEach(id => {
+        if (!foundIds.has(id)) {
+          const fallback = realProfiles?.find(p => p.id === id);
+          if (fallback) resolvedMatches.push(fallback);
+        }
+      });
+      
+      setCloudMatchedUsers(resolvedMatches);
+
+      // Keep user.matches in sync in local storage
+      if (allMatchIds.length !== (user?.matches || []).length) {
+        const updatedUser = { ...user, matches: allMatchIds };
+        updateUser(updatedUser);
+        if (typeof onUpdateUser === 'function') onUpdateUser(updatedUser);
+      }
+    } catch (err) {
+      console.warn('Error loading matches:', err);
+    }
+  };
+
   const loadCandidates = async () => {
     if (!user) return;
     let allUsers = getUsers() || [];
@@ -238,6 +283,17 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
     } catch (e) {
       console.warn('Real profiles sync notice:', e);
     }
+
+    // Filter out ANY legacy fake/dummy profiles - strictly real database users
+    const mockIds = new Set(['girl_priya', 'girl_sophia', 'girl_ananya', 'girl_riya', 'girl_isha', 'girl_meera', 'boy_rohan', 'boy_aditya', 'boy_kabir', 'boy_henry', 'boy_arjun']);
+    allUsers = allUsers.filter(u => 
+      u && 
+      !mockIds.has(u.id) && 
+      !u.id?.startsWith('girl_') && 
+      !u.id?.startsWith('boy_') && 
+      !u.id?.startsWith('mock_') && 
+      !u.isMock
+    );
 
     // 2. Fetch cloud likes and matches from Supabase
     let cloudLikes = [];
@@ -278,52 +334,21 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
       };
     });
 
-    // -------------------------------------------------------------
-    // PRIORITY SORTING:
-    // A) If Current User is Female (e.g. Sneha):
-    //    1. Real Elite Male Profiles (e.g. Aditya) are ALWAYS #1 at the TOP!
-    //    2. Other Real Male Profiles are #2
-    //    3. Mock/Demo Profiles are #3
-    // B) If Current User is Male (e.g. Aditya):
-    //    1. Females who already LIKED ME (e.g. Sneha) are ALWAYS #1 at the TOP!
-    //    2. Real Female Profiles are #2
-    //    3. Mock/Demo Profiles are #3
-    // -------------------------------------------------------------
-    if (isFemale) {
-      stateCandidates.sort((a, b) => {
-        // Priority 1: Real Elite Male
-        const aIsRealElite = a.isRealUser && a.plan === 'elite';
-        const bIsRealElite = b.isRealUser && b.plan === 'elite';
-        if (aIsRealElite && !bIsRealElite) return -1;
-        if (!aIsRealElite && bIsRealElite) return 1;
+    // Sort strictly by genuine priority:
+    // 1. Candidate who already liked current user (instant match potential)
+    // 2. Elite Tier candidates
+    // 3. Match Compatibility Score
+    stateCandidates.sort((a, b) => {
+      if (a.hasLikedYou && !b.hasLikedYou) return -1;
+      if (!a.hasLikedYou && b.hasLikedYou) return 1;
 
-        // Priority 2: Any Elite Male
-        const aIsElite = a.plan === 'elite';
-        const bIsElite = b.plan === 'elite';
-        if (aIsElite && !bIsElite) return -1;
-        if (!aIsElite && bIsElite) return 1;
+      const aIsElite = a.plan === 'elite';
+      const bIsElite = b.plan === 'elite';
+      if (aIsElite && !bIsElite) return -1;
+      if (!aIsElite && bIsElite) return 1;
 
-        // Priority 3: Real User before Mock
-        if (a.isRealUser && !b.isRealUser) return -1;
-        if (!a.isRealUser && b.isRealUser) return 1;
-
-        // Priority 4: Compatibility Score
-        return (b.matchScore || 0) - (a.matchScore || 0);
-      });
-    } else {
-      stateCandidates.sort((a, b) => {
-        // Priority 1: Liked me
-        if (a.hasLikedYou && !b.hasLikedYou) return -1;
-        if (!a.hasLikedYou && b.hasLikedYou) return 1;
-
-        // Priority 2: Real User before Mock
-        if (a.isRealUser && !b.isRealUser) return -1;
-        if (!a.isRealUser && b.isRealUser) return 1;
-
-        // Priority 3: Compatibility Score
-        return (b.matchScore || 0) - (a.matchScore || 0);
-      });
-    }
+      return (b.matchScore || 0) - (a.matchScore || 0);
+    });
 
     setCandidates(stateCandidates);
   };
@@ -381,6 +406,7 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
       });
 
       setSelectedMatch(candidate);
+      loadMatches();
     }
 
     const updatedUser = {
@@ -424,6 +450,7 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
 
   const getMatchedUsers = () => {
     if (!user) return [];
+    if (cloudMatchedUsers && cloudMatchedUsers.length > 0) return cloudMatchedUsers;
     const allUsers = getUsers() || [];
     return allUsers.filter(u => u && user?.matches?.includes(u.id));
   };
@@ -431,7 +458,7 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
   const matchedUsers = getMatchedUsers();
 
   return (
-    <div className="flex-1 flex flex-col h-full relative justify-between select-none overflow-hidden pb-20 bg-gradient-to-b from-[#FFF0F4] via-[#FFEBEF] to-[#FFF5F8]">
+    <div className={`flex-1 flex flex-col h-full relative justify-between select-none overflow-hidden ${currentTab === 'chat' && (isDirectChatActive || activeDirectChatUser) ? 'pb-0' : 'pb-20'} bg-gradient-to-b from-[#FFF0F4] via-[#FFEBEF] to-[#FFF5F8]`}>
       
       {/* Background Organic Wave Curves & Floating Soft Pink Heart (Exact Match to Image 1) */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 select-none">
@@ -788,7 +815,7 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
                     className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-full text-xs text-[#FF2E79] font-black bg-pink-50/80 hover:bg-pink-100/80 transition-all cursor-pointer shrink-0"
                   >
                     <Users className="w-3.5 h-3.5 text-[#FF2E79]" />
-                    <span>R{roundState?.roundNumber || 1} • Live</span>
+                    <span>{roundState?.activeState || user?.state || 'Delhi NCR'} Round #{roundState?.roundNumber || 1}</span>
                     <span className="w-2 h-2 rounded-full bg-[#FF2E79] animate-ping" />
                   </button>
                 </div>
@@ -917,7 +944,22 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
         <ChatView
           user={user}
           matchedUsers={matchedUsers}
+          initialChatUser={activeDirectChatUser}
           onOpenMatchProfile={(m) => setExpandedCandidate(m)}
+          onActiveChatChange={(chatPartner) => {
+            setIsDirectChatActive(Boolean(chatPartner));
+            setActiveDirectChatUser(chatPartner);
+          }}
+          onGoToDeck={() => {
+            setActiveDirectChatUser(null);
+            setIsDirectChatActive(false);
+            setCurrentTab('explore');
+          }}
+          onUnmatch={(partnerId) => {
+            unmatchUser(user.id, partnerId);
+            loadMatches();
+            loadCandidates();
+          }}
         />
       )}
 
@@ -936,112 +978,97 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
         />
       )}
 
-      {/* BOTTOM FLOATING NAVIGATION BAR (Exact Match to Image 1) */}
-      <div className="fixed bottom-3 left-4 right-4 z-40 bg-white/95 backdrop-blur-2xl border border-white/80 rounded-[32px] p-2 shadow-[0_15px_40px_rgba(255,46,121,0.18)] flex items-center justify-around max-w-md mx-auto select-none">
-        
-        <button 
-          onClick={() => setCurrentTab('explore')}
-          className={`transition-all cursor-pointer ${
-            currentTab === 'explore' 
-              ? 'bg-[#FFEBF2] text-[#FF2E79] rounded-[22px] px-5 py-2 flex flex-col items-center justify-center gap-0.5 shadow-2xs font-black' 
-              : 'flex flex-col items-center justify-center gap-0.5 px-4 py-1.5 text-slate-700 font-extrabold hover:text-black'
-          }`}
-          title="Home"
-        >
-          <Home className={`w-5 h-5 ${currentTab === 'explore' ? 'fill-[#FF2E79] text-[#FF2E79]' : 'stroke-[2.2]'}`} />
-          <span className="text-[11px]">Home</span>
-        </button>
+      {/* BOTTOM FLOATING NAVIGATION BAR (Exact Match to Image 1) - Hidden during direct chat to eliminate bottom gap */}
+      {!(currentTab === 'chat' && (isDirectChatActive || activeDirectChatUser)) && (
+        <div className="fixed bottom-3 left-4 right-4 z-40 bg-white/95 backdrop-blur-2xl border border-white/80 rounded-[32px] p-2 shadow-[0_15px_40px_rgba(255,46,121,0.18)] flex items-center justify-around max-w-md mx-auto select-none animate-slide-up">
+          
+          <button 
+            onClick={() => {
+              setActiveDirectChatUser(null);
+              setIsDirectChatActive(false);
+              setCurrentTab('explore');
+            }}
+            className={`transition-all cursor-pointer ${
+              currentTab === 'explore' 
+                ? 'bg-[#FFEBF2] text-[#FF2E79] rounded-[22px] px-5 py-2 flex flex-col items-center justify-center gap-0.5 shadow-2xs font-black' 
+                : 'flex flex-col items-center justify-center gap-0.5 px-4 py-1.5 text-slate-700 font-extrabold hover:text-black'
+            }`}
+            title="Home"
+          >
+            <Home className={`w-5 h-5 ${currentTab === 'explore' ? 'fill-[#FF2E79] text-[#FF2E79]' : 'stroke-[2.2]'}`} />
+            <span className="text-[11px]">Home</span>
+          </button>
 
-        <button 
-          onClick={() => setCurrentTab('radar')}
-          className={`transition-all cursor-pointer ${
-            currentTab === 'radar' 
-              ? 'bg-[#FFEBF2] text-[#FF2E79] rounded-[22px] px-5 py-2 flex flex-col items-center justify-center gap-0.5 shadow-2xs font-black' 
-              : 'flex flex-col items-center justify-center gap-0.5 px-4 py-1.5 text-slate-700 font-extrabold hover:text-black'
-          }`}
-          title="Discover"
-        >
-          <Compass className={`w-5 h-5 ${currentTab === 'radar' ? 'text-[#FF2E79]' : 'stroke-[2.2]'}`} />
-          <span className="text-[11px]">Discover</span>
-        </button>
-        
-        <button 
-          onClick={() => setCurrentTab('chat')}
-          className={`transition-all cursor-pointer relative ${
-            currentTab === 'chat' 
-              ? 'bg-[#FFEBF2] text-[#FF2E79] rounded-[22px] px-5 py-2 flex flex-col items-center justify-center gap-0.5 shadow-2xs font-black' 
-              : 'flex flex-col items-center justify-center gap-0.5 px-4 py-1.5 text-slate-700 font-extrabold hover:text-black'
-          }`}
-          title="Chats"
-        >
-          <div className="relative">
-            <MessageCircle className={`w-5 h-5 ${currentTab === 'chat' ? 'text-[#FF2E79]' : 'stroke-[2.2]'}`} />
-            <span className="w-2 h-2 bg-[#FF2E79] rounded-full absolute -top-0.5 -right-1 border border-white" />
-          </div>
-          <span className="text-[11px]">Chats</span>
-        </button>
-        
-        <button 
-          onClick={() => setCurrentTab('profile')}
-          className={`transition-all cursor-pointer ${
-            currentTab === 'profile' 
-              ? 'bg-[#FFEBF2] text-[#FF2E79] rounded-[22px] px-5 py-2 flex flex-col items-center justify-center gap-0.5 shadow-2xs font-black' 
-              : 'flex flex-col items-center justify-center gap-0.5 px-4 py-1.5 text-slate-700 font-extrabold hover:text-black'
-          }`}
-          title="Profile"
-        >
-          <User className={`w-5 h-5 ${currentTab === 'profile' ? 'text-[#FF2E79]' : 'stroke-[2.2]'}`} />
-          <span className="text-[11px]">Profile</span>
-        </button>
-      </div>
-
-      {/* MUTUAL MATCH MODAL */}
-      {selectedMatch && (
-        <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="glass-panel p-5 max-w-[310px] w-full text-center relative border border-white bg-white/95">
-            <button 
-              onClick={() => setSelectedMatch(null)}
-              className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-pink-100 text-slate-400 hover:text-slate-600 transition-all cursor-pointer"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
-            <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-2">
-              <Award className="w-6 h-6 text-emerald-600" />
+          <button 
+            onClick={() => {
+              setActiveDirectChatUser(null);
+              setIsDirectChatActive(false);
+              setCurrentTab('radar');
+            }}
+            className={`transition-all cursor-pointer ${
+              currentTab === 'radar' 
+                ? 'bg-[#FFEBF2] text-[#FF2E79] rounded-[22px] px-5 py-2 flex flex-col items-center justify-center gap-0.5 shadow-2xs font-black' 
+                : 'flex flex-col items-center justify-center gap-0.5 px-4 py-1.5 text-slate-700 font-extrabold hover:text-black'
+            }`}
+            title="Discover"
+          >
+            <Compass className={`w-5 h-5 ${currentTab === 'radar' ? 'text-[#FF2E79]' : 'stroke-[2.2]'}`} />
+            <span className="text-[11px]">Discover</span>
+          </button>
+          
+          <button 
+            onClick={() => {
+              setActiveDirectChatUser(null);
+              setIsDirectChatActive(false);
+              setCurrentTab('chat');
+              loadMatches();
+            }}
+            className={`transition-all cursor-pointer relative ${
+              currentTab === 'chat' 
+                ? 'bg-[#FFEBF2] text-[#FF2E79] rounded-[22px] px-5 py-2 flex flex-col items-center justify-center gap-0.5 shadow-2xs font-black' 
+                : 'flex flex-col items-center justify-center gap-0.5 px-4 py-1.5 text-slate-700 font-extrabold hover:text-black'
+            }`}
+            title="Chats"
+          >
+            <div className="relative">
+              <MessageCircle className={`w-5 h-5 ${currentTab === 'chat' ? 'text-[#FF2E79]' : 'stroke-[2.2]'}`} />
+              <span className="w-2 h-2 bg-[#FF2E79] rounded-full absolute -top-0.5 -right-1 border border-white" />
             </div>
-
-            <h3 className="text-lg font-black text-slate-900 font-display">It's a Match!</h3>
-            <p className="text-xs text-slate-500 mt-1 mb-4 leading-relaxed">
-              You and <strong className="text-slate-800">{selectedMatch.name}</strong> liked each other!
-            </p>
-
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <img src={user.avatar} className="w-14 h-14 rounded-full border-2 border-[#FF2E79] object-cover" alt="" />
-              <div className="w-8 h-8 rounded-full bg-rose-50 text-[#FF2E79] flex items-center justify-center shadow-sm">
-                <Heart className="w-4 h-4 fill-current" />
-              </div>
-              <img src={selectedMatch.avatar} className="w-14 h-14 rounded-full border-2 border-[#FF2E79] object-cover" alt="" />
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <button 
-                onClick={() => {
-                  setSelectedMatch(null);
-                  setCurrentTab('chat');
-                }}
-                className="w-full py-2.5 rounded-full bg-[#FF2E79] text-white font-bold text-xs shadow-md shadow-rose-300 hover:bg-[#e02447] cursor-pointer"
-              >
-                Send a Message
-              </button>
-              <button 
-                onClick={() => setSelectedMatch(null)}
-                className="w-full py-2.5 rounded-full bg-slate-100 text-slate-700 font-bold text-xs hover:bg-slate-200 cursor-pointer"
-              >
-                Keep Swiping
-              </button>
-            </div>
-          </div>
+            <span className="text-[11px]">Chats</span>
+          </button>
+          
+          <button 
+            onClick={() => {
+              setActiveDirectChatUser(null);
+              setIsDirectChatActive(false);
+              setCurrentTab('profile');
+            }}
+            className={`transition-all cursor-pointer ${
+              currentTab === 'profile' 
+                ? 'bg-[#FFEBF2] text-[#FF2E79] rounded-[22px] px-5 py-2 flex flex-col items-center justify-center gap-0.5 shadow-2xs font-black' 
+                : 'flex flex-col items-center justify-center gap-0.5 px-4 py-1.5 text-slate-700 font-extrabold hover:text-black'
+            }`}
+            title="Profile"
+          >
+            <User className={`w-5 h-5 ${currentTab === 'profile' ? 'text-[#FF2E79]' : 'stroke-[2.2]'}`} />
+            <span className="text-[11px]">Profile</span>
+          </button>
         </div>
+      )}
+
+      {/* MUTUAL MATCH CELEBRATION MODAL WITH ROLLING AVATAR COLLISION PHYSICS */}
+      {selectedMatch && (
+        <MatchCelebrationModal
+          user={user}
+          partner={selectedMatch}
+          onClose={() => setSelectedMatch(null)}
+          onStartChat={(partner) => {
+            setActiveDirectChatUser(partner);
+            setSelectedMatch(null);
+            setCurrentTab('chat');
+            loadMatches();
+          }}
+        />
       )}
 
       {/* NOTIFICATIONS MODAL */}

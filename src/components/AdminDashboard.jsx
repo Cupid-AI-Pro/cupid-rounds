@@ -9,6 +9,10 @@ import {
   clearAllData,
   getPaymentSubmissions,
   updatePaymentStatus,
+  rejectPaymentSubmission,
+  getRefundQueue,
+  processRefund,
+  rejectRefund,
   isAdminAuthenticated,
   setAdminAuthenticated,
   getStatesList,
@@ -30,6 +34,10 @@ import {
   getAllStateSchedules, 
   updateStateScheduleDate,
   runAlgorithmicMatchEngine,
+  getEnabledStates,
+  isStateEnabled,
+  toggleStateEnabled,
+  getPipelinedRoundStatus,
   ROUND_PHASES, 
   PHASE_LABELS 
 } from '../utils/roundManager';
@@ -76,7 +84,13 @@ import {
   X,
   Send,
   Eye,
-  Zap
+  Zap,
+  Copy,
+  CheckCheck,
+  ToggleLeft,
+  ToggleRight,
+  Power,
+  ShieldAlert
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import CupidLogo from './CupidLogo';
@@ -131,12 +145,22 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
   const [paymentSubmissions, setPaymentSubmissions] = useState([]);
   const [previewScreenshot, setPreviewScreenshot] = useState(null);
 
-  // Stats
+  // Refund Queue & State Toggles Management
+  const [refundQueue, setRefundQueue] = useState(() => getRefundQueue());
+  const [enabledStates, setEnabledStates] = useState(() => getEnabledStates());
+  const [copiedUpi, setCopiedUpi] = useState(null);
+  const [refundModalUser, setRefundModalUser] = useState(null);
+  const [refundTransactionRef, setRefundTransactionRef] = useState('');
+  const [refundNotes, setRefundNotes] = useState('');
+  const [rejectModalEntry, setRejectModalEntry] = useState(null);
+  const [rejectReason, setRejectReason] = useState('Payment screenshot or UPI transaction mismatch');
+
+  // Stats (strictly computed from real database profiles & transactions)
   const [stats, setStats] = useState({
-    totalUsers: 12648,
-    totalMatches: 3482,
-    newSignups: 892,
-    revenue: 124980,
+    totalUsers: 0,
+    totalMatches: 0,
+    newSignups: 0,
+    revenue: 0,
     active: 0,
     waitlisted: 0,
     refunds: 0,
@@ -202,6 +226,16 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
       }
     }
 
+    const mockIds = new Set(['girl_priya', 'girl_sophia', 'girl_ananya', 'girl_riya', 'girl_isha', 'girl_meera', 'boy_rohan', 'boy_aditya', 'boy_kabir', 'boy_henry', 'boy_arjun']);
+    allUsers = allUsers.filter(u => 
+      u && 
+      !mockIds.has(u.id) && 
+      !u.id?.startsWith('girl_') && 
+      !u.id?.startsWith('boy_') && 
+      !u.id?.startsWith('mock_') && 
+      !u.isMock
+    );
+
     setUsers(allUsers);
     const currentRound = getRoundState();
     setRoundState(currentRound);
@@ -211,8 +245,13 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
     const subs = getPaymentSubmissions();
     setPaymentSubmissions(subs);
 
+    const refunds = getRefundQueue();
+    setRefundQueue(refunds);
+    setEnabledStates(getEnabledStates());
+
     const matchCount = allUsers.reduce((acc, curr) => acc + (curr.matches?.length || 0), 0) / 2;
-    const refundCount = allUsers.filter(u => u.status === 'refund_requested' || u.refundEligible).length;
+    const pendingRefundsCount = refunds.filter(r => r.status === 'pending').length;
+    const refundCount = pendingRefundsCount || allUsers.filter(u => u.status === 'refund_requested' || u.refundEligible).length;
     const waitlistedCount = allUsers.filter(u => u.status === 'waitlisted').length;
     const activeCount = allUsers.filter(u => u.status === 'active').length;
     const pendingPayCount = subs.filter(s => s.status === 'pending').length;
@@ -285,6 +324,55 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
     loadAdminData();
     confetti({ particleCount: 90, spread: 70, origin: { y: 0.6 } });
     alert(`🎉 Live Round Successfully Switched to ${newState}!\n\nThis round is now instantly LIVE across all users' mobile devices and synced with Supabase.`);
+  };
+
+  // State Active/Inactive Toggle Handler (User Requirement: 10-Day schedule strictly preserved)
+  const handleToggleState = (stateName) => {
+    const currentlyEnabled = isStateEnabled(stateName);
+    const updatedMap = toggleStateEnabled(stateName, !currentlyEnabled);
+    setEnabledStates({ ...updatedMap });
+    setStateSchedules(getAllStateSchedules());
+    loadAdminData();
+  };
+
+  // Reject Invalid Payment Entry (User Requirement: Auto-approved by default, Admin can reject fake payments)
+  const handleRejectPaymentEntry = (submission) => {
+    if (!submission) return;
+    rejectPaymentSubmission(submission.userId, rejectReason);
+    setPaymentSubmissions(getPaymentSubmissions());
+    setRejectModalEntry(null);
+    loadAdminData();
+    alert(`Entry for ${submission.userName || 'user'} has been rejected. Their round participation was revoked and an alert was sent.`);
+  };
+
+  // Process User Refund with UPI Details (User Requirement: Dedicated refund queue with UPI IDs)
+  const handleProcessRefundConfirm = () => {
+    if (!refundModalUser) return;
+    processRefund(refundModalUser.userId, { 
+      transactionRef: refundTransactionRef || `UPI-TXN-${Date.now().toString().slice(-6)}`,
+      notes: refundNotes 
+    });
+    setRefundQueue(getRefundQueue());
+    setRefundModalUser(null);
+    setRefundTransactionRef('');
+    setRefundNotes('');
+    loadAdminData();
+    alert(`✅ Refund of ₹${refundModalUser.amount} for ${refundModalUser.name} to UPI ${refundModalUser.upiId} has been marked as completed!`);
+  };
+
+  const handleRejectRefundClick = (refundItem) => {
+    if (confirm(`Decline refund request for ${refundItem.name}?`)) {
+      rejectRefund(refundItem.userId, 'Did not meet refund criteria');
+      setRefundQueue(getRefundQueue());
+      loadAdminData();
+    }
+  };
+
+  const handleCopyUpi = (upiId) => {
+    if (!upiId) return;
+    navigator.clipboard.writeText(upiId);
+    setCopiedUpi(upiId);
+    setTimeout(() => setCopiedUpi(null), 2500);
   };
 
   // States Management Actions
@@ -562,13 +650,14 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
     );
   }
 
-  // Sidebar navigation items list (Image 2 exact menu)
+  // Sidebar navigation items list (Image 2 exact menu + Refund Queue & State Controls)
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'rounds', label: 'Rounds & State Toggles', icon: Flame },
+    { id: 'verifications', label: 'Payment Verifications', icon: ShieldCheck, badge: paymentSubmissions.filter(s => s.status === 'pending').length || null, badgeColor: 'bg-rose-500 text-white' },
+    { id: 'refunds', label: 'Refund Queue', icon: DollarSign, badge: refundQueue.filter(r => r.status === 'pending').length || null, badgeColor: 'bg-amber-500 text-white' },
     { id: 'users', label: 'Users', icon: Users, badge: stats.totalUsers },
-    { id: 'verifications', label: 'Verifications', icon: ShieldCheck, badge: stats.pendingPayments > 0 ? stats.pendingPayments : null, badgeColor: 'bg-rose-500 text-white' },
     { id: 'matches', label: 'Matches', icon: Heart, badge: stats.totalMatches },
-    { id: 'rounds', label: 'Live Rounds', icon: Flame },
     { id: 'reports', label: 'Reports', icon: Flag },
     { id: 'payments', label: 'Payments', icon: CreditCard },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
@@ -1146,44 +1235,46 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                       </div>
                       <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                     </button>
-
-                    <button onClick={() => setActiveNav('reports')} className="p-2.5 rounded-xl border border-slate-200 hover:border-[#FF2E79] hover:bg-rose-50/40 flex items-center justify-between transition-colors cursor-pointer">
-                      <div className="flex items-center gap-1.5 truncate">
-                        <BarChart3 className="w-3.5 h-3.5 text-[#FF2E79] shrink-0" />
-                        <span className="truncate">View Reports</span>
-                      </div>
-                      <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                    </button>
                   </div>
                 </div>
-
               </div>
-
             </div>
-
           </div>
         )}
 
         {/* ═══════════════════════════════════════════════════════════════════════
-            VIEW 2: VERIFICATIONS / PAYMENTS QUEUE
+            VIEW 2: VERIFICATIONS / PAYMENTS QUEUE (Auto-Approved by default)
            ═══════════════════════════════════════════════════════════════════════ */}
         {(activeNav === 'verifications' || activeNav === 'payments') && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <h1 className="text-2xl font-black text-slate-900 tracking-tight">Payment Verifications</h1>
-                <p className="text-xs text-slate-500 font-medium">
-                  Review payment screenshots to activate user accounts.
+                <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                  <ShieldCheck className="w-6 h-6 text-emerald-500" />
+                  <span>Payment Verifications</span>
+                </h1>
+                <p className="text-xs text-slate-500 font-medium mt-0.5">
+                  All male user entries are <strong>Auto-Approved</strong> by default so they enter the round immediately. You can review payment proofs and manually reject fraudulent entries.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setPaymentSubmissions(getPaymentSubmissions())}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-[#FFE1EB] hover:bg-rose-50 text-xs font-bold text-slate-700 cursor-pointer shadow-2xs"
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-[#FFE1EB] hover:bg-rose-50 text-xs font-bold text-slate-700 cursor-pointer shadow-2xs shrink-0"
               >
                 <RefreshCw className="w-3.5 h-3.5 text-[#FF2E79]" />
-                <span>Refresh Queue</span>
+                <span>Refresh Submissions</span>
               </button>
+            </div>
+
+            {/* Auto-Approval Notice Banner */}
+            <div className="p-3.5 rounded-2xl bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border border-emerald-200/80 flex items-center gap-3">
+              <div className="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-xs">
+                <Check className="w-4 h-4 stroke-[3]" />
+              </div>
+              <p className="text-xs text-emerald-900 font-semibold leading-relaxed">
+                <strong>Auto-Approve Enabled:</strong> During Day 1 (First 24h), user payments are automatically verified so they never face onboarding delays. If any payment screenshot or UPI reference is invalid, click <strong>"Reject Entry & Revoke"</strong> below.
+              </p>
             </div>
 
             {paymentSubmissions.length === 0 ? (
@@ -1195,19 +1286,20 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                 {[...paymentSubmissions].reverse().map((sub, i) => (
                   <div
                     key={sub.userId + i}
-                    className={`bg-white p-5 rounded-2xl space-y-3 border-2 ${
-                      sub.status === 'approved' ? 'border-emerald-200' :
-                      sub.status === 'rejected' ? 'border-red-200' :
+                    className={`bg-white p-5 rounded-2xl space-y-3 border-2 transition-all ${
+                      sub.status === 'approved' ? 'border-emerald-200 shadow-xs' :
+                      sub.status === 'rejected' ? 'border-rose-200 bg-rose-50/20' :
                       'border-amber-300'
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1 ${
                         sub.status === 'approved' ? 'bg-emerald-100 text-emerald-800' :
-                        sub.status === 'rejected' ? 'bg-red-100 text-red-700' :
+                        sub.status === 'rejected' ? 'bg-rose-100 text-rose-700' :
                         'bg-amber-100 text-amber-800'
                       }`}>
-                        {sub.status === 'approved' ? 'Approved' : sub.status === 'rejected' ? 'Rejected' : 'Pending Verification'}
+                        {sub.status === 'approved' && <Check className="w-3 h-3 stroke-[3]" />}
+                        {sub.status === 'approved' ? 'Auto-Approved (Active)' : sub.status === 'rejected' ? 'Rejected / Revoked' : 'Pending Verification'}
                       </span>
                       <span className="text-[10px] font-extrabold text-slate-600 uppercase">{sub.plan} Plan • ₹{sub.amount}</span>
                     </div>
@@ -1216,8 +1308,16 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                       <p className="font-black text-slate-900 text-sm">{sub.userName}</p>
                       <p className="text-slate-500">{sub.userEmail} {sub.userPhone ? `| ${sub.userPhone}` : ''}</p>
                       <p className="text-slate-500">State: <strong className="text-slate-800">{sub.userState}</strong></p>
+                      {sub.upiId && (
+                        <p className="text-slate-800 font-bold mt-1">UPI ID: <span className="font-mono text-[#FF2E79] font-extrabold">{sub.upiId}</span></p>
+                      )}
                       {sub.utr && (
-                        <p className="text-slate-800 font-bold mt-1">Ref ID: <span className="font-mono text-[#FF2E79] font-extrabold">{sub.utr}</span></p>
+                        <p className="text-slate-800 font-bold">Ref/UTR: <span className="font-mono text-slate-700 font-extrabold">{sub.utr}</span></p>
+                      )}
+                      {sub.rejectionReason && (
+                        <p className="text-rose-600 font-bold text-[11px] bg-rose-50 p-1.5 rounded-lg border border-rose-100 mt-1">
+                          Reason: {sub.rejectionReason}
+                        </p>
                       )}
                     </div>
 
@@ -1245,28 +1345,190 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                       <div className="bg-slate-100 rounded-xl p-3 text-center text-xs text-slate-400">No screenshot uploaded</div>
                     )}
 
-                    {sub.status === 'pending' && (
-                      <div className="flex gap-2 pt-1">
+                    <div className="flex gap-2 pt-1">
+                      {sub.status !== 'rejected' ? (
                         <button
                           type="button"
-                          onClick={() => handleApprovePayment(sub)}
-                          className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-95"
+                          onClick={() => setRejectModalEntry(sub)}
+                          className="w-full py-2.5 rounded-xl border border-rose-200 bg-rose-50/70 hover:bg-rose-100 text-rose-700 text-xs font-black flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-95"
                         >
-                          <CheckCircle2 className="w-4 h-4" />
-                          <span>Approve & Activate</span>
+                          <XCircle className="w-4 h-4 text-rose-600" />
+                          <span>Reject Entry & Revoke Participation</span>
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => handleRejectPayment(sub)}
-                          className="flex-1 py-2.5 rounded-xl bg-red-100 hover:bg-red-200 text-red-700 text-xs font-black flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-95"
-                        >
-                          <XCircle className="w-4 h-4" />
-                          <span>Reject</span>
-                        </button>
-                      </div>
-                    )}
+                      ) : (
+                        <div className="w-full py-2 rounded-xl bg-slate-100 text-slate-500 text-xs font-bold text-center">
+                          Entry Revoked
+                        </div>
+                      )}
+                    </div>
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ═══════════════════════════════════════════════════════════════════════
+            VIEW: DEDICATED REFUND QUEUE ('refunds') - With UPI IDs & 1-Click Copy
+           ═══════════════════════════════════════════════════════════════════════ */}
+        {activeNav === 'refunds' && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                  <DollarSign className="w-6 h-6 text-amber-500" />
+                  <span>Refund Management Queue</span>
+                </h1>
+                <p className="text-xs text-slate-500 font-medium mt-0.5">
+                  Users eligible for 100% money-back refund (unmatched paid entries or users who selected 0 candidates) with their UPI IDs.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setRefundQueue(getRefundQueue())}
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-[#FFE1EB] hover:bg-rose-50 text-xs font-bold text-slate-700 cursor-pointer shadow-2xs shrink-0"
+              >
+                <RefreshCw className="w-3.5 h-3.5 text-[#FF2E79]" />
+                <span>Refresh Queue</span>
+              </button>
+            </div>
+
+            {/* Metric Overview Cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+              <div className="bg-white p-4 rounded-2xl border border-amber-200 shadow-2xs space-y-1">
+                <span className="text-[10px] font-black text-amber-600 uppercase tracking-wider block">Pending Refunds</span>
+                <p className="text-xl sm:text-2xl font-black text-slate-900">{refundQueue.filter(r => r.status === 'pending').length}</p>
+                <span className="text-[10px] text-slate-400 font-semibold">Awaiting UPI payout</span>
+              </div>
+              <div className="bg-white p-4 rounded-2xl border border-rose-200 shadow-2xs space-y-1">
+                <span className="text-[10px] font-black text-rose-600 uppercase tracking-wider block">Pending Amount</span>
+                <p className="text-xl sm:text-2xl font-black text-[#FF2E79]">
+                  ₹{refundQueue.filter(r => r.status === 'pending').reduce((sum, r) => sum + (Number(r.amount) || 0), 0)}
+                </p>
+                <span className="text-[10px] text-slate-400 font-semibold">100% guarantee total</span>
+              </div>
+              <div className="bg-white p-4 rounded-2xl border border-emerald-200 shadow-2xs space-y-1">
+                <span className="text-[10px] font-black text-emerald-600 uppercase tracking-wider block">Completed Refunds</span>
+                <p className="text-xl sm:text-2xl font-black text-emerald-700">{refundQueue.filter(r => r.status === 'processed').length}</p>
+                <span className="text-[10px] text-slate-400 font-semibold">Paid to user UPIs</span>
+              </div>
+              <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs space-y-1">
+                <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">Total Eligible Entries</span>
+                <p className="text-xl sm:text-2xl font-black text-slate-900">{refundQueue.length}</p>
+                <span className="text-[10px] text-slate-400 font-semibold">Across all state rounds</span>
+              </div>
+            </div>
+
+            {/* Refunds Table / List */}
+            {refundQueue.length === 0 ? (
+              <div className="bg-white p-12 rounded-2xl border border-[#FFE1EB] text-center text-slate-400 text-xs font-semibold space-y-2">
+                <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto" />
+                <p className="text-sm font-black text-slate-700">No Pending Refunds</p>
+                <p>All eligible users have been settled or formed mutual round matches!</p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl border border-[#FFE1EB] p-4 sm:p-5 overflow-hidden shadow-2xs">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead>
+                      <tr className="border-b border-slate-100 text-slate-400 font-bold uppercase text-[10px]">
+                        <th className="pb-3">Candidate</th>
+                        <th className="pb-3">State / College</th>
+                        <th className="pb-3">Plan Paid</th>
+                        <th className="pb-3">Amount</th>
+                        <th className="pb-3">UPI ID (1-Click Copy)</th>
+                        <th className="pb-3">Reason</th>
+                        <th className="pb-3">Status</th>
+                        <th className="pb-3 text-right">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {refundQueue.map((item, idx) => (
+                        <tr key={item.userId + idx} className="hover:bg-pink-50/30 transition-colors">
+                          <td className="py-3 pr-2">
+                            <div className="flex items-center gap-2.5">
+                              <img src={item.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80'} alt="" className="w-9 h-9 rounded-full object-cover shrink-0 border border-slate-200" />
+                              <div>
+                                <p className="font-extrabold text-slate-900">{item.name}</p>
+                                <p className="text-[10px] text-slate-400">{item.email} {item.phone ? `• ${item.phone}` : ''}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-3 text-slate-600 font-semibold">
+                            {item.state} <span className="block text-[10px] text-slate-400 font-normal">{item.university}</span>
+                          </td>
+                          <td className="py-3">
+                            <span className="uppercase text-[10px] font-black px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
+                              {item.plan}
+                            </span>
+                          </td>
+                          <td className="py-3 font-black text-[#FF2E79] text-sm">
+                            ₹{item.amount}
+                          </td>
+                          <td className="py-3">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-mono text-xs font-black text-slate-900 bg-slate-100 px-2 py-1 rounded-lg border border-slate-200">
+                                {item.upiId}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => handleCopyUpi(item.upiId)}
+                                className="p-1 rounded-lg hover:bg-pink-100 text-[#FF2E79] cursor-pointer transition-colors"
+                                title="Copy UPI ID"
+                              >
+                                {copiedUpi === item.upiId ? (
+                                  <CheckCheck className="w-4 h-4 text-emerald-600" />
+                                ) : (
+                                  <Copy className="w-4 h-4" />
+                                )}
+                              </button>
+                            </div>
+                          </td>
+                          <td className="py-3 text-slate-500 text-[11px] max-w-[150px] truncate" title={item.reason}>
+                            {item.reason}
+                          </td>
+                          <td className="py-3">
+                            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase ${
+                              item.status === 'processed' ? 'bg-emerald-100 text-emerald-800' :
+                              item.status === 'rejected' ? 'bg-red-100 text-red-700' :
+                              'bg-amber-100 text-amber-800 animate-pulse'
+                            }`}>
+                              {item.status === 'processed' ? 'Processed' : item.status === 'rejected' ? 'Rejected' : 'Pending'}
+                            </span>
+                          </td>
+                          <td className="py-3 text-right">
+                            {item.status === 'pending' ? (
+                              <div className="flex items-center justify-end gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() => setRefundModalUser(item)}
+                                  className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[11px] flex items-center gap-1 shadow-xs cursor-pointer transition-all active:scale-95"
+                                >
+                                  <Check className="w-3.5 h-3.5" />
+                                  <span>Mark Paid</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRejectRefundClick(item)}
+                                  className="p-1.5 rounded-xl hover:bg-red-50 text-red-500 cursor-pointer"
+                                  title="Decline Refund"
+                                >
+                                  <X className="w-4 h-4" />
+                                </button>
+                              </div>
+                            ) : item.status === 'processed' ? (
+                              <span className="text-[10px] font-bold text-emerald-700">
+                                Ref: {item.transactionRef || 'Settled'}
+                              </span>
+                            ) : (
+                              <span className="text-[10px] font-bold text-red-500">Declined</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
           </div>
@@ -1381,121 +1643,337 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
         {/* ═══════════════════════════════════════════════════════════════════════
             VIEW 4: LIVE ROUNDS & SCHEDULE CONTROL ('rounds')
            ═══════════════════════════════════════════════════════════════════════ */}
+        {/* ═══════════════════════════════════════════════════════════════════════
+            VIEW 4: LIVE ROUNDS & STATE AUTOMATION CONTROL ('rounds')
+           ═══════════════════════════════════════════════════════════════════════ */}
         {activeNav === 'rounds' && (
           <div className="space-y-6">
-            <div>
-              <h1 className="text-2xl font-black text-slate-900 tracking-tight">Live Round Control</h1>
-              <p className="text-xs text-slate-500 font-medium">
-                Manage 10-day state rotation schedules and advance active phases.
-              </p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                  <Flame className="w-6 h-6 text-[#FF2E79]" />
+                  <span>Live Rounds & State Toggles</span>
+                </h1>
+                <p className="text-xs text-slate-500 font-medium mt-0.5">
+                  Automated 2-Day (48h) round lifecycle, 10-day state rotation schedules, and per-state ON/OFF toggles.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  type="button"
+                  onClick={handleRunMatchEngine}
+                  className="px-3.5 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl text-xs font-black flex items-center gap-1.5 transition-all shadow-md cursor-pointer"
+                >
+                  <Award className="w-3.5 h-3.5 text-amber-300" />
+                  <span>Run Match Engine</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleAdvancePhase}
+                  className="px-3.5 py-2 bg-[#FF2E79] hover:bg-rose-600 text-white rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-all shadow-md cursor-pointer"
+                >
+                  <Play className="w-3.5 h-3.5 fill-current" />
+                  <span>Advance Phase</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleStartNextRound}
+                  className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-all shadow-md cursor-pointer"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>Rotate State</span>
+                </button>
+              </div>
             </div>
 
-            {/* PHASE TIMELINE CONTROLLER */}
-            <div className="bg-slate-900 text-white rounded-2xl p-5 space-y-4">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <Clock className="w-4 h-4 text-[#FF2E79]" />
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
-                    Current Phase: <strong className="text-white font-extrabold">{PHASE_LABELS[roundState.currentPhase]?.title}</strong>
-                  </span>
-                  <span className="bg-rose-500/20 text-rose-300 border border-rose-500/30 px-2 py-0.5 rounded-md text-[10px] font-bold">
-                    {PHASE_LABELS[roundState.currentPhase]?.duration}
-                  </span>
+            {/* 1. 2-DAY (48-HOUR) PIPELINED ENGINE LIFECYCLE CARD */}
+            <div className="bg-gradient-to-br from-slate-900 via-slate-850 to-slate-900 text-white rounded-3xl p-5 sm:p-6 border border-slate-800 shadow-xl space-y-5">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="px-2.5 py-0.5 rounded-full bg-[#FF2E79]/20 text-[#FF2E79] border border-[#FF2E79]/30 text-[10px] font-black uppercase tracking-wider">
+                      48-Hour Round Engine
+                    </span>
+                    <span className="text-sm font-black text-white">
+                      Current State: <strong className="text-emerald-400">{roundState.activeState}</strong>
+                    </span>
+                    <span className="text-xs text-slate-400 font-semibold">
+                      (Round #{roundState.roundNumber || 1})
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-300">
+                    Phase: <strong className="text-white">{PHASE_LABELS[roundState.currentPhase]?.title || roundState.currentPhase}</strong> • {PHASE_LABELS[roundState.currentPhase]?.duration || '24h Duration'}
+                  </p>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    onClick={handleRunMatchEngine}
-                    className="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl text-xs font-black flex items-center gap-1.5 transition-all shadow-md cursor-pointer"
+                    onClick={() => {
+                      const currentSpeed = localStorage.getItem('cupid_demo_rotation_speed') || 'normal';
+                      const newSpeed = currentSpeed === 'fast' ? 'normal' : 'fast';
+                      localStorage.setItem('cupid_demo_rotation_speed', newSpeed);
+                      alert(newSpeed === 'fast' ? '⚡ Fast Demo Mode Enabled! Rounds advance every 1 minute.' : 'Standard 24h/Day Schedule Enabled.');
+                      loadAdminData();
+                    }}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-all border shadow-xs cursor-pointer ${
+                      localStorage.getItem('cupid_demo_rotation_speed') === 'fast'
+                        ? 'bg-amber-500 text-white border-amber-600 animate-pulse'
+                        : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
+                    }`}
                   >
-                    <Flame className="w-3.5 h-3.5 text-amber-300 fill-amber-300" />
-                    <span>Run 3-Tier Match Engine</span>
+                    <Zap className="w-3.5 h-3.5 text-amber-300" />
+                    <span>{localStorage.getItem('cupid_demo_rotation_speed') === 'fast' ? 'Fast Demo (1 Min/Phase)' : 'Normal 48h Schedule'}</span>
                   </button>
-
-                    <button
-                      type="button"
-                      onClick={handleAdvancePhase}
-                      className="px-3.5 py-2 bg-[#FF2E79] hover:bg-rose-600 text-white rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-all shadow-md cursor-pointer"
-                    >
-                      <Play className="w-3.5 h-3.5 fill-current" />
-                      <span>Advance Phase</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={handleStartNextRound}
-                      className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-all shadow-md cursor-pointer"
-                    >
-                      <RefreshCw className="w-3.5 h-3.5" />
-                      <span>Rotate to Next State</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const currentSpeed = localStorage.getItem('cupid_demo_rotation_speed') || 'normal';
-                        const newSpeed = currentSpeed === 'fast' ? 'normal' : 'fast';
-                        localStorage.setItem('cupid_demo_rotation_speed', newSpeed);
-                        alert(newSpeed === 'fast' ? 'Fast Auto-Rotation Mode Enabled! Phases will advance every 1 minute and rotate states automatically.' : 'Standard 24h Schedule Enabled.');
-                        loadAdminData();
-                      }}
-                      className={`px-3.5 py-2 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-all border shadow-xs cursor-pointer ${
-                        localStorage.getItem('cupid_demo_rotation_speed') === 'fast'
-                          ? 'bg-amber-500 text-white border-amber-600 animate-pulse'
-                          : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
-                      }`}
-                    >
-                      <Zap className="w-3.5 h-3.5" />
-                      <span>{localStorage.getItem('cupid_demo_rotation_speed') === 'fast' ? 'Fast Demo (1 Min/Round)' : '24h Schedule'}</span>
-                    </button>
-                  </div>
-                </div>
-
-              {/* 1. LIVE ACTIVE STATE ROUND SELECTION (SYNCED INSTANTLY ACROSS ALL PHONES) */}
-              <div className="p-4 rounded-xl bg-slate-800/90 border border-slate-700/80 space-y-3">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <MapPin className="w-4 h-4 text-[#FF2E79]" />
-                      <span className="text-xs font-black uppercase tracking-wider text-slate-300">
-                        Live Round State (Active On All Phones):
-                      </span>
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping inline-block"></span>
-                        {roundState.activeState} LIVE
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-slate-400">
-                      Selecting and switching the state here activates the round immediately across all users' mobile screens and syncs to Supabase.
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
-                    <div className="w-full sm:w-52">
-                      <CustomSelect
-                        value={liveStateSelect}
-                        onChange={setLiveStateSelect}
-                        options={statesList}
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => handleActiveStateChange(liveStateSelect)}
-                      className="px-4 py-2 bg-gradient-to-r from-[#FF2E79] to-rose-600 hover:from-rose-500 hover:to-pink-600 text-white rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-all shadow-md cursor-pointer whitespace-nowrap active:scale-95"
-                    >
-                      <Check className="w-4 h-4" />
-                      <span>Switch Live Round State</span>
-                    </button>
-                  </div>
                 </div>
               </div>
 
-              {/* 2. CALENDAR SCHEDULE DATE OVERRIDE (OPTIONAL) */}
-              <div className="pt-2 border-t border-slate-800/80">
+              {/* 3 Step 48-Hour Lifecycle Visualizer */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+                
+                {/* Step 1: Day 1 (0-24h) */}
+                <div className={`p-4 rounded-2xl border transition-all ${
+                  (roundState.currentPhase === 'entries_submission' || roundState.currentPhase === 'registration')
+                    ? 'bg-[#FF2E79]/10 border-[#FF2E79] shadow-lg shadow-[#FF2E79]/10 ring-1 ring-[#FF2E79]'
+                    : 'bg-slate-800/60 border-slate-700/80 text-slate-400'
+                }`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-rose-300 bg-rose-500/20 px-2 py-0.5 rounded-md">
+                      Day 1 (0 - 24 Hours)
+                    </span>
+                    <span className="text-xs font-bold text-slate-300">Phase 1</span>
+                  </div>
+                  <h4 className="text-sm font-black text-white mb-1">Entries & Auto-Approval</h4>
+                  <p className="text-[11px] text-slate-300 leading-relaxed">
+                    Users submit profiles and payment proofs. Male payments are <strong>Auto-Approved</strong> by default. Admin reviews screenshots to manually revoke fraudulent entries.
+                  </p>
+                  <div className="mt-3 pt-2 border-t border-slate-700/60 flex items-center justify-between text-[11px]">
+                    <span className="text-slate-400">Status:</span>
+                    <span className="font-extrabold text-emerald-400">
+                      {(roundState.currentPhase === 'entries_submission' || roundState.currentPhase === 'registration') ? '● Active Now' : 'Completed / Standby'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Step 2: Day 2 (24-48h) */}
+                <div className={`p-4 rounded-2xl border transition-all ${
+                  (roundState.currentPhase === 'live_matching' || roundState.currentPhase === 'browsing_matching')
+                    ? 'bg-purple-500/15 border-purple-500 shadow-lg shadow-purple-500/10 ring-1 ring-purple-400'
+                    : 'bg-slate-800/60 border-slate-700/80 text-slate-400'
+                }`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-purple-300 bg-purple-500/20 px-2 py-0.5 rounded-md">
+                      Day 2 (24 - 48 Hours)
+                    </span>
+                    <span className="text-xs font-bold text-slate-300">Phase 2</span>
+                  </div>
+                  <h4 className="text-sm font-black text-white mb-1">Live Browsing & Matching</h4>
+                  <p className="text-[11px] text-slate-300 leading-relaxed">
+                    Candidates browse and like. <strong>16-Hour Timer</strong> for Elite, <strong>8-Hour Timer</strong> for Premium users, followed by Basic settlement.
+                  </p>
+                  <div className="mt-3 pt-2 border-t border-slate-700/60 flex items-center justify-between text-[11px]">
+                    <span className="text-slate-400">Status:</span>
+                    <span className="font-extrabold text-purple-400">
+                      {(roundState.currentPhase === 'live_matching' || roundState.currentPhase === 'browsing_matching') ? '● Matching Live' : 'Pending Day 1'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Step 3: Hour 48 Settlement */}
+                <div className="p-4 rounded-2xl border bg-slate-800/60 border-slate-700/80 text-slate-300">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-emerald-300 bg-emerald-500/20 px-2 py-0.5 rounded-md">
+                      Hour 48.00 Settlement
+                    </span>
+                    <span className="text-xs font-bold text-slate-300">Settlement</span>
+                  </div>
+                  <h4 className="text-sm font-black text-white mb-1">Mutual Matches & Refunds</h4>
+                  <p className="text-[11px] text-slate-300 leading-relaxed">
+                    Matches are finalized instantly. Unmatched users & users who selected 0 candidates are routed to the <strong>Refund Queue</strong> with their UPI IDs for payout.
+                  </p>
+                  <div className="mt-3 pt-2 border-t border-slate-700/60 flex items-center justify-between text-[11px]">
+                    <span className="text-slate-400">Refund Guarantee:</span>
+                    <button
+                      type="button"
+                      onClick={() => setActiveNav('refunds')}
+                      className="font-extrabold text-amber-400 hover:underline cursor-pointer"
+                    >
+                      View Refund Queue →
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Multi-State Concurrent Pipelining Banner */}
+              {(() => {
+                const pipelined = getPipelinedRoundStatus();
+                return (
+                  <div className="p-3.5 rounded-xl bg-slate-800/80 border border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0">
+                        <RefreshCw className="w-4 h-4 animate-spin-slow" />
+                      </div>
+                      <div>
+                        <p className="font-extrabold text-white">Multi-State Concurrent Pipeline Active</p>
+                        <p className="text-[11px] text-slate-400">
+                          While <strong>{pipelined.activeState}</strong> is in Day 2 matching, <strong>{pipelined.pipelinedState}</strong> simultaneously opens Day 1 entries {pipelined.pipelinedStateEnabled ? '(Enabled)' : '(Paused by Toggle)'}.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase ${
+                        pipelined.pipelinedStateEnabled ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-slate-700 text-slate-400'
+                      }`}>
+                        {pipelined.pipelinedState}: {pipelined.pipelinedStateEnabled ? 'Pipelined Active' : 'Toggled Off'}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* 2. STATE ON / OFF TOGGLES GRID (STRICT 10-DAY SCHEDULE PRESERVATION) */}
+            <div className="bg-white p-5 sm:p-6 rounded-3xl border border-[#FFE1EB] shadow-xs space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
+                    <Power className="w-5 h-5 text-[#FF2E79]" />
+                    <span>State Active / Paused Toggles (10-Day Rotation Preservation)</span>
+                  </h3>
+                  <p className="text-xs text-slate-500 font-medium mt-0.5">
+                    Toggle individual state rounds ON or OFF. Turning off a state (e.g., Maharashtra or UP) skips that state on its day. 
+                    <strong>Other states (e.g. Delhi NCR) NEVER accelerate or come early</strong>; each state strictly preserves its 10-day cycle.
+                  </p>
+                </div>
+                <div className="bg-rose-50 border border-rose-100 px-3 py-1.5 rounded-xl text-[11px] font-black text-[#FF2E79] shrink-0">
+                  Fixed 10-Day Spacing Guaranteed
+                </div>
+              </div>
+
+              {/* State Cards Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                {stateSchedules.map((schedule, idx) => {
+                  const isEnabled = isStateEnabled(schedule.state);
+                  const isLiveCurrent = schedule.state.toLowerCase() === (roundState.activeState || '').toLowerCase();
+
+                  return (
+                    <div
+                      key={schedule.state + idx}
+                      className={`p-4 rounded-2xl border-2 transition-all relative ${
+                        isLiveCurrent
+                          ? 'border-emerald-400 bg-emerald-50/20 shadow-xs'
+                          : isEnabled
+                          ? 'border-slate-200 bg-white hover:border-pink-300'
+                          : 'border-slate-200 bg-slate-50/70 opacity-75'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <MapPin className={`w-4 h-4 ${isLiveCurrent ? 'text-emerald-600' : isEnabled ? 'text-[#FF2E79]' : 'text-slate-400'}`} />
+                          <span className="font-black text-slate-900 text-sm">{schedule.state}</span>
+                        </div>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase">
+                          Cycle Day {((idx) % 10) + 1}/10
+                        </span>
+                      </div>
+
+                      <div className="space-y-1 text-xs text-slate-600 mb-3">
+                        <p className="flex items-center justify-between">
+                          <span className="text-slate-400">Scheduled Date:</span>
+                          <strong className="text-slate-800">{schedule.nextRoundDate}</strong>
+                        </p>
+                        <p className="flex items-center justify-between">
+                          <span className="text-slate-400">Cycle Status:</span>
+                          <span className={`font-extrabold ${
+                            !isEnabled ? 'text-amber-600' : isLiveCurrent ? 'text-emerald-600' : 'text-slate-700'
+                          }`}>
+                            {!isEnabled ? 'Paused (Day Skipped)' : schedule.status}
+                          </span>
+                        </p>
+                      </div>
+
+                      <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
+                          !isEnabled ? 'bg-slate-200 text-slate-600' : isLiveCurrent ? 'bg-emerald-100 text-emerald-800' : 'bg-emerald-50 text-emerald-700'
+                        }`}>
+                          {isEnabled ? (isLiveCurrent ? '● Live Now' : 'Active') : '○ Disabled'}
+                        </span>
+
+                        <button
+                          type="button"
+                          onClick={() => handleToggleState(schedule.state)}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer shadow-2xs active:scale-95 ${
+                            isEnabled
+                              ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                              : 'bg-slate-200 hover:bg-slate-300 text-slate-700'
+                          }`}
+                        >
+                          {isEnabled ? (
+                            <>
+                              <ToggleRight className="w-4 h-4" />
+                              <span>Round ON</span>
+                            </>
+                          ) : (
+                            <>
+                              <ToggleLeft className="w-4 h-4 text-slate-500" />
+                              <span>Round OFF</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 3. INSTANT LIVE ROUND STATE SWITCHER & SCHEDULE OVERRIDE */}
+            <div className="bg-slate-900 text-white rounded-3xl p-5 sm:p-6 space-y-4">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <MapPin className="w-4 h-4 text-[#FF2E79]" />
+                    <span className="text-xs font-black uppercase tracking-wider text-slate-300">
+                      Force Switch Live State (Broadcasts to all mobile devices):
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping inline-block"></span>
+                      {roundState.activeState} LIVE
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-400">
+                    Switching the active state updates all registered candidates across the platform immediately and syncs with Supabase.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
+                  <div className="w-full sm:w-52">
+                    <CustomSelect
+                      value={liveStateSelect}
+                      onChange={setLiveStateSelect}
+                      options={statesList}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleActiveStateChange(liveStateSelect)}
+                    className="px-4 py-2 bg-gradient-to-r from-[#FF2E79] to-rose-600 hover:from-rose-500 hover:to-pink-600 text-white rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-all shadow-md cursor-pointer whitespace-nowrap active:scale-95"
+                  >
+                    <Check className="w-4 h-4" />
+                    <span>Switch Live State</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Schedule Override Form */}
+              <div className="pt-3 border-t border-slate-800/80">
                 <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                   <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                  <span>Future 10-Day Rotation Schedule Override (Optional):</span>
+                  <span>Manual Date Override (Optional):</span>
                 </div>
                 <form onSubmit={handleSaveCustomDate} className="flex flex-col sm:flex-row items-center gap-3">
                   <div className="w-full sm:w-48">
@@ -1516,11 +1994,12 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                     type="submit"
                     className="h-10 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold w-full sm:w-auto cursor-pointer"
                   >
-                    Override Calendar Date
+                    Save Override Date
                   </button>
                 </form>
               </div>
             </div>
+
           </div>
         )}
 
@@ -1988,6 +2467,189 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                 className="px-5 py-2.5 bg-slate-900 text-white font-extrabold text-xs rounded-full cursor-pointer"
               >
                 Close Inspection
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* REFUND CONFIRMATION MODAL */}
+      {refundModalUser && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-md w-full shadow-2xl border border-[#FFE1EB] space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <div className="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                  <DollarSign className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-slate-900">Process 100% Refund</h3>
+                  <p className="text-[11px] text-slate-400 font-semibold">Instant UPI Payout Settlement</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setRefundModalUser(null)}
+                className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="bg-[#FFF5F8] p-4 rounded-2xl border border-[#FFE1EB] space-y-2 text-xs">
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500 font-bold">Candidate:</span>
+                <span className="font-black text-slate-900">{refundModalUser.name}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500 font-bold">Plan / State:</span>
+                <span className="font-semibold text-slate-700 uppercase text-[11px]">{refundModalUser.plan} • {refundModalUser.state}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500 font-bold">Refund Amount:</span>
+                <span className="font-black text-[#FF2E79] text-base">₹{refundModalUser.amount}</span>
+              </div>
+              <div className="flex justify-between items-center pt-1 border-t border-[#FFE1EB]/60">
+                <span className="text-slate-500 font-bold">Recipient UPI ID:</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-mono font-black text-slate-900 bg-white px-2 py-0.5 rounded-lg border border-slate-200">
+                    {refundModalUser.upiId}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleCopyUpi(refundModalUser.upiId)}
+                    className="p-1 hover:bg-pink-100 text-[#FF2E79] rounded cursor-pointer"
+                    title="Copy UPI"
+                  >
+                    {copiedUpi === refundModalUser.upiId ? (
+                      <CheckCheck className="w-3.5 h-3.5 text-emerald-600" />
+                    ) : (
+                      <Copy className="w-3.5 h-3.5" />
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">
+                  UPI Transaction UTR / Ref ID
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. UPI-TXN-492810398"
+                  value={refundTransactionRef}
+                  onChange={(e) => setRefundTransactionRef(e.target.value)}
+                  className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-xs font-mono font-bold text-slate-800 focus:outline-none focus:border-[#FF2E79]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">
+                  Notes (Optional)
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Paid via GPay business"
+                  value={refundNotes}
+                  onChange={(e) => setRefundNotes(e.target.value)}
+                  className="w-full h-10 px-3.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:border-[#FF2E79]"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setRefundModalUser(null)}
+                className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 text-xs font-bold cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleProcessRefundConfirm}
+                className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black flex items-center justify-center gap-1.5 shadow-md shadow-emerald-200 cursor-pointer transition-all active:scale-95"
+              >
+                <Check className="w-4 h-4 stroke-[3]" />
+                <span>Confirm Refund Sent</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* REJECT PAYMENT ENTRY MODAL */}
+      {rejectModalEntry && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-md w-full shadow-2xl border border-rose-100 space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <div className="w-10 h-10 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center">
+                  <ShieldAlert className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-slate-900">Reject Payment Entry</h3>
+                  <p className="text-[11px] text-slate-400 font-semibold">Revoke participation for invalid payment</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setRejectModalEntry(null)}
+                className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="bg-rose-50/50 p-4 rounded-2xl border border-rose-100 space-y-1.5 text-xs">
+              <p className="font-black text-slate-900 text-sm">{rejectModalEntry.userName}</p>
+              <p className="text-slate-500">{rejectModalEntry.userEmail} • Plan: <strong className="text-slate-800 uppercase">{rejectModalEntry.plan} (₹{rejectModalEntry.amount})</strong></p>
+              {rejectModalEntry.upiId && (
+                <p className="text-slate-700 font-bold">UPI ID: <span className="font-mono text-[#FF2E79]">{rejectModalEntry.upiId}</span></p>
+              )}
+              {rejectModalEntry.utr && (
+                <p className="text-slate-700 font-bold">UTR: <span className="font-mono">{rejectModalEntry.utr}</span></p>
+              )}
+            </div>
+
+            <div className="space-y-1">
+              <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                Rejection Reason
+              </label>
+              <select
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                className="w-full h-10 px-3 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 bg-white"
+              >
+                <option value="Payment screenshot or UPI transaction mismatch">Payment screenshot or UPI mismatch</option>
+                <option value="Invalid UTR / Reference number provided">Invalid UTR / Reference number</option>
+                <option value="Duplicate transaction reference submitted">Duplicate transaction reference</option>
+                <option value="Unclear or unreadable screenshot proof">Unclear or unreadable screenshot proof</option>
+                <option value="Wrong payment amount transferred">Wrong payment amount transferred</option>
+              </select>
+            </div>
+
+            <p className="text-[11px] text-slate-400 font-medium">
+              Rejecting this entry immediately disables the user from the matching phase and marks their payment as invalid.
+            </p>
+
+            <div className="flex gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setRejectModalEntry(null)}
+                className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 text-xs font-bold cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => handleRejectPaymentEntry(rejectModalEntry)}
+                className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-black flex items-center justify-center gap-1.5 shadow-md shadow-rose-200 cursor-pointer transition-all active:scale-95"
+              >
+                <XCircle className="w-4 h-4" />
+                <span>Confirm Rejection</span>
               </button>
             </div>
           </div>

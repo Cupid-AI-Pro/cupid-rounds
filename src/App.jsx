@@ -290,7 +290,7 @@ export default function App() {
         <div className="hidden md:block absolute top-2 left-1/2 -translate-x-1/2 w-28 h-4 bg-slate-900 rounded-full z-50 pointer-events-none"></div>
 
         {/* Content Wrapper */}
-        <div className="flex-1 flex flex-col overflow-y-auto relative bg-transparent">
+        <div className="flex-1 flex flex-col overflow-hidden relative bg-transparent">
           {isPlayingIntro ? (
             <CinematicLoadingScreen 
               onComplete={() => setIsPlayingIntro(false)} 

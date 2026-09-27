@@ -5,7 +5,52 @@ import { supabase, isSupabaseConfigured } from '../services/supabaseClient.js';
 // Round State Storage Key
 const ROUND_STATE_KEY = 'cupid_round_state_v2';
 const CUSTOM_SCHEDULES_KEY = 'cupid_custom_schedules_v1';
+const ENABLED_STATES_KEY = 'cupid_enabled_states_v1';
 
+/**
+ * State On/Off Toggles:
+ * Admin can toggle any state ON/OFF.
+ * Crucial guarantee: Even if a state is toggled OFF, every state's 10-day schedule remains strictly fixed!
+ * Delhi NCR does not come early if UP is toggled OFF.
+ */
+export const getEnabledStates = () => {
+  const states = getStatesList();
+  const stored = localStorage.getItem(ENABLED_STATES_KEY);
+  let map = {};
+  if (stored) {
+    try {
+      map = JSON.parse(stored);
+    } catch (e) {}
+  }
+  const result = {};
+  states.forEach(st => {
+    result[st] = typeof map[st] === 'boolean' ? map[st] : true;
+  });
+  return result;
+};
+
+export const isStateEnabled = (stateName) => {
+  if (!stateName) return true;
+  const map = getEnabledStates();
+  return map[stateName] !== false;
+};
+
+export const toggleStateEnabled = (stateName, enabled) => {
+  const map = getEnabledStates();
+  map[stateName] = Boolean(enabled);
+  localStorage.setItem(ENABLED_STATES_KEY, JSON.stringify(map));
+  
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('cupid_round_state_changed'));
+    window.dispatchEvent(new CustomEvent('cupid_data_changed'));
+  }
+  return map;
+};
+
+/**
+ * 10-Day Rotation Schedule:
+ * Every state has a strictly fixed 10-day cycle position (offsetDay: index % 10).
+ */
 export const getRotationConfig = () => {
   const states = getStatesList();
   return states.map((state, index) => ({
@@ -14,20 +59,43 @@ export const getRotationConfig = () => {
   }));
 };
 
+/**
+ * 2-Day (48-Hour) Round Lifecyle:
+ * - Day 1 (0 to 24 Hours): Entries & Payment Submission (Auto-approved by default; Admin can reject fake payments)
+ * - Day 2 (24 to 48 Hours): Live Browsing & Matching (Elite 16h early spotlight, Premium 8h, Basic Open)
+ * - Hour 48: Instant Matching Delivered & Refund queue populated for unmatched paid users
+ */
 export const ROUND_PHASES = {
-  REGISTRATION: 'registration', // Phase 0: 24h Registration & Plan Purchase
-  ELITE_WINDOW: 'elite_window', // Phase 1: 16h Elite male profiles shown to females (max 2 matches)
-  PREMIUM_WINDOW: 'premium_window', // Phase 2: 8h Premium males pick from remaining females
-  BASIC_SETTLEMENT: 'basic_settlement', // Phase 3: Basic males auto-matched on preferences
-  COMPLETED: 'completed' // Phase 4: Round closed, results locked, next round re-entry open
+  ENTRIES_SUBMISSION: 'entries_submission', // Day 1: 24h Registration, Profiles & Auto-Approved Payments
+  LIVE_MATCHING: 'live_matching',           // Day 2: 24h Live Browsing (Elite 16h, Premium 8h, Basic Open)
+  COMPLETED: 'completed',                    // Hour 48: Round closed, matches revealed, refunds queued
+  
+  // Backward-compatible aliases for legacy imports
+  REGISTRATION: 'entries_submission',
+  ELITE_WINDOW: 'live_matching',
+  PREMIUM_WINDOW: 'live_matching',
+  BASIC_SETTLEMENT: 'live_matching'
 };
 
 export const PHASE_LABELS = {
-  [ROUND_PHASES.REGISTRATION]: { title: 'Registration & Entry', duration: '30 Mins', step: 1 },
-  [ROUND_PHASES.ELITE_WINDOW]: { title: 'Elite Spotlight Window', duration: '15 Mins', step: 2 },
-  [ROUND_PHASES.PREMIUM_WINDOW]: { title: 'Premium Matching Window', duration: '10 Mins', step: 3 },
-  [ROUND_PHASES.BASIC_SETTLEMENT]: { title: 'Basic Allocation & Settlement', duration: '5 Mins', step: 4 },
-  [ROUND_PHASES.COMPLETED]: { title: 'Round Completed', duration: 'Archived', step: 5 }
+  [ROUND_PHASES.ENTRIES_SUBMISSION]: { 
+    title: 'Entries & Payment Submission', 
+    subtitle: 'Profiles & Auto-Approved Payments Open (Admin Manual Rejection)', 
+    duration: '24 Hours (Day 1)', 
+    step: 1 
+  },
+  [ROUND_PHASES.LIVE_MATCHING]: { 
+    title: 'Live Browsing & Matching Window', 
+    subtitle: 'Elite (16h Window), Premium (8h Window) & Basic Allocation', 
+    duration: '24 Hours (Day 2)', 
+    step: 2 
+  },
+  [ROUND_PHASES.COMPLETED]: { 
+    title: 'Round Complete & Matches Delivered', 
+    subtitle: '100% Mutual Matches Revealed. Refunds ready for unmatched paid entries.', 
+    duration: 'Finalized', 
+    step: 3 
+  }
 };
 
 /**
@@ -37,9 +105,10 @@ export const getRoundState = () => {
   const defaultState = {
     activeState: 'Delhi NCR',
     roundNumber: 1,
-    currentPhase: ROUND_PHASES.REGISTRATION,
+    currentPhase: ROUND_PHASES.ENTRIES_SUBMISSION,
     roundStartDate: new Date().toISOString(),
     phaseStartedAt: new Date().toISOString(),
+    pipelinedState: 'Uttar Pradesh',
     femaleMaxMatches: 2,
     stateRoundMap: {
       "Delhi NCR": 1,
@@ -225,17 +294,22 @@ export const updateStateScheduleDate = (stateName, dateString, roundNum = 1) => 
 };
 
 /**
- * Calculate the next upcoming round date for any state based on 10-day cycle
+ * Calculate the next upcoming round date for any state based on fixed 10-day cycle
+ * User requirement: Even if a state is toggled OFF, every state's 10-day schedule remains strictly fixed!
+ * Delhi NCR does not come early if UP is toggled OFF. Each round only comes after 10 days.
  */
 export const getStateRoundSchedule = (stateName) => {
   const roundState = getRoundState();
   const rotationConfig = getRotationConfig();
+  const isEnabled = isStateEnabled(stateName);
+
   const configIndex = rotationConfig.findIndex(s => s.state.toLowerCase() === stateName.toLowerCase());
   const activeIndex = rotationConfig.findIndex(s => s.state.toLowerCase() === roundState.activeState.toLowerCase());
 
   const safeConfigIndex = configIndex !== -1 ? configIndex : 0;
   const safeActiveIndex = activeIndex !== -1 ? activeIndex : 0;
 
+  // STRICT 10-Day Cycle Difference
   const daysDifference = (safeConfigIndex - safeActiveIndex + 10) % 10;
   const isToday = daysDifference === 0 && stateName.toLowerCase() === roundState.activeState.toLowerCase();
 
@@ -251,10 +325,13 @@ export const getStateRoundSchedule = (stateName) => {
     return {
       state: stateName,
       isToday,
+      isEnabled,
+      isPaused: !isEnabled,
       daysLeft: daysDifference,
       nextRoundDate: formatted,
       rawDate: customMap[stateName].customDate,
-      roundNumber: customMap[stateName].roundNumber || roundState.roundNumber
+      roundNumber: customMap[stateName].roundNumber || roundState.roundNumber,
+      status: !isEnabled ? 'Round Paused by Administration' : (isToday ? 'Live Today' : `In ${daysDifference} Days`)
     };
   }
 
@@ -270,10 +347,47 @@ export const getStateRoundSchedule = (stateName) => {
   return {
     state: stateName,
     isToday,
+    isEnabled,
+    isPaused: !isEnabled,
     daysLeft: daysDifference,
     nextRoundDate: formattedDate,
     rawDate: targetDate.toISOString().split('T')[0],
-    roundNumber: roundState.roundNumber
+    roundNumber: roundState.roundNumber,
+    status: !isEnabled ? 'Round Paused by Administration' : (isToday ? 'Live Today' : `In ${daysDifference} Days`)
+  };
+};
+
+/**
+ * Multi-State Pipeline Engine Status:
+ * Returns the current overlapping 2-day pipeline state:
+ * - Live Matching State (Day 2: 24h to 48h)
+ * - Pipelined Entries State (Day 1: 0 to 24h)
+ */
+export const getPipelinedRoundStatus = () => {
+  const current = getRoundState();
+  const states = getStatesList();
+  const currentIdx = states.findIndex(s => s.toLowerCase() === (current.activeState || '').toLowerCase());
+  const safeCurrentIdx = currentIdx !== -1 ? currentIdx : 0;
+
+  // Next state in rotation
+  const nextIdx = (safeCurrentIdx + 1) % states.length;
+  const nextState = states[nextIdx];
+
+  const currentEnabled = isStateEnabled(current.activeState);
+  const nextEnabled = isStateEnabled(nextState);
+
+  return {
+    activeState: current.activeState,
+    activePhase: current.currentPhase,
+    activeStateEnabled: currentEnabled,
+    roundNumber: current.roundNumber,
+    
+    // Pipelined secondary state in Day 1 (Entries submission)
+    pipelinedState: nextState,
+    pipelinedStateEnabled: nextEnabled,
+    pipelinedPhase: ROUND_PHASES.ENTRIES_SUBMISSION,
+
+    allSchedules: getAllStateSchedules()
   };
 };
 
@@ -615,14 +729,14 @@ export const joinRound = (userId, planName = 'basic') => {
 };
 
 /**
- * Automated 1-Hour Round Timer & State Rotation Engine
- * Automatically rotates active state round every 60 minutes.
- * Within each 60-minute round:
- * - 0 to 30 Mins: Registration & Plan Purchase (Phase 1)
- * - 30 to 45 Mins: Elite Spotlight Window (Phase 2)
- * - 45 to 55 Mins: Premium Matching Window (Phase 3)
- * - 55 to 60 Mins: Basic Allocation & Settlement (Phase 4)
- * - 60 Mins: Round Closes & Rotates to Next State automatically!
+ * Automated 2-Day (48-Hour) Round Timer & Pipelined State Rotation Engine
+ *
+ * User specification:
+ * - Each round lasts exactly 2 DAYS (48 Hours).
+ * - Day 1 (First 24 Hours): Entries submission & payment verification (Auto-approved by default; Admin can reject fake payments).
+ * - Day 2 (Next 24 Hours): Live browsing & matching (16h timer for Elite, 8h timer for Premium).
+ * - Hour 48: Instant Matching Delivered & Refund queue populated for unmatched paid users.
+ * - Pipelining: While State A is in Day 2 (Matching), State B (next in 10-day cycle) starts Day 1 (Entries), unless toggled OFF!
  */
 export const checkAndRotateRoundAutomated = () => {
   const current = getRoundState();
@@ -634,38 +748,43 @@ export const checkAndRotateRoundAutomated = () => {
 
   const isFastDemo = typeof window !== 'undefined' && localStorage.getItem('cupid_demo_rotation_speed') === 'fast';
   const isAutoRotationEnabled = typeof window !== 'undefined' && localStorage.getItem('cupid_auto_rotation_enabled') === 'true';
-  const maxRoundDurationMins = isFastDemo ? 4 : 60; // 60 mins total per state round
 
-  // If automated rotation is not explicitly enabled, keep activeState pinned to what Admin configured!
+  // 48 hours = 2880 mins in standard real-time mode; 4 mins in fast demo mode
+  const maxRoundDurationMins = isFastDemo ? 4 : 2880;
+  const day1DurationMins = isFastDemo ? 2 : 1440; // 24 hours
+
+  // If automated rotation is not explicitly enabled and not in demo mode, preserve state
   if (!isAutoRotationEnabled && !isFastDemo) {
     return;
   }
 
-  // 1. If 60+ minutes have elapsed, auto-rotate state round to NEXT state!
+  // 1. If 48 hours (or demo 4 mins) elapsed: Deliver matches and rotate state in 10-day cycle!
   if (totalRoundElapsedMins >= maxRoundDurationMins) {
     const states = getStatesList();
     const currentIdx = states.findIndex(s => s.toLowerCase() === (current.activeState || '').toLowerCase());
     const safeCurrentIdx = currentIdx !== -1 ? currentIdx : 0;
     
-    const roundsToAdvance = isFastDemo ? 1 : Math.max(1, Math.floor(totalRoundElapsedMins / maxRoundDurationMins));
-    const nextIdx = (safeCurrentIdx + roundsToAdvance) % states.length;
-    const nextState = states[nextIdx];
-
+    // Complete matches and populate refund queue
     runAlgorithmicMatchEngine(current.activeState);
+
+    // Find next state in fixed 10-day rotation
+    let nextIdx = (safeCurrentIdx + 1) % states.length;
+    let nextState = states[nextIdx];
+
+    // If next state is toggled off, keep advancing cycle day without shifting schedule
+    if (!isStateEnabled(nextState)) {
+      console.log(`[Cupid Rotation] State "${nextState}" is toggled OFF by Admin. Round skipped for this cycle.`);
+    }
+
     startNextRoundForState(nextState);
     return;
   }
 
-  // 2. Phase calculation within the 60-minute round window
-  let expectedPhase = ROUND_PHASES.REGISTRATION;
-  if (isFastDemo) {
-    if (totalRoundElapsedMins >= 3) expectedPhase = ROUND_PHASES.BASIC_SETTLEMENT;
-    else if (totalRoundElapsedMins >= 2) expectedPhase = ROUND_PHASES.PREMIUM_WINDOW;
-    else if (totalRoundElapsedMins >= 1) expectedPhase = ROUND_PHASES.ELITE_WINDOW;
-  } else {
-    if (totalRoundElapsedMins >= 55) expectedPhase = ROUND_PHASES.BASIC_SETTLEMENT;
-    else if (totalRoundElapsedMins >= 45) expectedPhase = ROUND_PHASES.PREMIUM_WINDOW;
-    else if (totalRoundElapsedMins >= 30) expectedPhase = ROUND_PHASES.ELITE_WINDOW;
+  // 2. Phase calculation within the 48-Hour round window
+  let expectedPhase = ROUND_PHASES.ENTRIES_SUBMISSION;
+  if (totalRoundElapsedMins >= day1DurationMins) {
+    // Hour 24+ -> Day 2: Live Browsing & Matching (Elite 16h, Premium 8h)
+    expectedPhase = ROUND_PHASES.LIVE_MATCHING;
   }
 
   if (current.currentPhase !== expectedPhase) {
@@ -675,38 +794,6 @@ export const checkAndRotateRoundAutomated = () => {
       phaseStartedAt: new Date().toISOString()
     };
     saveRoundState(updated);
-  }
-
-  // Pre-Round Alert Dispatcher: Check if upcoming state round starts in <= 10 mins
-  try {
-    const states = getStatesList();
-    const currentIdx = states.findIndex(s => s.toLowerCase() === (current.activeState || '').toLowerCase());
-    const nextIdx = (currentIdx + 1) % states.length;
-    const nextState = states[nextIdx];
-
-    const minsUntilNextState = Math.max(1, Math.ceil(maxRoundDurationMins - totalRoundElapsedMins));
-
-    if (minsUntilNextState <= 10) {
-      const alertKey = `alert_10m_${nextState}_r${(current.stateRoundMap?.[nextState] || 1)}`;
-      if (!localStorage.getItem(alertKey)) {
-        localStorage.setItem(alertKey, 'true');
-        const allUsers = getUsers();
-        allUsers.forEach(u => {
-          if (u.state && u.state.toLowerCase() === nextState.toLowerCase()) {
-            import('../services/notificationManager').then(({ addNotification }) => {
-              addNotification(u.id, {
-                type: 'round_1day',
-                title: 'Upcoming Round Alert',
-                message: `Round #${(current.stateRoundMap?.[nextState] || 1)} for ${nextState} starts in ~${minsUntilNextState} minutes! Preferences & profile pre-locked.`,
-                actionUrl: 'explore'
-              });
-            });
-          }
-        });
-      }
-    }
-  } catch (e) {
-    console.warn('Pre-round alert check error:', e);
   }
 };
 

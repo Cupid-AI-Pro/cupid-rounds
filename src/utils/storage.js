@@ -225,19 +225,54 @@ export const savePaymentSubmission = (submission) => {
   try {
     const list = getPaymentSubmissions();
     const idx = list.findIndex(s => s.userId === submission.userId);
-    const entry = { ...submission, submittedAt: submission.submittedAt || new Date().toISOString(), status: 'pending' };
-    if (idx !== -1) { list[idx] = { ...list[idx], ...entry }; } else { list.push(entry); }
+    // User requested: All entries are AUTO-APPROVED by default! Admin can manually reject if payment is invalid.
+    const entry = { 
+      ...submission, 
+      submittedAt: submission.submittedAt || new Date().toISOString(), 
+      status: submission.status || 'approved',
+      autoApproved: true,
+      verified: true
+    };
+    if (idx !== -1) { 
+      list[idx] = { ...list[idx], ...entry }; 
+    } else { 
+      list.push(entry); 
+    }
     localStorage.setItem(KEYS.PAYMENT_SUBMISSIONS, JSON.stringify(list));
+
+    // Also ensure user's round participation and plan are active
+    if (submission.userId) {
+      const allUsers = getUsers();
+      const uIdx = allUsers.findIndex(u => u.id === submission.userId);
+      if (uIdx !== -1) {
+        allUsers[uIdx].roundParticipating = true;
+        allUsers[uIdx].status = 'active';
+        allUsers[uIdx].paymentVerified = true;
+        if (submission.plan) allUsers[uIdx].plan = submission.plan;
+        if (submission.upiId) allUsers[uIdx].refundUpi = submission.upiId;
+        saveUsers(allUsers);
+      }
+    }
+
     notifyDataChanged();
+    return entry;
   } catch (err) {
     console.warn("Storage quota limit reached while saving payment submission:", err);
     try {
       const list = getPaymentSubmissions();
       const idx = list.findIndex(s => s.userId === submission.userId);
-      const safeEntry = { ...submission, screenshotBase64: null, submittedAt: submission.submittedAt || new Date().toISOString(), status: 'pending' };
+      const safeEntry = { 
+        ...submission, 
+        screenshotBase64: null, 
+        submittedAt: submission.submittedAt || new Date().toISOString(), 
+        status: submission.status || 'approved',
+        autoApproved: true,
+        verified: true 
+      };
       if (idx !== -1) { list[idx] = { ...list[idx], ...safeEntry }; } else { list.push(safeEntry); }
       localStorage.setItem(KEYS.PAYMENT_SUBMISSIONS, JSON.stringify(list));
       notifyDataChanged();
+      return safeEntry;
     } catch (innerErr) {
       console.error("Critical storage error:", innerErr);
     }
@@ -257,30 +292,161 @@ export const updatePaymentStatus = (userId, status) => {
   return null;
 };
 
+export const rejectPaymentSubmission = (userId, reason = 'Payment screenshot or UPI transaction could not be verified') => {
+  const list = getPaymentSubmissions();
+  const idx = list.findIndex(s => s.userId === userId);
+  if (idx !== -1) {
+    list[idx].status = 'rejected';
+    list[idx].autoApproved = false;
+    list[idx].rejectionReason = reason;
+    list[idx].resolvedAt = new Date().toISOString();
+    localStorage.setItem(KEYS.PAYMENT_SUBMISSIONS, JSON.stringify(list));
+  }
+
+  // Revoke user's round participation
+  const allUsers = getUsers();
+  const uIdx = allUsers.findIndex(u => u.id === userId);
+  if (uIdx !== -1) {
+    allUsers[uIdx].roundParticipating = false;
+    allUsers[uIdx].status = 'payment_rejected';
+    allUsers[uIdx].paymentVerified = false;
+    allUsers[uIdx].rejectionReason = reason;
+    saveUsers(allUsers);
+
+    // Send push notification to user
+    import('../services/notificationManager').then(({ addNotification }) => {
+      addNotification(userId, {
+        type: 'payment',
+        title: 'Payment Entry Rejected',
+        message: `Your payment verification was rejected: "${reason}". Please submit a valid screenshot to participate.`,
+        actionUrl: 'profile'
+      });
+    }).catch(() => {});
+  }
+
+  notifyDataChanged();
+  return true;
+};
+
+// ─── Refund Queue Management ──────────────────────────────────────────────────
+export const getRefundQueue = () => {
+  const allUsers = getUsers();
+  const submissions = getPaymentSubmissions();
+  const subMap = new Map(submissions.map(s => [s.userId, s]));
+
+  const refunds = [];
+
+  allUsers.forEach(u => {
+    const isEligible = u.refundEligible === true || 
+                       u.refundStatus === 'pending' || 
+                       u.status === 'refund_requested' || 
+                       u.refundRequested === true;
+
+    if (isEligible || u.refundStatus === 'processed') {
+      const sub = subMap.get(u.id);
+      const defaultAmount = u.plan === 'elite' ? 449 : (u.plan === 'premium' ? 250 : 100);
+
+      refunds.push({
+        userId: u.id,
+        name: u.name || 'Anonymous User',
+        email: u.email || 'N/A',
+        phone: u.phone || 'N/A',
+        gender: u.gender || 'male',
+        avatar: u.avatar || '',
+        university: u.university || 'Delhi University',
+        state: u.state || 'Delhi NCR',
+        plan: u.plan || 'basic',
+        amount: u.refundAmount || sub?.amount || defaultAmount,
+        upiId: u.refundUpi || sub?.upiId || u.upiId || 'Not provided',
+        status: u.refundStatus || 'pending',
+        reason: u.refundReason || (u.matches?.length === 0 ? 'No mutual matches formed in round' : 'User requested refund'),
+        requestedAt: u.refundRequestedAt || sub?.submittedAt || new Date().toISOString(),
+        processedAt: u.refundProcessedAt || null,
+        transactionRef: u.refundUtr || null
+      });
+    }
+  });
+
+  return refunds;
+};
+
+export const processRefund = (userId, { transactionRef, notes } = {}) => {
+  const allUsers = getUsers();
+  const uIdx = allUsers.findIndex(u => u.id === userId);
+  if (uIdx !== -1) {
+    const u = allUsers[uIdx];
+    u.refundStatus = 'processed';
+    u.refundProcessedAt = new Date().toISOString();
+    u.refundUtr = transactionRef || `UPI-TXN-${Date.now().toString().slice(-6)}`;
+    u.refundNotes = notes || '';
+    u.refundEligible = false;
+    saveUsers(allUsers);
+
+    // Send push notification to user
+    import('../services/notificationManager').then(({ addNotification }) => {
+      addNotification(userId, {
+        type: 'refund',
+        title: 'Refund Processed Successfully',
+        message: `Your refund of ₹${u.refundAmount || 449} has been sent to UPI ID: ${u.refundUpi || 'your account'}. Ref: ${u.refundUtr}`,
+        actionUrl: 'profile'
+      });
+    }).catch(() => {});
+
+    notifyDataChanged();
+    return true;
+  }
+  return false;
+};
+
+export const rejectRefund = (userId, reason = 'Criteria for 100% money-back guarantee not met') => {
+  const allUsers = getUsers();
+  const uIdx = allUsers.findIndex(u => u.id === userId);
+  if (uIdx !== -1) {
+    const u = allUsers[uIdx];
+    u.refundStatus = 'rejected';
+    u.refundEligible = false;
+    u.refundRejectReason = reason;
+    saveUsers(allUsers);
+
+    import('../services/notificationManager').then(({ addNotification }) => {
+      addNotification(userId, {
+        type: 'refund',
+        title: 'Refund Request Declined',
+        message: `Your refund request was declined: ${reason}`,
+        actionUrl: 'profile'
+      });
+    }).catch(() => {});
+
+    notifyDataChanged();
+    return true;
+  }
+  return false;
+};
+
 
 export const initializeStorage = () => {
   const existingUsersJson = localStorage.getItem(KEYS.USERS);
-  if (!existingUsersJson || JSON.parse(existingUsersJson).length === 0) {
-    localStorage.setItem(KEYS.USERS, JSON.stringify(MOCK_USERS));
+  if (!existingUsersJson) {
+    localStorage.setItem(KEYS.USERS, JSON.stringify([]));
   } else {
-    // Ensure mock users (like girl_sophia, boy_henry, etc.) exist with updated profiles
+    // Purge any legacy fake/dummy profiles from localStorage
     try {
       const currentList = JSON.parse(existingUsersJson);
-      let updated = false;
-      MOCK_USERS.forEach(mockU => {
-        const idx = currentList.findIndex(u => u.id === mockU.id);
-        if (idx === -1) {
-          currentList.push(mockU);
-          updated = true;
-        } else if (mockU.id === 'girl_sophia' || mockU.id === 'boy_henry') {
-          currentList[idx] = { ...mockU, ...currentList[idx], avatar: mockU.avatar, name: mockU.name, photos: mockU.photos, university: mockU.university };
-          updated = true;
-        }
-      });
-      if (updated) {
-        localStorage.setItem(KEYS.USERS, JSON.stringify(currentList));
+      const mockIds = new Set(['girl_priya', 'girl_sophia', 'girl_ananya', 'girl_riya', 'girl_isha', 'girl_meera', 'boy_rohan', 'boy_aditya', 'boy_kabir', 'boy_henry', 'boy_arjun']);
+      const realUsersOnly = currentList.filter(u => 
+        u && 
+        !mockIds.has(u.id) && 
+        !u.id?.startsWith('girl_') && 
+        !u.id?.startsWith('boy_') && 
+        !u.id?.startsWith('mock_') &&
+        !u.isMock
+      );
+      if (realUsersOnly.length !== currentList.length) {
+        localStorage.setItem(KEYS.USERS, JSON.stringify(realUsersOnly));
       }
-    } catch (e) {}
+    } catch (e) {
+      localStorage.setItem(KEYS.USERS, JSON.stringify([]));
+    }
   }
 
   if (!localStorage.getItem(KEYS.ACTIVE_STATE)) {
@@ -300,7 +466,16 @@ export const getUsers = () => {
   if (!usersJson) return [];
   try {
     const parsed = JSON.parse(usersJson);
-    return Array.isArray(parsed) ? parsed : [];
+    if (!Array.isArray(parsed)) return [];
+    const mockIds = new Set(['girl_priya', 'girl_sophia', 'girl_ananya', 'girl_riya', 'girl_isha', 'girl_meera', 'boy_rohan', 'boy_aditya', 'boy_kabir', 'boy_henry', 'boy_arjun']);
+    return parsed.filter(u => 
+      u && 
+      !mockIds.has(u.id) && 
+      !u.id?.startsWith('girl_') && 
+      !u.id?.startsWith('boy_') && 
+      !u.id?.startsWith('mock_') &&
+      !u.isMock
+    );
   } catch (e) {
     return [];
   }
@@ -476,3 +651,41 @@ export const suggestMatch = (userAId, userBId) => {
   }
   return false;
 };
+
+export const unmatchUser = (userAId, userBId) => {
+  if (!userAId || !userBId) return false;
+  const users = getUsers();
+  const userA = users.find(u => u.id === userAId);
+  const userB = users.find(u => u.id === userBId);
+
+  if (userA) {
+    userA.matches = (userA.matches || []).filter(id => id !== userBId);
+  }
+  if (userB) {
+    userB.matches = (userB.matches || []).filter(id => id !== userAId);
+  }
+  saveUsers(users);
+
+  const currentUser = getCurrentUser();
+  if (currentUser) {
+    if (currentUser.id === userAId) setCurrentUser(userA);
+    if (currentUser.id === userBId) setCurrentUser(userB);
+  }
+
+  // Deactivate in Supabase
+  if (typeof window !== 'undefined') {
+    import('../services/supabaseClient.js').then(({ supabase, isSupabaseConfigured }) => {
+      if (isSupabaseConfigured()) {
+        supabase
+          .from('matches')
+          .update({ is_active: false })
+          .or(`and(user_a_id.eq.${userAId},user_b_id.eq.${userBId}),and(user_a_id.eq.${userBId},user_b_id.eq.${userAId})`)
+          .then(() => {});
+      }
+    });
+  }
+
+  notifyDataChanged();
+  return true;
+};
+
