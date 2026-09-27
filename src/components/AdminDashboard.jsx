@@ -822,6 +822,9 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
     { id: 'verifications', label: 'Payment Verifications', icon: ShieldCheck, badge: paymentSubmissions.filter(s => s.status === 'pending').length || null, badgeColor: 'bg-rose-500 text-white' },
     { id: 'refunds', label: 'Refund Queue', icon: DollarSign, badge: refundQueue.filter(r => r.status === 'pending').length || null, badgeColor: 'bg-amber-500 text-white' },
     { id: 'users', label: 'Users Directory', icon: Users, badge: stats.totalUsers },
+    { id: 'notifications', label: 'Notifications', icon: Bell },
+    { id: 'analytics', label: 'Analytics & Revenue', icon: BarChart3 },
+    { id: 'reports', label: 'Reports & Flags', icon: Flag },
     { id: 'settings', label: 'States & Colleges', icon: Settings },
   ];
 
@@ -938,9 +941,13 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
             <div className="flex md:hidden items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
               {[
                 { id: 'dashboard', label: 'Overview' },
-                { id: 'verifications', label: `Verifications ${stats.pendingPayments ? `(${stats.pendingPayments})` : ''}` },
-                { id: 'users', label: 'Users' },
                 { id: 'rounds', label: 'Rounds' },
+                { id: 'matches', label: 'Matches' },
+                { id: 'logs', label: 'Logs' },
+                { id: 'verifications', label: `Verifications ${stats.pendingPayments ? `(${stats.pendingPayments})` : ''}` },
+                { id: 'refunds', label: 'Refunds' },
+                { id: 'users', label: 'Users' },
+                { id: 'notifications', label: 'Notifications' },
                 { id: 'settings', label: 'Settings' }
               ].map(chip => (
                 <button
@@ -1031,30 +1038,30 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
               const activeMatchesSlice = matchedPairs.slice(0, 3);
 
               return (
-                <div className="bg-gradient-to-br from-slate-900 via-slate-850 to-slate-900 text-white rounded-3xl p-4 sm:p-6 border border-slate-800 shadow-xl space-y-5">
+                <div className="bg-white rounded-3xl p-5 sm:p-6 border border-[#FFE1EB] shadow-xs space-y-5 text-slate-800">
                   {/* Top Bar: Round Header & Quick Operational Controls */}
-                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-[#FFE1EB] pb-4">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2.5 flex-wrap">
                         <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 ${
                           isPaused 
-                            ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' 
-                            : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                            ? 'bg-amber-50 text-amber-700 border border-amber-200' 
+                            : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                         }`}>
-                          <span className={`w-2 h-2 rounded-full ${isPaused ? 'bg-amber-400' : 'bg-emerald-400 animate-ping'}`} />
+                          <span className={`w-2 h-2 rounded-full ${isPaused ? 'bg-amber-500' : 'bg-emerald-500 animate-ping'}`} />
                           {isPaused ? 'PAUSED' : 'LIVE ROUND NOW'}
                         </span>
-                        <h2 className="text-base sm:text-lg font-black text-white flex items-center gap-2">
+                        <h2 className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
                           <span>Cupid Round #{currentRoundNum}</span>
-                          <span className="text-rose-400">•</span>
-                          <span className="text-pink-300">{currentActiveState}</span>
+                          <span className="text-[#FF2E79]">•</span>
+                          <span className="text-[#FF2E79] font-black">{currentActiveState}</span>
                         </h2>
-                        <span className="text-xs text-slate-400 font-medium">
+                        <span className="text-xs text-slate-500 font-semibold">
                           ({phaseInfo.title})
                         </span>
                       </div>
                       {isPaused && roundState.pauseReason && (
-                        <p className="text-xs text-amber-300/90 font-medium">
+                        <p className="text-xs text-amber-700 font-medium">
                           ⚠️ Pause Reason: {roundState.pauseReason}
                         </p>
                       )}
@@ -1066,7 +1073,7 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                         <button
                           type="button"
                           onClick={handleResumeActiveRoundClick}
-                          className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black flex items-center gap-1.5 shadow-md transition-all active:scale-95 cursor-pointer"
+                          className="px-3.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-black flex items-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer"
                         >
                           <Play className="w-3.5 h-3.5 fill-current" />
                           <span>Resume Round</span>
@@ -1075,7 +1082,7 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                         <button
                           type="button"
                           onClick={() => setShowPauseModal(true)}
-                          className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-black flex items-center gap-1.5 shadow-md transition-all active:scale-95 cursor-pointer"
+                          className="px-3.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 text-xs font-black flex items-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer"
                         >
                           <Pause className="w-3.5 h-3.5" />
                           <span>Pause / Hold</span>
@@ -1085,16 +1092,16 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                       <button
                         type="button"
                         onClick={handleSkipActiveRoundClick}
-                        className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+                        className="px-3.5 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer"
                       >
-                        <SkipForward className="w-3.5 h-3.5 text-purple-400" />
+                        <SkipForward className="w-3.5 h-3.5 text-purple-600" />
                         <span>Skip Round</span>
                       </button>
 
                       <button
                         type="button"
                         onClick={handleManualArchiveClick}
-                        className="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-black flex items-center gap-1.5 shadow-md transition-all active:scale-95 cursor-pointer"
+                        className="px-3.5 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 text-xs font-black flex items-center gap-1.5 shadow-2xs transition-all active:scale-95 cursor-pointer"
                       >
                         <FileText className="w-3.5 h-3.5" />
                         <span>Archive Snapshot</span>
@@ -1103,7 +1110,7 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                       <button
                         type="button"
                         onClick={() => setActiveNav('rounds')}
-                        className="px-3 py-1.5 rounded-xl bg-[#FF2E79] hover:bg-rose-600 text-white text-xs font-black flex items-center gap-1.5 shadow-md transition-all active:scale-95 cursor-pointer"
+                        className="px-3.5 py-1.5 rounded-xl bg-[#FF2E79] hover:bg-rose-600 text-white text-xs font-black flex items-center gap-1.5 shadow-xs transition-all active:scale-95 cursor-pointer"
                       >
                         <Sliders className="w-3.5 h-3.5" />
                         <span>Alter Timings</span>
@@ -1114,11 +1121,11 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                   {/* Middle Grid: Dynamic Timer & Next Round Pipeline */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {/* Dynamic Live Phase Countdown Timer */}
-                    <div className="md:col-span-2 bg-slate-800/80 rounded-2xl p-4 border border-slate-700/80 space-y-3">
+                    <div className="md:col-span-2 bg-[#FFF9FA] rounded-2xl p-4 sm:p-5 border border-[#FFE1EB] space-y-3.5">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div>
-                          <span className="text-[10px] font-black uppercase tracking-wider text-rose-300">Dynamic Phase Countdown</span>
-                          <h4 className="text-xs font-bold text-slate-300">{phaseInfo.title} Window</h4>
+                          <span className="text-[10px] font-black uppercase tracking-wider text-[#FF2E79]">Dynamic Phase Countdown</span>
+                          <h4 className="text-xs font-bold text-slate-800">{phaseInfo.title} Window</h4>
                         </div>
                         {/* Quick Extend Timer Buttons */}
                         <div className="flex items-center gap-1.5 flex-wrap">
@@ -1128,7 +1135,7 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                               key={hrs}
                               type="button"
                               onClick={() => handleExtendCurrentTimer(hrs)}
-                              className="px-2 py-0.5 rounded-lg bg-slate-700 hover:bg-[#FF2E79] text-white text-[11px] font-black border border-slate-600 transition-colors cursor-pointer"
+                              className="px-2.5 py-1 rounded-xl bg-white hover:bg-[#FF2E79] hover:text-white text-slate-700 text-[11px] font-black border border-pink-200 transition-colors shadow-2xs cursor-pointer"
                             >
                               +{hrs}h
                             </button>
@@ -1136,45 +1143,47 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                         </div>
                       </div>
 
-                      {/* Giant Digital Ticking Clock Display */}
+                      {/* Digital Ticking Clock Display in Cupid Light Aesthetic */}
                       <div className="flex items-center gap-3">
                         <div className="flex items-center gap-2">
-                          <div className="bg-slate-900 border border-slate-700 px-3.5 py-2 rounded-xl text-center min-w-[54px]">
-                            <span className="text-2xl sm:text-3xl font-black text-white tracking-tight">{phaseCountdown.hours}</span>
-                            <span className="block text-[9px] font-bold text-slate-400 uppercase">Hours</span>
+                          <div className="bg-white border-2 border-pink-100 px-3.5 py-2 rounded-2xl text-center min-w-[56px] shadow-2xs">
+                            <span className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{phaseCountdown.hours}</span>
+                            <span className="block text-[9px] font-black text-slate-400 uppercase tracking-wider">Hours</span>
                           </div>
-                          <span className="text-2xl font-black text-rose-400 animate-pulse">:</span>
-                          <div className="bg-slate-900 border border-slate-700 px-3.5 py-2 rounded-xl text-center min-w-[54px]">
-                            <span className="text-2xl sm:text-3xl font-black text-white tracking-tight">{phaseCountdown.mins}</span>
-                            <span className="block text-[9px] font-bold text-slate-400 uppercase">Mins</span>
+                          <span className="text-2xl font-black text-[#FF2E79] animate-pulse">:</span>
+                          <div className="bg-white border-2 border-pink-100 px-3.5 py-2 rounded-2xl text-center min-w-[56px] shadow-2xs">
+                            <span className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{phaseCountdown.mins}</span>
+                            <span className="block text-[9px] font-black text-slate-400 uppercase tracking-wider">Mins</span>
                           </div>
-                          <span className="text-2xl font-black text-rose-400 animate-pulse">:</span>
-                          <div className="bg-slate-900 border border-slate-700 px-3.5 py-2 rounded-xl text-center min-w-[54px]">
-                            <span className="text-2xl sm:text-3xl font-black text-emerald-400 tracking-tight">{phaseCountdown.secs}</span>
-                            <span className="block text-[9px] font-bold text-slate-400 uppercase">Secs</span>
+                          <span className="text-2xl font-black text-[#FF2E79] animate-pulse">:</span>
+                          <div className="bg-white border-2 border-pink-200 px-3.5 py-2 rounded-2xl text-center min-w-[56px] shadow-2xs">
+                            <span className="text-2xl sm:text-3xl font-black text-[#FF2E79] tracking-tight">{phaseCountdown.secs}</span>
+                            <span className="block text-[9px] font-black text-[#FF2E79] uppercase tracking-wider">Secs</span>
                           </div>
                         </div>
 
-                        <div className="flex-1 hidden sm:block pl-2 border-l border-slate-700/60 text-xs text-slate-300 space-y-1">
-                          <p className="flex items-center gap-1.5">
-                            <Clock className="w-3.5 h-3.5 text-rose-400" />
+                        <div className="flex-1 hidden sm:block pl-3 border-l border-pink-100 text-xs text-slate-600 space-y-1">
+                          <p className="flex items-center gap-1.5 font-bold text-slate-800">
+                            <Clock className="w-3.5 h-3.5 text-[#FF2E79]" />
                             <span>Started: {new Date(roundState.phaseStartedAt || roundState.roundStartDate || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                           </p>
-                          <p className="text-[11px] text-slate-400">
-                            When timer reaches zero, round auto-settles or transitions to the next phase across website & mobile app.
+                          <p className="text-[11px] text-slate-500 leading-relaxed">
+                            When timer reaches zero, round transitions automatically to the next phase across website & mobile app.
                           </p>
                         </div>
                       </div>
 
                       {/* Direct Phase Switch Fast Pills */}
-                      <div className="pt-2 border-t border-slate-700/60 flex items-center justify-between text-xs flex-wrap gap-2">
-                        <span className="text-slate-400 text-[11px] font-semibold">Direct Phase Jump:</span>
+                      <div className="pt-2.5 border-t border-pink-100 flex items-center justify-between text-xs flex-wrap gap-2">
+                        <span className="text-slate-500 text-[11px] font-bold">Direct Phase Jump:</span>
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <button
                             type="button"
                             onClick={() => handleSwitchPhaseDirect('entries_submission')}
-                            className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase transition-colors cursor-pointer ${
-                              currentPhase === 'entries_submission' ? 'bg-[#FF2E79] text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                            className={`px-3 py-1 rounded-xl text-[10px] font-black uppercase transition-all cursor-pointer ${
+                              currentPhase === 'entries_submission' 
+                                ? 'bg-[#FF2E79] text-white shadow-xs border border-[#FF2E79]' 
+                                : 'bg-white text-slate-700 border border-slate-200 hover:border-pink-300'
                             }`}
                           >
                             1. Entries (Day 1)
@@ -1182,8 +1191,10 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                           <button
                             type="button"
                             onClick={() => handleSwitchPhaseDirect('live_matching')}
-                            className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase transition-colors cursor-pointer ${
-                              currentPhase === 'live_matching' ? 'bg-purple-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                            className={`px-3 py-1 rounded-xl text-[10px] font-black uppercase transition-all cursor-pointer ${
+                              currentPhase === 'live_matching' 
+                                ? 'bg-purple-600 text-white shadow-xs border border-purple-600' 
+                                : 'bg-white text-slate-700 border border-slate-200 hover:border-purple-300'
                             }`}
                           >
                             2. Matching (Day 2)
@@ -1191,8 +1202,10 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                           <button
                             type="button"
                             onClick={() => handleSwitchPhaseDirect('results_settlement')}
-                            className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase transition-colors cursor-pointer ${
-                              currentPhase === 'results_settlement' ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                            className={`px-3 py-1 rounded-xl text-[10px] font-black uppercase transition-all cursor-pointer ${
+                              currentPhase === 'results_settlement' 
+                                ? 'bg-emerald-600 text-white shadow-xs border border-emerald-600' 
+                                : 'bg-white text-slate-700 border border-slate-200 hover:border-emerald-300'
                             }`}
                           >
                             3. Settlement (Hour 48)
@@ -1202,29 +1215,29 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                     </div>
 
                     {/* Next Round Rotation Card */}
-                    <div className="bg-slate-800/80 rounded-2xl p-4 border border-slate-700/80 space-y-2.5 flex flex-col justify-between">
+                    <div className="bg-[#FFF9FA] rounded-2xl p-4 sm:p-5 border border-[#FFE1EB] space-y-3 flex flex-col justify-between">
                       <div>
-                        <span className="text-[10px] font-black uppercase tracking-wider text-purple-300 bg-purple-500/20 px-2 py-0.5 rounded-md">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-purple-700 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-md">
                           Next Round in Pipeline
                         </span>
-                        <h4 className="text-base font-black text-white mt-1.5 flex items-center gap-1.5">
-                          <MapPin className="w-4 h-4 text-purple-400" />
+                        <h4 className="text-base font-black text-slate-900 mt-2 flex items-center gap-1.5">
+                          <MapPin className="w-4 h-4 text-[#FF2E79]" />
                           <span>{nextStateObj.state}</span>
                         </h4>
-                        <p className="text-xs text-slate-300 mt-1">
-                          Scheduled: <strong className="text-emerald-400">{nextStateObj.nextRoundDate}</strong>
+                        <p className="text-xs text-slate-600 mt-1">
+                          Scheduled: <strong className="text-emerald-700 font-extrabold">{nextStateObj.nextRoundDate}</strong>
                         </p>
                       </div>
 
-                      <div className="p-2.5 rounded-xl bg-slate-900/90 border border-slate-700 text-[11px] text-slate-400 space-y-1">
-                        <p className="font-bold text-slate-200">10-Day Rotation Spacing</p>
+                      <div className="p-3 rounded-xl bg-white border border-pink-100 text-[11px] text-slate-500 space-y-1">
+                        <p className="font-bold text-slate-800">10-Day Rotation Spacing</p>
                         <p>States rotate in order. You can toggle states ON/OFF in Round Controls.</p>
                       </div>
 
                       <button
                         type="button"
                         onClick={handleStartNextRound}
-                        className="w-full py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                        className="w-full py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-black flex items-center justify-center gap-1.5 transition-all shadow-2xs cursor-pointer"
                       >
                         <RefreshCw className="w-3.5 h-3.5" />
                         <span>Rotate State Now</span>
@@ -1235,43 +1248,43 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                   {/* Bottom Grid: Delhi NCR Live Entries Breakdown & Live Matched Pairs Preview */}
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-1">
                     {/* Delhi NCR Live Entries Card */}
-                    <div className="bg-slate-800/70 rounded-2xl p-4 border border-slate-700/70 space-y-3">
+                    <div className="bg-[#FFF9FA] rounded-2xl p-4 sm:p-5 border border-[#FFE1EB] space-y-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-xl bg-pink-500/20 text-[#FF2E79] flex items-center justify-center font-black text-xs">
+                          <div className="w-8 h-8 rounded-xl bg-pink-100 text-[#FF2E79] flex items-center justify-center font-black text-xs">
                             DL
                           </div>
                           <div>
-                            <h4 className="text-xs font-black text-white">Delhi NCR Live Entries</h4>
-                            <p className="text-[10px] text-slate-400">Current round entry stats & plan tiers</p>
+                            <h4 className="text-xs font-black text-slate-900">Delhi NCR Live Entries</h4>
+                            <p className="text-[10px] text-slate-500">Current round entry stats & plan tiers</p>
                           </div>
                         </div>
-                        <span className="px-2.5 py-1 rounded-full bg-rose-500/20 text-rose-300 font-black text-xs border border-rose-500/30">
+                        <span className="px-3 py-1 rounded-full bg-pink-50 text-[#FF2E79] font-black text-xs border border-pink-200">
                           {delhiEntries.length} Total Registered
                         </span>
                       </div>
 
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
-                        <div className="bg-slate-900/80 p-2 rounded-xl border border-slate-800">
-                          <span className="text-[10px] text-slate-400 font-bold block">Males</span>
-                          <span className="text-sm font-black text-blue-400">{delhiMaleCount}</span>
+                        <div className="bg-white p-2.5 rounded-xl border border-pink-100 shadow-2xs">
+                          <span className="text-[10px] text-slate-400 font-bold block uppercase">Males</span>
+                          <span className="text-base font-black text-blue-600">{delhiMaleCount}</span>
                         </div>
-                        <div className="bg-slate-900/80 p-2 rounded-xl border border-slate-800">
-                          <span className="text-[10px] text-slate-400 font-bold block">Females</span>
-                          <span className="text-sm font-black text-pink-400">{delhiFemaleCount}</span>
+                        <div className="bg-white p-2.5 rounded-xl border border-pink-100 shadow-2xs">
+                          <span className="text-[10px] text-slate-400 font-bold block uppercase">Females</span>
+                          <span className="text-base font-black text-pink-600">{delhiFemaleCount}</span>
                         </div>
-                        <div className="bg-slate-900/80 p-2 rounded-xl border border-slate-800">
-                          <span className="text-[10px] text-slate-400 font-bold block">Elite (₹449)</span>
-                          <span className="text-sm font-black text-purple-400">{delhiEliteCount}</span>
+                        <div className="bg-white p-2.5 rounded-xl border border-pink-100 shadow-2xs">
+                          <span className="text-[10px] text-slate-400 font-bold block uppercase">Elite (₹449)</span>
+                          <span className="text-base font-black text-purple-700">{delhiEliteCount}</span>
                         </div>
-                        <div className="bg-slate-900/80 p-2 rounded-xl border border-slate-800">
-                          <span className="text-[10px] text-slate-400 font-bold block">Premium (₹250)</span>
-                          <span className="text-sm font-black text-amber-400">{delhiPremiumCount}</span>
+                        <div className="bg-white p-2.5 rounded-xl border border-pink-100 shadow-2xs">
+                          <span className="text-[10px] text-slate-400 font-bold block uppercase">Premium (₹250)</span>
+                          <span className="text-base font-black text-amber-700">{delhiPremiumCount}</span>
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between text-[11px] text-slate-300 pt-1 border-t border-slate-700/60">
-                        <span>Auto-Approved / Verified: <strong className="text-emerald-400">{delhiVerifiedCount}</strong></span>
+                      <div className="flex items-center justify-between text-[11px] text-slate-600 pt-2 border-t border-pink-100">
+                        <span>Auto-Approved / Verified: <strong className="text-emerald-700">{delhiVerifiedCount}</strong></span>
                         <button
                           type="button"
                           onClick={() => setActiveNav('verifications')}
@@ -1283,21 +1296,21 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                     </div>
 
                     {/* Live Matches Preview Card */}
-                    <div className="bg-slate-800/70 rounded-2xl p-4 border border-slate-700/70 space-y-3">
+                    <div className="bg-[#FFF9FA] rounded-2xl p-4 sm:p-5 border border-[#FFE1EB] space-y-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-xl bg-purple-500/20 text-purple-300 flex items-center justify-center font-black text-xs">
+                          <div className="w-8 h-8 rounded-xl bg-pink-100 text-[#FF2E79] flex items-center justify-center font-black text-xs">
                             <Heart className="w-4 h-4 fill-current" />
                           </div>
                           <div>
-                            <h4 className="text-xs font-black text-white">Live Matched Pairs ({matchedPairs.length})</h4>
-                            <p className="text-[10px] text-slate-400">Mutual matches formed this round</p>
+                            <h4 className="text-xs font-black text-slate-900">Live Matched Pairs ({matchedPairs.length})</h4>
+                            <p className="text-[10px] text-slate-500">Mutual matches formed this round</p>
                           </div>
                         </div>
                         <button
                           type="button"
                           onClick={() => setActiveNav('matches')}
-                          className="text-xs font-bold text-rose-300 hover:text-white flex items-center gap-1 cursor-pointer"
+                          className="text-xs font-bold text-[#FF2E79] hover:underline flex items-center gap-1 cursor-pointer"
                         >
                           <span>Open Matchmaker</span>
                           <ChevronRight className="w-3.5 h-3.5" />
@@ -1305,12 +1318,12 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                       </div>
 
                       {activeMatchesSlice.length === 0 ? (
-                        <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 text-center text-xs text-slate-400 space-y-2">
+                        <div className="p-4 rounded-xl bg-white border border-pink-100 text-center text-xs text-slate-500 space-y-2">
                           <p>No mutual matches generated yet.</p>
                           <button
                             type="button"
                             onClick={() => setActiveNav('matches')}
-                            className="px-3 py-1 rounded-lg bg-[#FF2E79] text-white text-[11px] font-black cursor-pointer"
+                            className="px-3 py-1 rounded-lg bg-[#FF2E79] text-white text-[11px] font-black cursor-pointer shadow-xs"
                           >
                             + Assign Manual Match
                           </button>
@@ -1318,17 +1331,17 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                       ) : (
                         <div className="space-y-2">
                           {activeMatchesSlice.map((pair, pIdx) => (
-                            <div key={pIdx} className="p-2 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between text-xs">
+                            <div key={pIdx} className="p-2.5 rounded-xl bg-white border border-pink-100 shadow-2xs flex items-center justify-between text-xs">
                               <div className="flex items-center gap-2">
                                 <img src={pair.userA.avatar} alt="" className="w-7 h-7 rounded-full object-cover border border-[#FF2E79]" />
-                                <span className="font-bold text-white text-[11px]">{pair.userA.name}</span>
+                                <span className="font-bold text-slate-900 text-[11px]">{pair.userA.name}</span>
                               </div>
-                              <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-300 text-[10px] font-black">
+                              <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-pink-50 text-[#FF2E79] text-[10px] font-black border border-pink-200">
                                 <Heart className="w-3 h-3 fill-current text-[#FF2E79]" />
                                 <span>{pair.score || 95}%</span>
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="font-bold text-white text-[11px]">{pair.userB.name}</span>
+                                <span className="font-bold text-slate-900 text-[11px]">{pair.userB.name}</span>
                                 <img src={pair.userB.avatar} alt="" className="w-7 h-7 rounded-full object-cover border border-purple-400" />
                               </div>
                             </div>
@@ -1336,12 +1349,12 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                         </div>
                       )}
 
-                      <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-700/60">
+                      <div className="flex items-center justify-between text-[11px] text-slate-500 pt-2 border-t border-pink-100">
                         <span>Can assign 1 or multiple matches manually</span>
                         <button
                           type="button"
                           onClick={() => setActiveNav('matches')}
-                          className="font-bold text-purple-400 hover:underline cursor-pointer"
+                          className="font-bold text-purple-700 hover:underline cursor-pointer"
                         >
                           Manual Matchmaker & Unmatch →
                         </button>
@@ -2260,8 +2273,8 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                         {roundState.activeState} • Round #{roundState.roundNumber || 1}
                       </h4>
                     </div>
-                    <div className="px-2.5 py-1 rounded-full bg-slate-900 text-emerald-400 font-mono text-xs font-bold flex items-center gap-1.5">
-                      <Clock className="w-3.5 h-3.5 text-emerald-400 animate-spin-slow" />
+                    <div className="px-3 py-1 rounded-full bg-pink-50 text-[#FF2E79] border border-pink-200 font-mono text-xs font-black flex items-center gap-1.5 shadow-2xs">
+                      <Clock className="w-3.5 h-3.5 text-[#FF2E79] animate-spin-slow" />
                       <span>{phaseCountdown.hours}:{phaseCountdown.mins}:{phaseCountdown.secs}</span>
                     </div>
                   </div>
@@ -2341,22 +2354,22 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
             </div>
 
             {/* 1. 2-DAY (48-HOUR) PIPELINED ENGINE LIFECYCLE CARD */}
-            <div className="bg-gradient-to-br from-slate-900 via-slate-850 to-slate-900 text-white rounded-3xl p-5 sm:p-6 border border-slate-800 shadow-xl space-y-5">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-4">
+            <div className="bg-white rounded-3xl p-5 sm:p-6 border border-[#FFE1EB] shadow-xs space-y-5 text-slate-800">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-[#FFE1EB] pb-4">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="px-2.5 py-0.5 rounded-full bg-[#FF2E79]/20 text-[#FF2E79] border border-[#FF2E79]/30 text-[10px] font-black uppercase tracking-wider">
+                    <span className="px-2.5 py-0.5 rounded-full bg-pink-50 text-[#FF2E79] border border-pink-200 text-[10px] font-black uppercase tracking-wider">
                       48-Hour Round Engine
                     </span>
-                    <span className="text-sm font-black text-white">
-                      Current State: <strong className="text-emerald-400">{roundState.activeState}</strong>
+                    <span className="text-sm font-black text-slate-900">
+                      Current State: <strong className="text-[#FF2E79] font-black">{roundState.activeState}</strong>
                     </span>
                     <span className="text-xs text-slate-400 font-semibold">
                       (Round #{roundState.roundNumber || 1})
                     </span>
                   </div>
-                  <p className="text-xs text-slate-300">
-                    Phase: <strong className="text-white">{PHASE_LABELS[roundState.currentPhase]?.title || roundState.currentPhase}</strong> • {PHASE_LABELS[roundState.currentPhase]?.duration || '24h Duration'}
+                  <p className="text-xs text-slate-500">
+                    Phase: <strong className="text-slate-900 font-bold">{PHASE_LABELS[roundState.currentPhase]?.title || roundState.currentPhase}</strong> • {PHASE_LABELS[roundState.currentPhase]?.duration || '24h Duration'}
                   </p>
                 </div>
 
@@ -2373,10 +2386,10 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                     className={`px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-all border shadow-xs cursor-pointer ${
                       localStorage.getItem('cupid_demo_rotation_speed') === 'fast'
                         ? 'bg-amber-500 text-white border-amber-600 animate-pulse'
-                        : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
+                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                     }`}
                   >
-                    <Zap className="w-3.5 h-3.5 text-amber-300" />
+                    <Zap className="w-3.5 h-3.5 text-amber-500" />
                     <span>{localStorage.getItem('cupid_demo_rotation_speed') === 'fast' ? 'Fast Demo (1 Min/Phase)' : 'Normal 48h Schedule'}</span>
                   </button>
                 </div>
@@ -2388,22 +2401,22 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                 {/* Step 1: Day 1 (0-24h) */}
                 <div className={`p-4 rounded-2xl border transition-all ${
                   (roundState.currentPhase === 'entries_submission' || roundState.currentPhase === 'registration')
-                    ? 'bg-[#FF2E79]/10 border-[#FF2E79] shadow-lg shadow-[#FF2E79]/10 ring-1 ring-[#FF2E79]'
-                    : 'bg-slate-800/60 border-slate-700/80 text-slate-400'
+                    ? 'bg-[#FFF5F8] border-2 border-[#FF2E79] shadow-xs'
+                    : 'bg-slate-50/70 border-slate-200 text-slate-500'
                 }`}>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-rose-300 bg-rose-500/20 px-2 py-0.5 rounded-md">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-[#FF2E79] bg-pink-100/70 px-2 py-0.5 rounded-md">
                       Day 1 (0 - 24 Hours)
                     </span>
-                    <span className="text-xs font-bold text-slate-300">Phase 1</span>
+                    <span className="text-xs font-bold text-slate-400">Phase 1</span>
                   </div>
-                  <h4 className="text-sm font-black text-white mb-1">Entries & Auto-Approval</h4>
-                  <p className="text-[11px] text-slate-300 leading-relaxed">
+                  <h4 className="text-sm font-black text-slate-900 mb-1">Entries & Auto-Approval</h4>
+                  <p className="text-[11px] text-slate-600 leading-relaxed">
                     Users submit profiles and payment proofs. Male payments are <strong>Auto-Approved</strong> by default. Admin reviews screenshots to manually revoke fraudulent entries.
                   </p>
-                  <div className="mt-3 pt-2 border-t border-slate-700/60 flex items-center justify-between text-[11px]">
+                  <div className="mt-3 pt-2 border-t border-slate-200/80 flex items-center justify-between text-[11px]">
                     <span className="text-slate-400">Status:</span>
-                    <span className="font-extrabold text-emerald-400">
+                    <span className="font-extrabold text-emerald-600">
                       {(roundState.currentPhase === 'entries_submission' || roundState.currentPhase === 'registration') ? '● Active Now' : 'Completed / Standby'}
                     </span>
                   </div>
@@ -2412,45 +2425,45 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                 {/* Step 2: Day 2 (24-48h) */}
                 <div className={`p-4 rounded-2xl border transition-all ${
                   (roundState.currentPhase === 'live_matching' || roundState.currentPhase === 'browsing_matching')
-                    ? 'bg-purple-500/15 border-purple-500 shadow-lg shadow-purple-500/10 ring-1 ring-purple-400'
-                    : 'bg-slate-800/60 border-slate-700/80 text-slate-400'
+                    ? 'bg-purple-50/80 border-2 border-purple-400 shadow-xs'
+                    : 'bg-slate-50/70 border-slate-200 text-slate-500'
                 }`}>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-purple-300 bg-purple-500/20 px-2 py-0.5 rounded-md">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-purple-700 bg-purple-100 px-2 py-0.5 rounded-md">
                       Day 2 (24 - 48 Hours)
                     </span>
-                    <span className="text-xs font-bold text-slate-300">Phase 2</span>
+                    <span className="text-xs font-bold text-slate-400">Phase 2</span>
                   </div>
-                  <h4 className="text-sm font-black text-white mb-1">Live Browsing & Matching</h4>
-                  <p className="text-[11px] text-slate-300 leading-relaxed">
+                  <h4 className="text-sm font-black text-slate-900 mb-1">Live Browsing & Matching</h4>
+                  <p className="text-[11px] text-slate-600 leading-relaxed">
                     Candidates browse and like. <strong>16-Hour Timer</strong> for Elite, <strong>8-Hour Timer</strong> for Premium users, followed by Basic settlement.
                   </p>
-                  <div className="mt-3 pt-2 border-t border-slate-700/60 flex items-center justify-between text-[11px]">
+                  <div className="mt-3 pt-2 border-t border-slate-200/80 flex items-center justify-between text-[11px]">
                     <span className="text-slate-400">Status:</span>
-                    <span className="font-extrabold text-purple-400">
+                    <span className="font-extrabold text-purple-700">
                       {(roundState.currentPhase === 'live_matching' || roundState.currentPhase === 'browsing_matching') ? '● Matching Live' : 'Pending Day 1'}
                     </span>
                   </div>
                 </div>
 
                 {/* Step 3: Hour 48 Settlement */}
-                <div className="p-4 rounded-2xl border bg-slate-800/60 border-slate-700/80 text-slate-300">
+                <div className="p-4 rounded-2xl border bg-emerald-50/40 border-emerald-200 text-slate-700">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-emerald-300 bg-emerald-500/20 px-2 py-0.5 rounded-md">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-md">
                       Hour 48.00 Settlement
                     </span>
-                    <span className="text-xs font-bold text-slate-300">Settlement</span>
+                    <span className="text-xs font-bold text-slate-400">Settlement</span>
                   </div>
-                  <h4 className="text-sm font-black text-white mb-1">Mutual Matches & Refunds</h4>
-                  <p className="text-[11px] text-slate-300 leading-relaxed">
+                  <h4 className="text-sm font-black text-slate-900 mb-1">Mutual Matches & Refunds</h4>
+                  <p className="text-[11px] text-slate-600 leading-relaxed">
                     Matches are finalized instantly. Unmatched users & users who selected 0 candidates are routed to the <strong>Refund Queue</strong> with their UPI IDs for payout.
                   </p>
-                  <div className="mt-3 pt-2 border-t border-slate-700/60 flex items-center justify-between text-[11px]">
-                    <span className="text-slate-400">Refund Guarantee:</span>
+                  <div className="mt-3 pt-2 border-t border-emerald-200/60 flex items-center justify-between text-[11px]">
+                    <span className="text-slate-500">Refund Guarantee:</span>
                     <button
                       type="button"
                       onClick={() => setActiveNav('refunds')}
-                      className="font-extrabold text-amber-400 hover:underline cursor-pointer"
+                      className="font-extrabold text-amber-700 hover:underline cursor-pointer"
                     >
                       View Refund Queue →
                     </button>
@@ -2463,21 +2476,21 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
               {(() => {
                 const pipelined = getPipelinedRoundStatus();
                 return (
-                  <div className="p-3.5 rounded-xl bg-slate-800/80 border border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                  <div className="p-3.5 rounded-2xl bg-[#FFF9FA] border border-[#FFE1EB] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0">
+                      <div className="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
                         <RefreshCw className="w-4 h-4 animate-spin-slow" />
                       </div>
                       <div>
-                        <p className="font-extrabold text-white">Multi-State Concurrent Pipeline Active</p>
-                        <p className="text-[11px] text-slate-400">
-                          While <strong>{pipelined.activeState}</strong> is in Day 2 matching, <strong>{pipelined.pipelinedState}</strong> simultaneously opens Day 1 entries {pipelined.pipelinedStateEnabled ? '(Enabled)' : '(Paused by Toggle)'}.
+                        <p className="font-extrabold text-slate-900">Multi-State Concurrent Pipeline Active</p>
+                        <p className="text-[11px] text-slate-500">
+                          While <strong className="text-slate-800">{pipelined.activeState}</strong> is in Day 2 matching, <strong className="text-slate-800">{pipelined.pipelinedState}</strong> simultaneously opens Day 1 entries {pipelined.pipelinedStateEnabled ? '(Enabled)' : '(Paused by Toggle)'}.
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase ${
-                        pipelined.pipelinedStateEnabled ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-slate-700 text-slate-400'
+                        pipelined.pipelinedStateEnabled ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500'
                       }`}>
                         {pipelined.pipelinedState}: {pipelined.pipelinedStateEnabled ? 'Pipelined Active' : 'Toggled Off'}
                       </span>
@@ -2583,20 +2596,20 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
             </div>
 
             {/* 3. INSTANT LIVE ROUND STATE SWITCHER & SCHEDULE OVERRIDE */}
-            <div className="bg-slate-900 text-white rounded-3xl p-5 sm:p-6 space-y-4">
+            <div className="bg-white text-slate-800 rounded-3xl p-5 sm:p-6 border border-[#FFE1EB] shadow-xs space-y-4">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <MapPin className="w-4 h-4 text-[#FF2E79]" />
-                    <span className="text-xs font-black uppercase tracking-wider text-slate-300">
+                    <span className="text-xs font-black uppercase tracking-wider text-slate-700">
                       Force Switch Live State (Broadcasts to all mobile devices):
                     </span>
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping inline-block"></span>
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping inline-block"></span>
                       {roundState.activeState} LIVE
                     </span>
                   </div>
-                  <p className="text-[11px] text-slate-400">
+                  <p className="text-[11px] text-slate-500">
                     Switching the active state updates all registered candidates across the platform immediately and syncs with Supabase.
                   </p>
                 </div>
@@ -3723,7 +3736,7 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
             <div className="pt-2 flex justify-end">
               <button
                 onClick={() => setSelectedUser(null)}
-                className="px-5 py-2.5 bg-slate-900 text-white font-extrabold text-xs rounded-full cursor-pointer"
+                className="px-5 py-2.5 bg-[#FF2E79] hover:bg-rose-600 text-white font-extrabold text-xs rounded-xl shadow-sm cursor-pointer transition-all active:scale-95"
               >
                 Close Inspection
               </button>
