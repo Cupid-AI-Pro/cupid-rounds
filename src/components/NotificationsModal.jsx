@@ -9,14 +9,34 @@ import {
   ChevronRight, 
   ShieldCheck
 } from 'lucide-react';
-import { markNotificationAsRead, markAllNotificationsAsRead } from '../services/notificationManager';
+import { markNotificationAsRead, markAllNotificationsAsRead, getDeviceNotificationStatus, requestNotificationPermissionUserGesture, sendDeviceNotification } from '../services/notificationManager';
 
 export default function NotificationsModal({ user, notifications, onClose, onRefresh, onNavigateTab }) {
   const [isClosing, setIsClosing] = useState(false);
+  const [devicePermission, setDevicePermission] = useState(() => getDeviceNotificationStatus());
+  const [testSent, setTestSent] = useState(false);
 
   const handleClose = () => {
     setIsClosing(true);
     setTimeout(onClose, 220);
+  };
+
+  const handleEnableDeviceAlerts = async () => {
+    const res = await requestNotificationPermissionUserGesture();
+    setDevicePermission(getDeviceNotificationStatus());
+    if (res.granted) {
+      setTestSent(true);
+      setTimeout(() => setTestSent(false), 4000);
+    }
+  };
+
+  const handleSendTestNotification = () => {
+    sendDeviceNotification(
+      'Cupid Rounds Alert',
+      'Test notification delivered to your phone status bar successfully!'
+    );
+    setTestSent(true);
+    setTimeout(() => setTestSent(false), 4000);
   };
 
   const handleItemClick = (notif) => {
@@ -74,9 +94,44 @@ export default function NotificationsModal({ user, notifications, onClose, onRef
           </button>
         </div>
 
+        {/* Device Notification Status Card */}
+        <div className="px-4 py-2.5 bg-gradient-to-r from-pink-50/70 to-rose-50/50 border-b border-rose-100/60 flex items-center justify-between gap-2 shrink-0">
+          {devicePermission === 'granted' ? (
+            <>
+              <div className="flex items-center gap-1.5 min-w-0">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 animate-pulse"></span>
+                <span className="text-[10.5px] font-bold text-slate-700 truncate">
+                  Phone Status Bar Alerts Active
+                </span>
+              </div>
+              <button
+                onClick={handleSendTestNotification}
+                className="px-2.5 py-1 bg-white hover:bg-rose-50 text-[10px] font-extrabold text-[#FF2E79] border border-rose-200 rounded-lg shadow-2xs cursor-pointer transition-all active:scale-95 shrink-0"
+              >
+                {testSent ? '✓ Sent to Phone' : 'Test Phone Alert'}
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="flex items-center gap-1.5 min-w-0">
+                <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0"></span>
+                <span className="text-[10.5px] font-bold text-slate-700 truncate">
+                  Phone Alerts Disabled
+                </span>
+              </div>
+              <button
+                onClick={handleEnableDeviceAlerts}
+                className="px-2.5 py-1 bg-[#FF2E79] hover:bg-rose-600 text-[10px] font-black text-white rounded-lg shadow-2xs cursor-pointer transition-all active:scale-95 shrink-0"
+              >
+                Enable Phone Alerts
+              </button>
+            </>
+          )}
+        </div>
+
         {/* Action Toolbar */}
         {notifications.length > 0 && unreadCount > 0 && (
-          <div className="px-4 py-2 bg-pink-50/50 border-b border-rose-100/50 flex justify-end shrink-0">
+          <div className="px-4 py-2 bg-pink-50/30 border-b border-rose-100/50 flex justify-end shrink-0">
             <button
               onClick={handleMarkAllRead}
               className="text-[11px] font-bold text-[#FF2E79] hover:underline flex items-center gap-1 cursor-pointer"
@@ -86,6 +141,7 @@ export default function NotificationsModal({ user, notifications, onClose, onRef
             </button>
           </div>
         )}
+
 
         {/* Notifications List Body */}
         <div className="flex-1 overflow-y-auto p-4 space-y-2.5 no-scrollbar">

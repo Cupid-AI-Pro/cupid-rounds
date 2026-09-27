@@ -57,9 +57,11 @@ self.addEventListener('push', (event) => {
 
   const options = {
     body: data.body || data.message || 'Check Cupid Rounds app for new updates.',
-    icon: '/favicon.svg',
-    badge: '/favicon.svg',
+    icon: '/favicon.png',
+    badge: '/favicon.png',
     vibrate: [200, 100, 200],
+    renotify: true,
+    requireInteraction: true,
     data: { url: data.url || '/' },
     tag: `cupid_push_${Date.now()}`
   };
@@ -83,4 +85,19 @@ self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
+
+  // Allow app to request OS status bar notification directly through SW
+  if (event.data && event.data.type === 'SHOW_NOTIFICATION') {
+    const { title, options } = event.data;
+    const notifOptions = {
+      icon: '/favicon.png',
+      badge: '/favicon.png',
+      vibrate: [200, 100, 200],
+      renotify: true,
+      requireInteraction: true,
+      ...options
+    };
+    self.registration.showNotification(title || 'Cupid Rounds Alert', notifOptions);
+  }
 });
+

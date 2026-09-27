@@ -54,6 +54,12 @@ import {
 import { PLANS_INFO } from '../data/mockData';
 import { supabase, isSupabaseConfigured } from '../services/supabaseClient';
 import { 
+  broadcastNotification, 
+  sendDeviceNotification, 
+  requestNotificationPermissionUserGesture, 
+  getDeviceNotificationStatus 
+} from '../services/notificationManager';
+import { 
   LayoutDashboard,
   Users, 
   ShieldCheck, 
@@ -204,6 +210,18 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
   // Round Alteration States
   const [showPauseModal, setShowPauseModal] = useState(false);
   const [pauseReasonInput, setPauseReasonInput] = useState('Round temporarily paused by administration for scheduled review');
+
+  // Broadcast Notifications Console States
+  const [isBroadcasting, setIsBroadcasting] = useState(false);
+  const [broadcastFeedback, setBroadcastFeedback] = useState(null);
+  const [testAlertSent, setTestAlertSent] = useState(false);
+  const [recentBroadcasts, setRecentBroadcasts] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('cupid_global_broadcasts') || '[]');
+    } catch (e) {
+      return [];
+    }
+  });
 
   useEffect(() => {
     const updateCountdown = () => {
@@ -3454,43 +3472,239 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
            ═══════════════════════════════════════════════════════════════════════ */}
         {activeNav === 'notifications' && (
           <div className="space-y-6">
-            <div>
-              <h1 className="text-2xl font-black text-slate-900 tracking-tight">Broadcast Notifications Console</h1>
-              <p className="text-xs text-slate-500 font-medium">Send real-time in-app alerts to users in the platform.</p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                  <Bell className="w-6 h-6 text-[#FF2E79]" />
+                  <span>Broadcast Notifications Console</span>
+                </h1>
+                <p className="text-xs text-slate-500 font-medium">
+                  Dispatch live status bar alerts & cloud push notifications to all users' phones in real time.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span>Push Engine Active</span>
+                </span>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-pink-50 text-[#FF2E79] border border-pink-200">
+                  <span>Supabase Realtime</span>
+                </span>
+              </div>
             </div>
 
-            <div className="bg-white p-6 rounded-2xl border border-[#FFE1EB] max-w-xl space-y-4">
-              <h3 className="text-sm font-black text-slate-900">Create System Announcement</h3>
-              <form onSubmit={(e) => {
-                e.preventDefault();
-                const title = e.target.title.value;
-                const msg = e.target.msg.value;
-                if (!title || !msg) return;
-                
-                import('../services/notificationManager').then(({ broadcastNotification }) => {
-                  broadcastNotification({
-                    title: title,
-                    message: msg
-                  });
-                });
-
-                const allUsers = getUsers();
-                alert(`Broadcast notification successfully dispatched to all ${allUsers.length} users' phones!`);
-                e.target.reset();
-              }} className="space-y-3">
-                <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1">Notification Title</label>
-                  <input name="title" type="text" required placeholder="e.g. Round 2 Live Today!" className="w-full h-10 px-3 border rounded-xl text-xs" />
+            {/* Delivery Feedback Banner */}
+            {broadcastFeedback && (
+              <div className={`p-4 rounded-2xl border text-xs font-bold flex items-center justify-between animate-fade-in ${
+                broadcastFeedback.type === 'success' 
+                  ? 'bg-emerald-50 border-emerald-200 text-emerald-800' 
+                  : 'bg-rose-50 border-rose-200 text-rose-800'
+              }`}>
+                <div className="flex items-center gap-2.5">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                  <span>{broadcastFeedback.message}</span>
                 </div>
-                <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1">Message Content</label>
-                  <textarea name="msg" required rows="3" placeholder="Enter message to broadcast to all users..." className="w-full p-3 border rounded-xl text-xs" />
-                </div>
-                <button type="submit" className="w-full h-11 bg-[#FF2E79] hover:bg-rose-600 text-white font-extrabold text-xs rounded-xl shadow-md cursor-pointer flex items-center justify-center gap-2">
-                  <Send className="w-4 h-4" />
-                  <span>Broadcast to All Users</span>
+                <button 
+                  onClick={() => setBroadcastFeedback(null)} 
+                  className="text-slate-400 hover:text-slate-700 p-1"
+                >
+                  <X className="w-4 h-4" />
                 </button>
-              </form>
+              </div>
+            )}
+
+            <div className="grid lg:grid-cols-12 gap-6">
+              {/* Broadcast Creator Card */}
+              <div className="lg:col-span-7 bg-white p-6 rounded-2xl border border-[#FFE1EB] shadow-2xs space-y-4">
+                <div className="flex items-center justify-between pb-2 border-b border-rose-100">
+                  <div>
+                    <h3 className="text-sm font-black text-slate-900">Create System Announcement</h3>
+                    <p className="text-[11px] text-slate-500">Will appear in users' phone scroll-down notification shade & in-app</p>
+                  </div>
+                  <span className="text-[10px] font-extrabold text-[#FF2E79] bg-rose-50 px-2 py-0.5 rounded-md border border-rose-100">
+                    Live Broadcast
+                  </span>
+                </div>
+
+                {/* Quick Templates */}
+                <div>
+                  <label className="text-[11px] font-bold text-slate-500 block mb-1.5">Quick Presets:</label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      { title: 'Match Round is LIVE Today! 🔥', msg: 'Round #1 is active in Delhi NCR! Check your top compatible candidate profiles now.' },
+                      { title: '⏰ 2 Hours Left to Form Mutual Matches!', msg: 'Voting window closes soon. Like your candidates before time runs out!' },
+                      { title: '🎉 New Matches Dispatched!', msg: 'Your mutual matches for this round have been published. Check your chats now!' }
+                    ].map((preset, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => {
+                          const form = document.getElementById('admin-broadcast-form');
+                          if (form) {
+                            form.title.value = preset.title;
+                            form.msg.value = preset.msg;
+                          }
+                        }}
+                        className="px-2.5 py-1 text-[10.5px] font-semibold bg-rose-50/60 hover:bg-rose-100 text-slate-700 rounded-lg border border-rose-100 transition-colors cursor-pointer text-left"
+                      >
+                        {preset.title.split('!')[0]}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <form id="admin-broadcast-form" onSubmit={async (e) => {
+                  e.preventDefault();
+                  const title = e.target.title.value.trim();
+                  const msg = e.target.msg.value.trim();
+                  if (!title || !msg) return;
+
+                  setIsBroadcasting(true);
+                  setBroadcastFeedback(null);
+
+                  try {
+                    const item = await broadcastNotification({ title, message: msg });
+                    
+                    // Refresh recent broadcasts list
+                    try {
+                      const updated = JSON.parse(localStorage.getItem('cupid_global_broadcasts') || '[]');
+                      setRecentBroadcasts(updated);
+                    } catch (err) {}
+
+                    setBroadcastFeedback({
+                      type: 'success',
+                      message: `Broadcast successfully pushed! Dispatched to Supabase Realtime channel + Cloud Database + All connected user phones.`
+                    });
+
+                    e.target.reset();
+                  } catch (err) {
+                    setBroadcastFeedback({
+                      type: 'error',
+                      message: `Broadcast dispatch encountered an issue: ${err.message}`
+                    });
+                  } finally {
+                    setIsBroadcasting(false);
+                  }
+                }} className="space-y-4">
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">Notification Title</label>
+                    <input 
+                      name="title" 
+                      type="text" 
+                      required 
+                      placeholder="e.g. Delhi NCR Round is LIVE Today! 🔥" 
+                      className="w-full h-10 px-3 border border-slate-200 focus:border-[#FF2E79] focus:ring-1 focus:ring-[#FF2E79] rounded-xl text-xs outline-none transition-all" 
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">Message Content</label>
+                    <textarea 
+                      name="msg" 
+                      required 
+                      rows="3" 
+                      placeholder="Enter detailed message to appear in user's phone notification center..." 
+                      className="w-full p-3 border border-slate-200 focus:border-[#FF2E79] focus:ring-1 focus:ring-[#FF2E79] rounded-xl text-xs outline-none transition-all" 
+                    />
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row items-center gap-3 pt-1">
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const form = document.getElementById('admin-broadcast-form');
+                        const testTitle = form?.title.value.trim() || 'Test Alert: Cupid Rounds';
+                        const testMsg = form?.msg.value.trim() || 'This is a test notification to verify your phone status bar alerts.';
+
+                        if (getDeviceNotificationStatus() !== 'granted') {
+                          await requestNotificationPermissionUserGesture();
+                        }
+                        
+                        sendDeviceNotification(testTitle, testMsg);
+                        setTestAlertSent(true);
+                        setTimeout(() => setTestAlertSent(false), 4000);
+                      }}
+                      className="w-full sm:w-auto px-4 h-11 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold text-xs rounded-xl cursor-pointer flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
+                    >
+                      <Bell className="w-3.5 h-3.5 text-[#FF2E79]" />
+                      <span>{testAlertSent ? '✓ Sent to Your Phone' : 'Test on My Device First'}</span>
+                    </button>
+
+                    <button 
+                      type="submit" 
+                      disabled={isBroadcasting}
+                      className="flex-1 w-full h-11 bg-[#FF2E79] hover:bg-rose-600 disabled:opacity-60 text-white font-extrabold text-xs rounded-xl shadow-md cursor-pointer flex items-center justify-center gap-2 transition-all active:scale-98"
+                    >
+                      {isBroadcasting ? (
+                        <>
+                          <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                          <span>Broadcasting to All Phones...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-4 h-4" />
+                          <span>Broadcast to All Users & Connected Phones</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              {/* Status & History Card */}
+              <div className="lg:col-span-5 space-y-4">
+                {/* Real-time Diagnostics Card */}
+                <div className="bg-white p-5 rounded-2xl border border-[#FFE1EB] shadow-2xs space-y-3">
+                  <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider">
+                    Push Delivery Diagnostics
+                  </h3>
+                  <div className="space-y-2 text-xs">
+                    <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50">
+                      <span className="text-slate-600 font-medium">OS Status Bar Alerts</span>
+                      <span className="font-extrabold text-emerald-600">Active (ServiceWorker)</span>
+                    </div>
+                    <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50">
+                      <span className="text-slate-600 font-medium">Supabase Realtime Channel</span>
+                      <span className="font-extrabold text-emerald-600">cupid_global_alerts</span>
+                    </div>
+                    <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50">
+                      <span className="text-slate-600 font-medium">Cloud Database Sync</span>
+                      <span className="font-extrabold text-emerald-600">public.notifications</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Recent Broadcasts */}
+                <div className="bg-white p-5 rounded-2xl border border-[#FFE1EB] shadow-2xs space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider">
+                      Recent Broadcast History
+                    </h3>
+                    <span className="text-[10px] text-slate-400 font-bold">
+                      {recentBroadcasts.length} Sent
+                    </span>
+                  </div>
+
+                  <div className="space-y-2 max-h-60 overflow-y-auto pr-1 no-scrollbar">
+                    {recentBroadcasts.length === 0 ? (
+                      <p className="text-xs text-slate-400 py-4 text-center">No broadcasts sent yet.</p>
+                    ) : (
+                      recentBroadcasts.map((b, i) => (
+                        <div key={b.id || i} className="p-2.5 rounded-xl border border-slate-100 bg-slate-50/70 hover:bg-white transition-all space-y-1">
+                          <div className="flex items-center justify-between gap-1">
+                            <span className="text-xs font-black text-slate-800 truncate">{b.title}</span>
+                            <span className="text-[9.5px] text-slate-400 font-medium shrink-0">
+                              {b.timestamp ? new Date(b.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recent'}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-slate-600 line-clamp-2 leading-tight">{b.message}</p>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}

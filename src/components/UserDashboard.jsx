@@ -38,6 +38,9 @@ import {
   getUnreadCount, 
   checkAndTriggerRoundNotifications,
   requestDeviceNotificationPermission,
+  requestNotificationPermissionUserGesture,
+  getDeviceNotificationStatus,
+  setupRealtimeBroadcastListener,
   syncBroadcastNotifications
 } from '../services/notificationManager';
 import { 
@@ -60,6 +63,7 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
   const [showPermissionPrompt, setShowPermissionPrompt] = useState(false);
   const [showNotificationsModal, setShowNotificationsModal] = useState(false);
   const [notifications, setNotifications] = useState(() => getNotifications(user?.id));
+  const [hasDismissedNotifBanner, setHasDismissedNotifBanner] = useState(false);
   const [showTour, setShowTour] = useState(() => {
     return user?.id ? !localStorage.getItem(`tour_shown_${user.id}`) : false;
   });
@@ -164,14 +168,19 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
       loadMatches();
     }) : () => {};
 
-    // Periodic broadcast notification and cloud sync check
+    // Real-time broadcast listener for instant push notifications to user phones
+    const unsubBroadcasts = user?.id ? setupRealtimeBroadcastListener(user.id, () => {
+      setNotifications(getNotifications(user.id));
+    }) : () => {};
+
+    // Periodic broadcast notification and cloud sync check (fast 4s polling fallback)
     const notifInterval = setInterval(() => {
       if (user?.id) {
         syncBroadcastNotifications(user.id).then(() => {
           setNotifications(getNotifications(user.id));
         });
       }
-    }, 8000);
+    }, 4000);
 
     const hasPrompted = user?.id ? localStorage.getItem(`perm_prompted_${user.id}`) : true;
     if (!hasPrompted) {
@@ -180,6 +189,7 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
 
     return () => {
       if (typeof unsubActivity === 'function') unsubActivity();
+      if (typeof unsubBroadcasts === 'function') unsubBroadcasts();
       clearInterval(notifInterval);
     };
   }, [user?.id, user?.gender, user?.interestedIn, user?.university, activeFilter, roundState?.currentPhase]);
@@ -558,6 +568,43 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
               </div>
             </div>
           </div>
+
+          {/* Phone Notification Permission Prompt Banner */}
+          {getDeviceNotificationStatus() !== 'granted' && !hasDismissedNotifBanner && (
+            <div className="mb-2.5 px-3.5 py-2.5 bg-gradient-to-r from-rose-50 via-pink-50 to-rose-50 border border-rose-200/90 rounded-2xl flex items-center justify-between gap-2 shadow-2xs animate-fade-in">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-7 h-7 rounded-xl bg-[#FF2E79] text-white flex items-center justify-center shrink-0 shadow-xs shadow-rose-200">
+                  <Bell className="w-3.5 h-3.5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[11px] font-extrabold text-slate-800 leading-tight truncate">
+                    Enable Phone Status Bar Alerts
+                  </p>
+                  <p className="text-[9.5px] font-medium text-slate-500 leading-tight truncate">
+                    Receive matches & broadcasts in your notification shade
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <button
+                  onClick={async () => {
+                    await requestNotificationPermissionUserGesture();
+                    setHasDismissedNotifBanner(true);
+                  }}
+                  className="px-3 py-1.5 bg-[#FF2E79] hover:bg-rose-600 text-white text-[10.5px] font-black rounded-xl shadow-xs cursor-pointer active:scale-95 transition-all"
+                >
+                  Enable
+                </button>
+                <button
+                  onClick={() => setHasDismissedNotifBanner(true)}
+                  className="p-1 text-slate-400 hover:text-slate-600 cursor-pointer"
+                  title="Dismiss"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Refund Alert Banner for Unmatched Paid Users */}
           {(user?.refundEligible || user?.refundStatus === 'pending') && (

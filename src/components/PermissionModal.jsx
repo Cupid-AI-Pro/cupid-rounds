@@ -9,14 +9,30 @@ import {
   X
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { requestNotificationPermissionUserGesture } from '../services/notificationManager';
 
 export default function PermissionModal({ onComplete }) {
   const [locationAllowed, setLocationAllowed] = useState(true);
   const [notificationAllowed, setNotificationAllowed] = useState(true);
   const [isGranting, setIsGranting] = useState(false);
 
-  const handleGrant = () => {
+  const handleGrant = async () => {
     setIsGranting(true);
+
+    if (notificationAllowed) {
+      try {
+        await requestNotificationPermissionUserGesture();
+      } catch (e) {
+        console.warn('Notification permission request error:', e);
+      }
+    }
+
+    if (locationAllowed && 'geolocation' in navigator) {
+      try {
+        navigator.geolocation.getCurrentPosition(() => {}, () => {});
+      } catch (e) {}
+    }
+
     setTimeout(() => {
       confetti({
         particleCount: 50,
@@ -25,8 +41,9 @@ export default function PermissionModal({ onComplete }) {
         colors: ['#FF2E79', '#10B981', '#EC4899']
       });
       onComplete({ location: locationAllowed, notifications: notificationAllowed });
-    }, 600);
+    }, 400);
   };
+
 
   return (
     <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-md flex items-end sm:items-center justify-center p-3 animate-fade-in select-none">
