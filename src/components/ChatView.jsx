@@ -47,7 +47,7 @@ export default function ChatView({
   onUnmatch,
   onActiveChatChange
 }) {
-  const [activeChatUser, setActiveChatUser] = useState(initialChatUser || matchedUsers[0] || null);
+  const [activeChatUser, setActiveChatUser] = useState(initialChatUser || null);
   const [messages, setMessages] = useState({});
   const [inputMessage, setInputMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -60,6 +60,15 @@ export default function ChatView({
   const [reportSubmitted, setReportSubmitted] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
 
+  // Mobile visual viewport and keyboard height tracking
+  const [viewportHeight, setViewportHeight] = useState(() => {
+    if (typeof window !== 'undefined' && window.visualViewport) {
+      return window.visualViewport.height;
+    }
+    return null;
+  });
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+
   const messagesContainerRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -70,14 +79,46 @@ export default function ChatView({
     }
   }, [activeChatUser, onActiveChatChange]);
 
-  // Sync initialChatUser if changed externally
+  // Sync initialChatUser only when explicitly passed from parent
   useEffect(() => {
     if (initialChatUser) {
       setActiveChatUser(initialChatUser);
-    } else if (!activeChatUser && matchedUsers.length > 0) {
-      setActiveChatUser(matchedUsers[0]);
     }
-  }, [initialChatUser, matchedUsers]);
+  }, [initialChatUser]);
+
+  // Mobile visual viewport listener to prevent keyboard from obscuring input or scrolling header off-screen
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.visualViewport) return;
+
+    const handleViewportChange = () => {
+      const vv = window.visualViewport;
+      setViewportHeight(vv.height);
+
+      const isMobile = window.innerWidth < 768;
+      const keyboardActive = isMobile && vv.height < (window.innerHeight - 80);
+      setIsKeyboardOpen(keyboardActive);
+
+      // Lock document scroll so top header & banner are never pushed off screen
+      if (window.scrollY !== 0 || window.pageYOffset !== 0) {
+        window.scrollTo(0, 0);
+      }
+      if (document.documentElement.scrollTop !== 0) {
+        document.documentElement.scrollTop = 0;
+      }
+      if (document.body.scrollTop !== 0) {
+        document.body.scrollTop = 0;
+      }
+    };
+
+    window.visualViewport.addEventListener('resize', handleViewportChange);
+    window.visualViewport.addEventListener('scroll', handleViewportChange);
+    handleViewportChange();
+
+    return () => {
+      window.visualViewport.removeEventListener('resize', handleViewportChange);
+      window.visualViewport.removeEventListener('scroll', handleViewportChange);
+    };
+  }, [activeChatUser]);
 
   // Smooth scroll container to bottom without bouncing the window
   const scrollToBottom = () => {
@@ -92,6 +133,20 @@ export default function ChatView({
   useEffect(() => {
     scrollToBottom();
   }, [messages, activeChatUser]);
+
+  const handleInputFocus = () => {
+    window.scrollTo(0, 0);
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+      scrollToBottom();
+    }, 70);
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+      scrollToBottom();
+    }, 220);
+  };
 
   // Toast notification helper
   const showToast = (msg) => {
@@ -247,6 +302,7 @@ export default function ChatView({
     setShowUnmatchModal(false);
     setShowMenu(false);
     setActiveChatUser(null);
+    if (onActiveChatChange) onActiveChatChange(null);
     showToast(`Unmatched with ${partnerName}`);
   };
 
@@ -277,6 +333,7 @@ export default function ChatView({
       }
 
       setActiveChatUser(null);
+      if (onActiveChatChange) onActiveChatChange(null);
       showToast(`Report received. ${partnerName} has been blocked.`);
     }, 1200);
   };
@@ -292,8 +349,20 @@ export default function ChatView({
   // VIEW 1: ACTIVE DIRECT CHAT WINDOW (FLUID, ZERO BOTTOM GAP, SAAS LEVEL)
   // ═══════════════════════════════════════════════════════════════════════════
   if (activeChatUser) {
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
     return (
-      <div className="flex-1 flex flex-col h-full bg-[#FFF5F8] relative select-none overflow-hidden">
+      <div 
+        className="fixed md:absolute inset-0 z-50 flex flex-col bg-[#FFF5F8] overflow-hidden select-none md:rounded-[44px]"
+        style={{
+          height: (isMobile && viewportHeight) ? `${viewportHeight}px` : '100%',
+          maxHeight: (isMobile && viewportHeight) ? `${viewportHeight}px` : '100%',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 'auto'
+        }}
+      >
         
         {/* Floating Toast Notification */}
         {toastMessage && (
@@ -304,10 +373,13 @@ export default function ChatView({
         )}
 
         {/* Top Header (Glassmorphic, Sticky, SaaS Quality) */}
-        <div className="p-3 bg-white/95 backdrop-blur-xl border-b border-pink-100 flex items-center justify-between z-20 shadow-xs shrink-0">
+        <div className="pt-[max(0.75rem,env(safe-area-inset-top))] px-3 pb-2.5 bg-white/95 backdrop-blur-xl border-b border-pink-100 flex items-center justify-between z-20 shadow-xs shrink-0">
           <div className="flex items-center gap-2.5">
             <button
-              onClick={() => setActiveChatUser(null)}
+              onClick={() => {
+                setActiveChatUser(null);
+                if (onActiveChatChange) onActiveChatChange(null);
+              }}
               className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 active:scale-95 flex items-center justify-center text-slate-700 transition-all cursor-pointer"
               title="Back to Matches"
             >
@@ -475,13 +547,14 @@ export default function ChatView({
           ))}
         </div>
 
-        {/* Bottom Message Input (Flush Bottom, Safe Area Inset, Keeps Keyboard Open) */}
-        <div className="p-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-white/95 backdrop-blur-xl border-t border-slate-100 flex items-center gap-2 shrink-0 z-20 shadow-md">
+        {/* Bottom Message Input (Flush Bottom, Sits Directly Above Keyboard) */}
+        <div className={`p-2.5 ${isKeyboardOpen ? 'pb-2.5' : 'pb-[max(0.75rem,env(safe-area-inset-bottom))]'} bg-white/95 backdrop-blur-xl border-t border-slate-100 flex items-center gap-2 shrink-0 z-20 shadow-md`}>
           <input
             ref={inputRef}
             type="text"
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
+            onFocus={handleInputFocus}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 e.preventDefault();
@@ -704,7 +777,10 @@ export default function ChatView({
               {matchedUsers.map((m) => (
                 <div
                   key={m.id}
-                  onClick={() => setActiveChatUser(m)}
+                  onClick={() => {
+                    setActiveChatUser(m);
+                    if (onActiveChatChange) onActiveChatChange(m);
+                  }}
                   className="flex flex-col items-center gap-1 cursor-pointer shrink-0 group"
                 >
                   <div className="relative w-14 h-14 rounded-full p-0.5 bg-gradient-to-tr from-[#FF2E79] to-pink-500 shadow-md ring-2 ring-white group-hover:scale-105 transition-transform">
@@ -744,7 +820,10 @@ export default function ChatView({
               return (
                 <div
                   key={m.id}
-                  onClick={() => setActiveChatUser(m)}
+                  onClick={() => {
+                    setActiveChatUser(m);
+                    if (onActiveChatChange) onActiveChatChange(m);
+                  }}
                   className="p-3 bg-white hover:bg-pink-50/60 rounded-2xl border border-pink-100/70 shadow-2xs flex items-center justify-between cursor-pointer transition-all active:scale-[0.99]"
                 >
                   <div className="flex items-center gap-3">

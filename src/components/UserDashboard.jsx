@@ -500,6 +500,8 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
           onOpenChat={(c) => {
             handleLike(c);
             setExpandedCandidate(null);
+            setActiveDirectChatUser(c);
+            setIsDirectChatActive(true);
             setCurrentTab('chat');
           }}
         />
@@ -843,7 +845,11 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
                   </p>
                   <button
                     type="button"
-                    onClick={() => setCurrentTab('chat')}
+                    onClick={() => {
+                      setActiveDirectChatUser(null);
+                      setIsDirectChatActive(false);
+                      setCurrentTab('chat');
+                    }}
                     className="mt-4 px-6 py-2.5 bg-[#FF2E79] text-white rounded-full text-xs font-extrabold shadow-md shadow-rose-300 cursor-pointer"
                   >
                     Open Chats ({user?.matches?.length || 0})
