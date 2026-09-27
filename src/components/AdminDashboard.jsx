@@ -5,6 +5,8 @@ import {
   getActiveState, 
   setActiveState, 
   createMatch, 
+  unmatchUser,
+  assignManualMatch,
   updateUser,
   clearAllData,
   getPaymentSubmissions,
@@ -38,8 +40,16 @@ import {
   isStateEnabled,
   toggleStateEnabled,
   getPipelinedRoundStatus,
+  getStateRoundSchedule,
   ROUND_PHASES, 
-  PHASE_LABELS 
+  PHASE_LABELS,
+  getRoundLogs,
+  archiveCurrentRound,
+  deleteRoundLog,
+  alterRoundTiming,
+  pauseOrCancelActiveRound,
+  resumeActiveRound,
+  skipActiveRound
 } from '../utils/roundManager';
 import { PLANS_INFO } from '../data/mockData';
 import { supabase, isSupabaseConfigured } from '../services/supabaseClient';
@@ -90,7 +100,15 @@ import {
   ToggleLeft,
   ToggleRight,
   Power,
-  ShieldAlert
+  ShieldAlert,
+  Pause,
+  SkipForward,
+  Sliders,
+  Filter,
+  CheckSquare,
+  Square,
+  Sparkles,
+  ArrowRight
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import CupidLogo from './CupidLogo';
@@ -166,6 +184,53 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
     refunds: 0,
     pendingPayments: 0
   });
+
+  // Round Logs & Historical Archive State
+  const [roundLogs, setRoundLogs] = useState(() => getRoundLogs());
+  const [selectedLogId, setSelectedLogId] = useState(() => getRoundLogs()[0]?.id || null);
+  const [logActiveSubTab, setLogActiveSubTab] = useState('participants'); // 'participants' | 'matches' | 'refunds'
+
+  // Dynamic Phase Timer State (ticking live every second)
+  const [phaseCountdown, setPhaseCountdown] = useState({ hours: '23', mins: '59', secs: '59', totalSecs: 86400 });
+
+  // Manual Matchmaker State
+  const [matchmakerUserA, setMatchmakerUserA] = useState('');
+  const [matchmakerSelectedTargets, setMatchmakerSelectedTargets] = useState([]);
+  const [matchmakerScore, setMatchmakerScore] = useState(96);
+  const [matchmakerSearchQuery, setMatchmakerSearchQuery] = useState('');
+  const [matchmakerGenderFilter, setMatchmakerGenderFilter] = useState('all');
+  const [matchmakerStateFilter, setMatchmakerStateFilter] = useState('All');
+
+  // Round Alteration States
+  const [showPauseModal, setShowPauseModal] = useState(false);
+  const [pauseReasonInput, setPauseReasonInput] = useState('Round temporarily paused by administration for scheduled review');
+
+  useEffect(() => {
+    const updateCountdown = () => {
+      const rs = getRoundState();
+      const phaseStart = new Date(rs.phaseStartedAt || rs.roundStartDate || Date.now()).getTime();
+      const now = Date.now();
+      const elapsedSecs = Math.max(0, Math.floor((now - phaseStart) / 1000));
+      
+      const phaseDurationSecs = (rs.customDurationHours ? rs.customDurationHours * 3600 : 24 * 3600);
+      const remainingSecs = Math.max(0, phaseDurationSecs - elapsedSecs);
+      
+      const hrs = Math.floor(remainingSecs / 3600);
+      const mins = Math.floor((remainingSecs % 3600) / 60);
+      const secs = remainingSecs % 60;
+
+      setPhaseCountdown({
+        hours: String(hrs).padStart(2, '0'),
+        mins: String(mins).padStart(2, '0'),
+        secs: String(secs).padStart(2, '0'),
+        totalSecs: remainingSecs
+      });
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, [roundState]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -514,7 +579,7 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
     const matchedPairs = [];
     const visited = new Set();
     users.forEach(u => {
-      if (u.matches && u.matches.length > 0) {
+      if (Array.isArray(u.matches) && u.matches.length > 0) {
         u.matches.forEach(mId => {
           const pairKey = [u.id, mId].sort().join('_');
           if (!visited.has(pairKey)) {
@@ -524,6 +589,7 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
               matchedPairs.push({
                 userA: u,
                 userB: partner,
+                score: u.matchScore || partner.matchScore || 94,
                 state: u.state || partner.state || 'Delhi NCR'
               });
             }
@@ -532,6 +598,103 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
       }
     });
     return matchedPairs;
+  };
+
+  // Manual Matchmaker Actions
+  const handleToggleTargetCandidate = (candidateId) => {
+    setMatchmakerSelectedTargets(prev => 
+      prev.includes(candidateId) ? prev.filter(id => id !== candidateId) : [...prev, candidateId]
+    );
+  };
+
+  const handleAssignManualMatches = () => {
+    if (!matchmakerUserA) {
+      alert('Please select the primary user first.');
+      return;
+    }
+    if (matchmakerSelectedTargets.length === 0) {
+      alert('Please select at least 1 candidate profile to match with.');
+      return;
+    }
+
+    const success = assignManualMatch(matchmakerUserA, matchmakerSelectedTargets, Number(matchmakerScore) || 95);
+    if (success) {
+      confetti({ particleCount: 120, spread: 80, origin: { y: 0.5 } });
+      loadAdminData();
+      alert(`🎉 Successfully assigned ${matchmakerSelectedTargets.length} match(es)! The mutual match is now live in both users' profiles & chat.`);
+      setMatchmakerSelectedTargets([]);
+    }
+  };
+
+  const handleUnmatchClick = (userAId, userBId) => {
+    if (confirm('Are you sure you want to unmatch these two users? Their chat connection will be closed.')) {
+      unmatchUser(userAId, userBId);
+      loadAdminData();
+    }
+  };
+
+  // Round Timing & Alteration Actions
+  const handleExtendCurrentTimer = (hours) => {
+    const updated = alterRoundTiming({ extendHours: hours });
+    setRoundState(updated);
+    loadAdminData();
+    confetti({ particleCount: 60, spread: 50, origin: { y: 0.6 } });
+    alert(`⏱️ Phase timer successfully extended by +${hours} hours! Synced live across website & mobile apps.`);
+  };
+
+  const handleSwitchPhaseDirect = (newPhase) => {
+    const updated = alterRoundTiming({ newPhase });
+    setRoundState(updated);
+    loadAdminData();
+    confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 } });
+    alert(`⚡ Round phase switched to "${PHASE_LABELS[newPhase]?.title || newPhase}"! All devices updated.`);
+  };
+
+  const handleConfirmPauseRound = () => {
+    const updated = pauseOrCancelActiveRound(pauseReasonInput);
+    setRoundState(updated);
+    setShowPauseModal(false);
+    loadAdminData();
+    alert(`⏸️ Active round for ${roundState.activeState} has been PAUSED.`);
+  };
+
+  const handleResumeActiveRoundClick = () => {
+    const updated = resumeActiveRound();
+    setRoundState(updated);
+    loadAdminData();
+    confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
+    alert(`▶️ Active round for ${roundState.activeState} has been RESUMED!`);
+  };
+
+  const handleSkipActiveRoundClick = () => {
+    if (confirm(`Are you sure you want to SKIP Round #${roundState.roundNumber} for ${roundState.activeState}? A snapshot will be saved to Round Logs and the round will immediately rotate to the next scheduled state.`)) {
+      const updated = skipActiveRound(`Skipped manually by Admin on ${new Date().toLocaleString()}`);
+      setRoundState(updated);
+      setRoundLogs(getRoundLogs());
+      loadAdminData();
+      confetti({ particleCount: 100, spread: 70, origin: { y: 0.5 } });
+      alert(`⏭️ Round skipped! Next state is now live.`);
+    }
+  };
+
+  const handleManualArchiveClick = () => {
+    const log = archiveCurrentRound('manual_archive', `Manual admin snapshot saved on ${new Date().toLocaleString()}`);
+    const freshLogs = getRoundLogs();
+    setRoundLogs(freshLogs);
+    setSelectedLogId(log.id);
+    setActiveNav('logs');
+    confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 } });
+    alert(`📸 Round snapshot archived! Available in Round Logs tab.`);
+  };
+
+  const handleDeleteLogClick = (logId) => {
+    if (confirm('Are you sure you want to delete this round log archive?')) {
+      const fresh = deleteRoundLog(logId);
+      setRoundLogs(fresh);
+      if (selectedLogId === logId) {
+        setSelectedLogId(fresh[0]?.id || null);
+      }
+    }
   };
 
   const filteredUsers = users.filter(u => {
@@ -650,20 +813,16 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
     );
   }
 
-  // Sidebar navigation items list (Image 2 exact menu + Refund Queue & State Controls)
+  // Sidebar navigation items list
   const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'rounds', label: 'Rounds & State Toggles', icon: Flame },
+    { id: 'dashboard', label: 'Live Operations', icon: LayoutDashboard },
+    { id: 'rounds', label: 'Round Controls & Timers', icon: Flame },
+    { id: 'matches', label: 'Manual Matchmaker & Pairs', icon: Heart, badge: stats.totalMatches },
+    { id: 'logs', label: 'Round Logs & Archives', icon: FileText, badge: roundLogs.length || null, badgeColor: 'bg-purple-100 text-purple-700' },
     { id: 'verifications', label: 'Payment Verifications', icon: ShieldCheck, badge: paymentSubmissions.filter(s => s.status === 'pending').length || null, badgeColor: 'bg-rose-500 text-white' },
     { id: 'refunds', label: 'Refund Queue', icon: DollarSign, badge: refundQueue.filter(r => r.status === 'pending').length || null, badgeColor: 'bg-amber-500 text-white' },
-    { id: 'users', label: 'Users', icon: Users, badge: stats.totalUsers },
-    { id: 'matches', label: 'Matches', icon: Heart, badge: stats.totalMatches },
-    { id: 'reports', label: 'Reports', icon: Flag },
-    { id: 'payments', label: 'Payments', icon: CreditCard },
-    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-    { id: 'content', label: 'Content', icon: FileText },
-    { id: 'notifications', label: 'Notifications', icon: Bell },
-    { id: 'settings', label: 'Settings', icon: Settings },
+    { id: 'users', label: 'Users Directory', icon: Users, badge: stats.totalUsers },
+    { id: 'settings', label: 'States & Colleges', icon: Settings },
   ];
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -846,6 +1005,352 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                 </div>
               </div>
             </div>
+
+            {/* ═══════════════════════════════════════════════════════════════
+                LIVE ROUND OPERATIONS & DYNAMIC TIMER BANNER (SaaS Command Center)
+               ═══════════════════════════════════════════════════════════════ */}
+            {(() => {
+              const currentRoundNum = roundState.roundNumber || 1;
+              const currentActiveState = roundState.activeState || activeState || 'Delhi NCR';
+              const isPaused = !!roundState.isPaused;
+              const currentPhase = roundState.currentPhase || 'entries_submission';
+              const phaseInfo = PHASE_LABELS[currentPhase] || { title: 'Entries & Auto-Approval', duration: '24h' };
+              
+              // Next Round Schedule Info
+              const upcomingStates = stateSchedules.filter(s => s.state.toLowerCase() !== currentActiveState.toLowerCase());
+              const nextStateObj = upcomingStates[0] || stateSchedules[1] || { state: 'Maharashtra', nextRoundDate: 'In 2 Days' };
+              
+              // Delhi NCR Live Entries Calculation
+              const delhiEntries = users.filter(u => (u.state || '').toLowerCase().includes('delhi'));
+              const delhiMaleCount = delhiEntries.filter(u => u.gender === 'male').length;
+              const delhiFemaleCount = delhiEntries.filter(u => u.gender === 'female').length;
+              const delhiEliteCount = delhiEntries.filter(u => u.plan === 'elite').length;
+              const delhiPremiumCount = delhiEntries.filter(u => u.plan === 'premium').length;
+              const delhiBasicCount = delhiEntries.filter(u => !u.plan || u.plan === 'basic').length;
+              const delhiVerifiedCount = delhiEntries.filter(u => u.paymentStatus === 'verified' || u.isVerified).length;
+              const activeMatchesSlice = matchedPairs.slice(0, 3);
+
+              return (
+                <div className="bg-gradient-to-br from-slate-900 via-slate-850 to-slate-900 text-white rounded-3xl p-4 sm:p-6 border border-slate-800 shadow-xl space-y-5">
+                  {/* Top Bar: Round Header & Quick Operational Controls */}
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2.5 flex-wrap">
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 ${
+                          isPaused 
+                            ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' 
+                            : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                        }`}>
+                          <span className={`w-2 h-2 rounded-full ${isPaused ? 'bg-amber-400' : 'bg-emerald-400 animate-ping'}`} />
+                          {isPaused ? 'PAUSED' : 'LIVE ROUND NOW'}
+                        </span>
+                        <h2 className="text-base sm:text-lg font-black text-white flex items-center gap-2">
+                          <span>Cupid Round #{currentRoundNum}</span>
+                          <span className="text-rose-400">•</span>
+                          <span className="text-pink-300">{currentActiveState}</span>
+                        </h2>
+                        <span className="text-xs text-slate-400 font-medium">
+                          ({phaseInfo.title})
+                        </span>
+                      </div>
+                      {isPaused && roundState.pauseReason && (
+                        <p className="text-xs text-amber-300/90 font-medium">
+                          ⚠️ Pause Reason: {roundState.pauseReason}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Operational Action Controls */}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {isPaused ? (
+                        <button
+                          type="button"
+                          onClick={handleResumeActiveRoundClick}
+                          className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black flex items-center gap-1.5 shadow-md transition-all active:scale-95 cursor-pointer"
+                        >
+                          <Play className="w-3.5 h-3.5 fill-current" />
+                          <span>Resume Round</span>
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setShowPauseModal(true)}
+                          className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-black flex items-center gap-1.5 shadow-md transition-all active:scale-95 cursor-pointer"
+                        >
+                          <Pause className="w-3.5 h-3.5" />
+                          <span>Pause / Hold</span>
+                        </button>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={handleSkipActiveRoundClick}
+                        className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+                      >
+                        <SkipForward className="w-3.5 h-3.5 text-purple-400" />
+                        <span>Skip Round</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={handleManualArchiveClick}
+                        className="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-black flex items-center gap-1.5 shadow-md transition-all active:scale-95 cursor-pointer"
+                      >
+                        <FileText className="w-3.5 h-3.5" />
+                        <span>Archive Snapshot</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setActiveNav('rounds')}
+                        className="px-3 py-1.5 rounded-xl bg-[#FF2E79] hover:bg-rose-600 text-white text-xs font-black flex items-center gap-1.5 shadow-md transition-all active:scale-95 cursor-pointer"
+                      >
+                        <Sliders className="w-3.5 h-3.5" />
+                        <span>Alter Timings</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Middle Grid: Dynamic Timer & Next Round Pipeline */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* Dynamic Live Phase Countdown Timer */}
+                    <div className="md:col-span-2 bg-slate-800/80 rounded-2xl p-4 border border-slate-700/80 space-y-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div>
+                          <span className="text-[10px] font-black uppercase tracking-wider text-rose-300">Dynamic Phase Countdown</span>
+                          <h4 className="text-xs font-bold text-slate-300">{phaseInfo.title} Window</h4>
+                        </div>
+                        {/* Quick Extend Timer Buttons */}
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-[10px] text-slate-400 font-bold mr-1">Extend:</span>
+                          {[1, 2, 6, 12, 24].map((hrs) => (
+                            <button
+                              key={hrs}
+                              type="button"
+                              onClick={() => handleExtendCurrentTimer(hrs)}
+                              className="px-2 py-0.5 rounded-lg bg-slate-700 hover:bg-[#FF2E79] text-white text-[11px] font-black border border-slate-600 transition-colors cursor-pointer"
+                            >
+                              +{hrs}h
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Giant Digital Ticking Clock Display */}
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
+                          <div className="bg-slate-900 border border-slate-700 px-3.5 py-2 rounded-xl text-center min-w-[54px]">
+                            <span className="text-2xl sm:text-3xl font-black text-white tracking-tight">{phaseCountdown.hours}</span>
+                            <span className="block text-[9px] font-bold text-slate-400 uppercase">Hours</span>
+                          </div>
+                          <span className="text-2xl font-black text-rose-400 animate-pulse">:</span>
+                          <div className="bg-slate-900 border border-slate-700 px-3.5 py-2 rounded-xl text-center min-w-[54px]">
+                            <span className="text-2xl sm:text-3xl font-black text-white tracking-tight">{phaseCountdown.mins}</span>
+                            <span className="block text-[9px] font-bold text-slate-400 uppercase">Mins</span>
+                          </div>
+                          <span className="text-2xl font-black text-rose-400 animate-pulse">:</span>
+                          <div className="bg-slate-900 border border-slate-700 px-3.5 py-2 rounded-xl text-center min-w-[54px]">
+                            <span className="text-2xl sm:text-3xl font-black text-emerald-400 tracking-tight">{phaseCountdown.secs}</span>
+                            <span className="block text-[9px] font-bold text-slate-400 uppercase">Secs</span>
+                          </div>
+                        </div>
+
+                        <div className="flex-1 hidden sm:block pl-2 border-l border-slate-700/60 text-xs text-slate-300 space-y-1">
+                          <p className="flex items-center gap-1.5">
+                            <Clock className="w-3.5 h-3.5 text-rose-400" />
+                            <span>Started: {new Date(roundState.phaseStartedAt || roundState.roundStartDate || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                          </p>
+                          <p className="text-[11px] text-slate-400">
+                            When timer reaches zero, round auto-settles or transitions to the next phase across website & mobile app.
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Direct Phase Switch Fast Pills */}
+                      <div className="pt-2 border-t border-slate-700/60 flex items-center justify-between text-xs flex-wrap gap-2">
+                        <span className="text-slate-400 text-[11px] font-semibold">Direct Phase Jump:</span>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <button
+                            type="button"
+                            onClick={() => handleSwitchPhaseDirect('entries_submission')}
+                            className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase transition-colors cursor-pointer ${
+                              currentPhase === 'entries_submission' ? 'bg-[#FF2E79] text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                            }`}
+                          >
+                            1. Entries (Day 1)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleSwitchPhaseDirect('live_matching')}
+                            className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase transition-colors cursor-pointer ${
+                              currentPhase === 'live_matching' ? 'bg-purple-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                            }`}
+                          >
+                            2. Matching (Day 2)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleSwitchPhaseDirect('results_settlement')}
+                            className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase transition-colors cursor-pointer ${
+                              currentPhase === 'results_settlement' ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                            }`}
+                          >
+                            3. Settlement (Hour 48)
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Next Round Rotation Card */}
+                    <div className="bg-slate-800/80 rounded-2xl p-4 border border-slate-700/80 space-y-2.5 flex flex-col justify-between">
+                      <div>
+                        <span className="text-[10px] font-black uppercase tracking-wider text-purple-300 bg-purple-500/20 px-2 py-0.5 rounded-md">
+                          Next Round in Pipeline
+                        </span>
+                        <h4 className="text-base font-black text-white mt-1.5 flex items-center gap-1.5">
+                          <MapPin className="w-4 h-4 text-purple-400" />
+                          <span>{nextStateObj.state}</span>
+                        </h4>
+                        <p className="text-xs text-slate-300 mt-1">
+                          Scheduled: <strong className="text-emerald-400">{nextStateObj.nextRoundDate}</strong>
+                        </p>
+                      </div>
+
+                      <div className="p-2.5 rounded-xl bg-slate-900/90 border border-slate-700 text-[11px] text-slate-400 space-y-1">
+                        <p className="font-bold text-slate-200">10-Day Rotation Spacing</p>
+                        <p>States rotate in order. You can toggle states ON/OFF in Round Controls.</p>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={handleStartNextRound}
+                        className="w-full py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5" />
+                        <span>Rotate State Now</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Bottom Grid: Delhi NCR Live Entries Breakdown & Live Matched Pairs Preview */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-1">
+                    {/* Delhi NCR Live Entries Card */}
+                    <div className="bg-slate-800/70 rounded-2xl p-4 border border-slate-700/70 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-xl bg-pink-500/20 text-[#FF2E79] flex items-center justify-center font-black text-xs">
+                            DL
+                          </div>
+                          <div>
+                            <h4 className="text-xs font-black text-white">Delhi NCR Live Entries</h4>
+                            <p className="text-[10px] text-slate-400">Current round entry stats & plan tiers</p>
+                          </div>
+                        </div>
+                        <span className="px-2.5 py-1 rounded-full bg-rose-500/20 text-rose-300 font-black text-xs border border-rose-500/30">
+                          {delhiEntries.length} Total Registered
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
+                        <div className="bg-slate-900/80 p-2 rounded-xl border border-slate-800">
+                          <span className="text-[10px] text-slate-400 font-bold block">Males</span>
+                          <span className="text-sm font-black text-blue-400">{delhiMaleCount}</span>
+                        </div>
+                        <div className="bg-slate-900/80 p-2 rounded-xl border border-slate-800">
+                          <span className="text-[10px] text-slate-400 font-bold block">Females</span>
+                          <span className="text-sm font-black text-pink-400">{delhiFemaleCount}</span>
+                        </div>
+                        <div className="bg-slate-900/80 p-2 rounded-xl border border-slate-800">
+                          <span className="text-[10px] text-slate-400 font-bold block">Elite (₹449)</span>
+                          <span className="text-sm font-black text-purple-400">{delhiEliteCount}</span>
+                        </div>
+                        <div className="bg-slate-900/80 p-2 rounded-xl border border-slate-800">
+                          <span className="text-[10px] text-slate-400 font-bold block">Premium (₹250)</span>
+                          <span className="text-sm font-black text-amber-400">{delhiPremiumCount}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between text-[11px] text-slate-300 pt-1 border-t border-slate-700/60">
+                        <span>Auto-Approved / Verified: <strong className="text-emerald-400">{delhiVerifiedCount}</strong></span>
+                        <button
+                          type="button"
+                          onClick={() => setActiveNav('verifications')}
+                          className="text-[#FF2E79] font-bold hover:underline"
+                        >
+                          Review Screenshots →
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Live Matches Preview Card */}
+                    <div className="bg-slate-800/70 rounded-2xl p-4 border border-slate-700/70 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-xl bg-purple-500/20 text-purple-300 flex items-center justify-center font-black text-xs">
+                            <Heart className="w-4 h-4 fill-current" />
+                          </div>
+                          <div>
+                            <h4 className="text-xs font-black text-white">Live Matched Pairs ({matchedPairs.length})</h4>
+                            <p className="text-[10px] text-slate-400">Mutual matches formed this round</p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setActiveNav('matches')}
+                          className="text-xs font-bold text-rose-300 hover:text-white flex items-center gap-1 cursor-pointer"
+                        >
+                          <span>Open Matchmaker</span>
+                          <ChevronRight className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+
+                      {activeMatchesSlice.length === 0 ? (
+                        <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 text-center text-xs text-slate-400 space-y-2">
+                          <p>No mutual matches generated yet.</p>
+                          <button
+                            type="button"
+                            onClick={() => setActiveNav('matches')}
+                            className="px-3 py-1 rounded-lg bg-[#FF2E79] text-white text-[11px] font-black cursor-pointer"
+                          >
+                            + Assign Manual Match
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          {activeMatchesSlice.map((pair, pIdx) => (
+                            <div key={pIdx} className="p-2 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between text-xs">
+                              <div className="flex items-center gap-2">
+                                <img src={pair.userA.avatar} alt="" className="w-7 h-7 rounded-full object-cover border border-[#FF2E79]" />
+                                <span className="font-bold text-white text-[11px]">{pair.userA.name}</span>
+                              </div>
+                              <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-300 text-[10px] font-black">
+                                <Heart className="w-3 h-3 fill-current text-[#FF2E79]" />
+                                <span>{pair.score || 95}%</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold text-white text-[11px]">{pair.userB.name}</span>
+                                <img src={pair.userB.avatar} alt="" className="w-7 h-7 rounded-full object-cover border border-purple-400" />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-700/60">
+                        <span>Can assign 1 or multiple matches manually</span>
+                        <button
+                          type="button"
+                          onClick={() => setActiveNav('matches')}
+                          className="font-bold text-purple-400 hover:underline cursor-pointer"
+                        >
+                          Manual Matchmaker & Unmatch →
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Row 1: Top 4 Summary Metric Cards (2x2 grid on mobile, 4-col on desktop) */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
@@ -1689,6 +2194,152 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
               </div>
             </div>
 
+            {/* ═══════════════════════════════════════════════════════════════
+                ROUND TIMING & LIFECYCLE ALTERATION SUITE
+               ═══════════════════════════════════════════════════════════════ */}
+            <div className="bg-white rounded-3xl p-5 sm:p-6 border border-[#FFE1EB] shadow-xs space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+                <div>
+                  <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
+                    <Sliders className="w-5 h-5 text-[#FF2E79]" />
+                    <span>Round Timing & Lifecycle Alteration Controls</span>
+                  </h3>
+                  <p className="text-xs text-slate-500 font-medium mt-0.5">
+                    Alter round timings, extend countdown timers, pause, resume, or skip active rounds. Changes sync live with mobile app & web.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {roundState.isPaused ? (
+                    <button
+                      type="button"
+                      onClick={handleResumeActiveRoundClick}
+                      className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black flex items-center gap-1.5 shadow-md transition-all active:scale-95 cursor-pointer"
+                    >
+                      <Play className="w-3.5 h-3.5 fill-current" />
+                      <span>Resume Active Round</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setShowPauseModal(true)}
+                      className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-black flex items-center gap-1.5 shadow-md transition-all active:scale-95 cursor-pointer"
+                    >
+                      <Pause className="w-3.5 h-3.5" />
+                      <span>Pause / Cancel Round</span>
+                    </button>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={handleSkipActiveRoundClick}
+                    className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+                  >
+                    <SkipForward className="w-3.5 h-3.5 text-purple-300" />
+                    <span>Skip Round</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleManualArchiveClick}
+                    className="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-black flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+                  >
+                    <FileText className="w-3.5 h-3.5" />
+                    <span>Save Snapshot to Logs</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Grid: Quick Extension & Timing Controls */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Panel A: Dynamic Countdown & Fast Extension */}
+                <div className="p-4 rounded-2xl bg-[#FFF9FA] border border-[#FFE1EB] space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-[10px] font-black uppercase tracking-wider text-[#FF2E79]">Active Round Timer</span>
+                      <h4 className="text-xs font-bold text-slate-800">
+                        {roundState.activeState} • Round #{roundState.roundNumber || 1}
+                      </h4>
+                    </div>
+                    <div className="px-2.5 py-1 rounded-full bg-slate-900 text-emerald-400 font-mono text-xs font-bold flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5 text-emerald-400 animate-spin-slow" />
+                      <span>{phaseCountdown.hours}:{phaseCountdown.mins}:{phaseCountdown.secs}</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-bold text-slate-600 mb-1.5 block">Extend Active Phase Timer (Add Hours):</label>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {[1, 2, 6, 12, 24].map((hrs) => (
+                        <button
+                          key={hrs}
+                          type="button"
+                          onClick={() => handleExtendCurrentTimer(hrs)}
+                          className="px-3 py-1.5 rounded-xl bg-white hover:bg-[#FF2E79] hover:text-white text-slate-700 text-xs font-black border border-pink-200 transition-colors shadow-2xs cursor-pointer"
+                        >
+                          +{hrs} Hour{hrs > 1 ? 's' : ''}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <p className="text-[10px] text-slate-400">
+                    Adding hours extends the current phase countdown instantly without resetting participants or matches.
+                  </p>
+                </div>
+
+                {/* Panel B: Switch Phase Directly */}
+                <div className="p-4 rounded-2xl bg-[#FFF9FA] border border-[#FFE1EB] space-y-3">
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-wider text-[#FF2E79]">Phase Controller</span>
+                    <h4 className="text-xs font-bold text-slate-800">Direct Phase Jump</h4>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleSwitchPhaseDirect('entries_submission')}
+                      className={`p-2.5 rounded-xl text-center text-xs font-black border transition-all cursor-pointer ${
+                        roundState.currentPhase === 'entries_submission'
+                          ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-sm'
+                          : 'bg-white text-slate-700 border-pink-200 hover:border-[#FF2E79]'
+                      }`}
+                    >
+                      <span className="block text-[10px] opacity-75 uppercase">Phase 1</span>
+                      <span>Entries (24h)</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSwitchPhaseDirect('live_matching')}
+                      className={`p-2.5 rounded-xl text-center text-xs font-black border transition-all cursor-pointer ${
+                        roundState.currentPhase === 'live_matching'
+                          ? 'bg-purple-600 text-white border-purple-600 shadow-sm'
+                          : 'bg-white text-slate-700 border-pink-200 hover:border-purple-600'
+                      }`}
+                    >
+                      <span className="block text-[10px] opacity-75 uppercase">Phase 2</span>
+                      <span>Matching (24h)</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSwitchPhaseDirect('results_settlement')}
+                      className={`p-2.5 rounded-xl text-center text-xs font-black border transition-all cursor-pointer ${
+                        roundState.currentPhase === 'results_settlement'
+                          ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
+                          : 'bg-white text-slate-700 border-pink-200 hover:border-emerald-600'
+                      }`}
+                    >
+                      <span className="block text-[10px] opacity-75 uppercase">Phase 3</span>
+                      <span>Settlement</span>
+                    </button>
+                  </div>
+
+                  <p className="text-[10px] text-slate-400">
+                    Switching phase instantly updates live UI for all users logged in on web & mobile app.
+                  </p>
+                </div>
+              </div>
+            </div>
+
             {/* 1. 2-DAY (48-HOUR) PIPELINED ENGINE LIFECYCLE CARD */}
             <div className="bg-gradient-to-br from-slate-900 via-slate-850 to-slate-900 text-white rounded-3xl p-5 sm:p-6 border border-slate-800 shadow-xl space-y-5">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-4">
@@ -2004,64 +2655,672 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
         )}
 
         {/* ═══════════════════════════════════════════════════════════════════════
-            VIEW: MATCHES ('matches')
+            VIEW: MATCHES & MANUAL MATCHMAKER ('matches')
            ═══════════════════════════════════════════════════════════════════════ */}
         {activeNav === 'matches' && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <h1 className="text-2xl font-black text-slate-900 tracking-tight">Active Platform Matches</h1>
-                <p className="text-xs text-slate-500 font-medium">
-                  Inspect algorithmic matches created by the 3-tier matching engine across rounds.
+                <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                  <Heart className="w-6 h-6 text-[#FF2E79] fill-current" />
+                  <span>Manual Matchmaker & Platform Pairs</span>
+                </h1>
+                <p className="text-xs text-slate-500 font-medium mt-0.5">
+                  Super Admin matchmaking override: assign single or multiple candidate profiles to any user, customize compatibility scores, and manage live matches.
                 </p>
               </div>
-              <span className="px-3.5 py-1.5 rounded-full bg-[#FFF0F5] text-[#FF2E79] font-black text-xs border border-pink-200">
-                {matchedPairs.length} Total Pairs
-              </span>
-            </div>
-
-            {matchedPairs.length === 0 ? (
-              <div className="bg-white p-10 rounded-2xl border border-[#FFE1EB] text-center text-slate-400 text-xs font-semibold space-y-3">
-                <p>No active matched pairs created yet.</p>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="px-3.5 py-1.5 rounded-full bg-[#FFF0F5] text-[#FF2E79] font-black text-xs border border-pink-200">
+                  {matchedPairs.length} Active Matched Pairs
+                </span>
                 <button
+                  type="button"
                   onClick={handleRunMatchEngine}
-                  className="px-4 py-2 bg-[#FF2E79] text-white rounded-xl font-bold text-xs shadow-md"
+                  className="px-3.5 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 text-white rounded-xl text-xs font-black shadow-md cursor-pointer"
                 >
-                  Run 3-Tier Match Engine Now
+                  Run Algorithmic Engine
                 </button>
               </div>
-            ) : (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {matchedPairs.map((pair, idx) => (
-                  <div key={idx} className="bg-white p-4 rounded-2xl border border-[#FFE1EB] shadow-2xs space-y-3">
-                    <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase">
-                      <span>{pair.state}</span>
-                      <span className="text-emerald-600 font-black">Mutual Match</span>
+            </div>
+
+            {/* 1. SUPER ADMIN MANUAL MATCHMAKER WIDGET */}
+            {(() => {
+              const selectedUserAObj = users.find(u => u.id === matchmakerUserA);
+              const candidatePool = users.filter(u => {
+                if (matchmakerUserA && u.id === matchmakerUserA) return false;
+                if (matchmakerGenderFilter !== 'all' && u.gender !== matchmakerGenderFilter) return false;
+                if (matchmakerStateFilter !== 'all' && (u.state || '').toLowerCase() !== matchmakerStateFilter.toLowerCase()) return false;
+                if (matchmakerSearchQuery.trim()) {
+                  const q = matchmakerSearchQuery.toLowerCase();
+                  return (u.name || '').toLowerCase().includes(q) || (u.university || '').toLowerCase().includes(q);
+                }
+                return true;
+              });
+
+              return (
+                <div className="bg-gradient-to-br from-white via-rose-50/20 to-pink-50/30 rounded-3xl p-5 sm:p-6 border-2 border-pink-200 shadow-sm space-y-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-pink-100 pb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-xl bg-pink-100 text-[#FF2E79] flex items-center justify-center">
+                        <Sparkles className="w-4 h-4 fill-current" />
+                      </div>
+                      <div>
+                        <h3 className="text-base font-black text-slate-900">Super Admin Manual Matchmaker</h3>
+                        <p className="text-[11px] text-slate-500 font-medium">Assign any profile (or multiple profiles) directly to a user</p>
+                      </div>
+                    </div>
+                    {matchmakerSelectedTargets.length > 0 && (
+                      <span className="px-3 py-1 rounded-full bg-[#FF2E79] text-white text-xs font-black animate-pulse">
+                        {matchmakerSelectedTargets.length} Profile(s) Selected
+                      </span>
+                    )}
+                  </div>
+
+                  {/* 3 Step Matchmaker Columns */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                    
+                    {/* Step 1: Select Primary User (4 Cols) */}
+                    <div className="lg:col-span-4 space-y-3 p-4 rounded-2xl bg-white border border-[#FFE1EB] shadow-2xs">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-[#FF2E79] bg-pink-50 px-2 py-0.5 rounded-md">
+                          Step 1
+                        </span>
+                        <span className="text-xs font-bold text-slate-700">Primary Candidate (User A)</span>
+                      </div>
+
+                      <div>
+                        <label className="text-[11px] font-bold text-slate-600 block mb-1">Select Candidate:</label>
+                        <select
+                          value={matchmakerUserA}
+                          onChange={(e) => {
+                            setMatchmakerUserA(e.target.value);
+                            setMatchmakerSelectedTargets([]);
+                          }}
+                          className="w-full h-10 px-3 rounded-xl border border-slate-200 text-xs text-slate-800 font-medium bg-white focus:outline-none focus:border-[#FF2E79] cursor-pointer"
+                        >
+                          <option value="">-- Choose User to Match --</option>
+                          {users.map(u => (
+                            <option key={u.id} value={u.id}>
+                              {u.name} ({u.gender || 'N/A'}, {u.state || 'Delhi NCR'}) - {u.plan ? u.plan.toUpperCase() : 'BASIC'}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Selected Primary User Card Preview */}
+                      {selectedUserAObj ? (
+                        <div className="p-3.5 rounded-xl bg-pink-50/60 border border-pink-200 space-y-2">
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={selectedUserAObj.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120'}
+                              alt=""
+                              className="w-12 h-12 rounded-full object-cover border-2 border-[#FF2E79] shadow-xs shrink-0"
+                            />
+                            <div className="min-w-0">
+                              <h4 className="text-sm font-black text-slate-900 truncate">{selectedUserAObj.name}</h4>
+                              <p className="text-[11px] text-slate-500 truncate">{selectedUserAObj.university || 'University'} • {selectedUserAObj.state || 'Delhi NCR'}</p>
+                              <div className="flex items-center gap-1.5 mt-1">
+                                <span className="px-2 py-0.5 rounded-md bg-white text-[10px] font-black uppercase text-purple-700 border border-purple-200">
+                                  {selectedUserAObj.plan || 'basic'}
+                                </span>
+                                <span className="text-[10px] font-bold text-slate-500">
+                                  {selectedUserAObj.matches?.length || 0} Existing Matches
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="p-6 rounded-xl border border-dashed border-slate-200 text-center text-slate-400 text-xs">
+                          Pick a candidate from the dropdown above to start matching.
+                        </div>
+                      )}
+
+                      {/* Compatibility Score Slider */}
+                      <div className="pt-2 border-t border-slate-100 space-y-1.5">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="font-bold text-slate-700">Match Compatibility Score:</span>
+                          <span className="font-black text-[#FF2E79] text-sm">{matchmakerScore}%</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="70"
+                          max="99"
+                          value={matchmakerScore}
+                          onChange={(e) => setMatchmakerScore(e.target.value)}
+                          className="w-full accent-[#FF2E79] cursor-pointer"
+                        />
+                        <div className="flex justify-between text-[10px] text-slate-400">
+                          <span>70% (Good)</span>
+                          <span>85% (Great)</span>
+                          <span>99% (Perfect)</span>
+                        </div>
+                      </div>
+
+                      {/* Action Button */}
+                      <button
+                        type="button"
+                        onClick={handleAssignManualMatches}
+                        disabled={!matchmakerUserA || matchmakerSelectedTargets.length === 0}
+                        className={`w-full py-2.5 rounded-xl text-xs font-black flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer ${
+                          !matchmakerUserA || matchmakerSelectedTargets.length === 0
+                            ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
+                            : 'bg-gradient-to-r from-[#FF2E79] to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white shadow-pink-200 active:scale-98'
+                        }`}
+                      >
+                        <Heart className="w-4 h-4 fill-current" />
+                        <span>
+                          {matchmakerSelectedTargets.length > 1
+                            ? `Assign ${matchmakerSelectedTargets.length} Mutual Matches Now`
+                            : 'Assign Mutual Match Now'}
+                        </span>
+                      </button>
                     </div>
 
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <img src={pair.userA.avatar} alt="" className="w-10 h-10 rounded-full object-cover border-2 border-[#FF2E79]" />
-                        <div>
-                          <p className="text-xs font-black text-slate-900">{pair.userA.name}</p>
-                          <p className="text-[10px] text-slate-400 uppercase font-bold">{pair.userA.plan || 'basic'}</p>
+                    {/* Step 2: Select Candidate Profiles (8 Cols - Multi Select!) */}
+                    <div className="lg:col-span-8 space-y-3 p-4 rounded-2xl bg-white border border-[#FFE1EB] shadow-2xs">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-black uppercase tracking-wider text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md">
+                            Step 2
+                          </span>
+                          <span className="text-xs font-bold text-slate-700">
+                            Select Matching Candidate(s) (Multi-Select Allowed)
+                          </span>
+                        </div>
+                        {matchmakerSelectedTargets.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => setMatchmakerSelectedTargets([])}
+                            className="text-[11px] font-bold text-rose-500 hover:underline"
+                          >
+                            Clear Selection ({matchmakerSelectedTargets.length})
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Filters & Search Row */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <div className="relative">
+                          <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400" />
+                          <input
+                            type="text"
+                            placeholder="Search name, college..."
+                            value={matchmakerSearchQuery}
+                            onChange={(e) => setMatchmakerSearchQuery(e.target.value)}
+                            className="w-full h-9 pl-9 pr-3 rounded-xl border border-slate-200 text-xs text-slate-700 focus:outline-none focus:border-[#FF2E79]"
+                          />
+                        </div>
+
+                        {/* Gender Filter Buttons */}
+                        <div className="flex rounded-xl border border-slate-200 overflow-hidden bg-slate-50 p-0.5 text-[11px] font-bold">
+                          {['all', 'female', 'male'].map(g => (
+                            <button
+                              key={g}
+                              type="button"
+                              onClick={() => setMatchmakerGenderFilter(g)}
+                              className={`flex-1 py-1 rounded-lg capitalize transition-colors ${
+                                matchmakerGenderFilter === g ? 'bg-white text-[#FF2E79] shadow-2xs font-black' : 'text-slate-500 hover:text-slate-800'
+                              }`}
+                            >
+                              {g}
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* State Filter */}
+                        <select
+                          value={matchmakerStateFilter}
+                          onChange={(e) => setMatchmakerStateFilter(e.target.value)}
+                          className="h-9 px-3 rounded-xl border border-slate-200 text-xs text-slate-700 bg-white focus:outline-none focus:border-[#FF2E79]"
+                        >
+                          <option value="all">All States</option>
+                          <option value="delhi ncr">Delhi NCR</option>
+                          <option value="maharashtra">Maharashtra</option>
+                          <option value="karnataka">Karnataka</option>
+                          <option value="uttar pradesh">Uttar Pradesh</option>
+                        </select>
+                      </div>
+
+                      {/* Candidates Multi-Select Scrollable Grid */}
+                      <div className="max-h-[320px] overflow-y-auto pr-1 space-y-2">
+                        {candidatePool.length === 0 ? (
+                          <div className="p-8 text-center text-slate-400 text-xs font-medium">
+                            No candidates match your filters.
+                          </div>
+                        ) : (
+                          candidatePool.map(candidate => {
+                            const isSelected = matchmakerSelectedTargets.includes(candidate.id);
+                            return (
+                              <div
+                                key={candidate.id}
+                                onClick={() => handleToggleTargetCandidate(candidate.id)}
+                                className={`p-3 rounded-xl border-2 transition-all flex items-center justify-between gap-3 cursor-pointer ${
+                                  isSelected
+                                    ? 'bg-rose-50/70 border-[#FF2E79] shadow-xs'
+                                    : 'bg-white border-slate-100 hover:border-pink-200 hover:bg-slate-50/50'
+                                }`}
+                              >
+                                <div className="flex items-center gap-3 min-w-0">
+                                  <div className="text-[#FF2E79]">
+                                    {isSelected ? (
+                                      <CheckSquare className="w-5 h-5 fill-rose-100" />
+                                    ) : (
+                                      <Square className="w-5 h-5 text-slate-300" />
+                                    )}
+                                  </div>
+                                  <img
+                                    src={candidate.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'}
+                                    alt=""
+                                    className="w-10 h-10 rounded-full object-cover border border-slate-200 shrink-0"
+                                  />
+                                  <div className="min-w-0">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-xs font-black text-slate-900 truncate">{candidate.name}</span>
+                                      <span className="text-[10px] text-slate-400 font-bold capitalize">({candidate.gender || 'N/A'})</span>
+                                    </div>
+                                    <p className="text-[10px] text-slate-500 truncate">
+                                      {candidate.university || 'College'} • {candidate.state || 'Delhi NCR'}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center gap-2 shrink-0">
+                                  <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase ${
+                                    candidate.plan === 'elite' ? 'bg-purple-100 text-purple-700' :
+                                    candidate.plan === 'premium' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600'
+                                  }`}>
+                                    {candidate.plan || 'basic'}
+                                  </span>
+                                  {isSelected && (
+                                    <span className="px-2 py-0.5 rounded-full bg-[#FF2E79] text-white text-[10px] font-black">
+                                      Selected
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })
+                        )}
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* 2. ACTIVE PLATFORM MATCHES & UNMATCH CONTROLS */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-base font-black text-slate-900 tracking-tight">Active Platform Matches</h3>
+                  <p className="text-xs text-slate-500 font-medium">Mutual matches created by algorithm or admin. You can inspect chats or unmatch any pair.</p>
+                </div>
+                <span className="text-xs font-extrabold text-slate-500">
+                  Showing {matchedPairs.length} mutual connections
+                </span>
+              </div>
+
+              {matchedPairs.length === 0 ? (
+                <div className="bg-white p-10 rounded-2xl border border-[#FFE1EB] text-center text-slate-400 text-xs font-semibold space-y-3">
+                  <p>No active matched pairs created yet.</p>
+                  <p className="text-slate-400">Use the Super Admin Manual Matchmaker above to assign mutual matches!</p>
+                </div>
+              ) : (
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {matchedPairs.map((pair, idx) => (
+                    <div key={idx} className="bg-white p-4 rounded-2xl border border-[#FFE1EB] shadow-2xs space-y-3 hover:shadow-xs transition-shadow">
+                      <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 uppercase">
+                        <span className="flex items-center gap-1">
+                          <MapPin className="w-3 h-3 text-[#FF2E79]" />
+                          <span>{pair.state}</span>
+                        </span>
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-black border border-emerald-200">
+                          {pair.score || 95}% Match
+                        </span>
+                      </div>
+
+                      {/* Two Candidate Cards */}
+                      <div className="flex items-center justify-between gap-2 pt-1">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <img src={pair.userA.avatar} alt="" className="w-10 h-10 rounded-full object-cover border-2 border-[#FF2E79] shrink-0" />
+                          <div className="min-w-0">
+                            <p className="text-xs font-black text-slate-900 truncate">{pair.userA.name}</p>
+                            <p className="text-[10px] text-slate-400 uppercase font-bold">{pair.userA.plan || 'basic'}</p>
+                          </div>
+                        </div>
+
+                        <div className="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center text-[#FF2E79] shrink-0">
+                          <Heart className="w-4 h-4 fill-current" />
+                        </div>
+
+                        <div className="flex items-center gap-2 text-right min-w-0">
+                          <div className="min-w-0">
+                            <p className="text-xs font-black text-slate-900 truncate">{pair.userB.name}</p>
+                            <p className="text-[10px] text-slate-400 uppercase font-bold">{pair.userB.plan || 'basic'}</p>
+                          </div>
+                          <img src={pair.userB.avatar} alt="" className="w-10 h-10 rounded-full object-cover border-2 border-purple-400 shrink-0" />
                         </div>
                       </div>
 
-                      <Heart className="w-4 h-4 fill-[#FF2E79] text-[#FF2E79] shrink-0" />
-
-                      <div className="flex items-center gap-2 text-right">
-                        <div>
-                          <p className="text-xs font-black text-slate-900">{pair.userB.name}</p>
-                          <p className="text-[10px] text-slate-400 uppercase font-bold">{pair.userB.plan || 'basic'}</p>
-                        </div>
-                        <img src={pair.userB.avatar} alt="" className="w-10 h-10 rounded-full object-cover border-2 border-pink-400" />
+                      {/* Footer: Unmatch Button */}
+                      <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                        <span className="text-[10px] text-slate-400 font-semibold">Mutual Connection Active</span>
+                        <button
+                          type="button"
+                          onClick={() => handleUnmatchClick(pair.userA.id, pair.userB.id)}
+                          className="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 text-[11px] font-black transition-colors cursor-pointer"
+                        >
+                          Unmatch Pair
+                        </button>
                       </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ═══════════════════════════════════════════════════════════════════════
+            VIEW: ROUND LOGS & HISTORICAL ARCHIVES ('logs')
+           ═══════════════════════════════════════════════════════════════════════ */}
+        {activeNav === 'logs' && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                  <FileText className="w-6 h-6 text-purple-600" />
+                  <span>Round Logs & Historical Archives</span>
+                </h1>
+                <p className="text-xs text-slate-500 font-medium mt-0.5">
+                  Permanent records for every round: who entered, who was matched, and who was refunded with their UPI details.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  type="button"
+                  onClick={handleManualArchiveClick}
+                  className="px-3.5 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-black flex items-center gap-1.5 transition-all shadow-md cursor-pointer"
+                >
+                  <FileText className="w-3.5 h-3.5" />
+                  <span>Capture Current Snapshot Now</span>
+                </button>
+              </div>
+            </div>
+
+            {(() => {
+              const activeLog = roundLogs.find(l => l.id === selectedLogId) || roundLogs[0];
+
+              if (!activeLog) {
+                return (
+                  <div className="bg-white p-12 rounded-3xl border border-[#FFE1EB] text-center space-y-3">
+                    <p className="text-slate-400 text-xs font-bold">No round archives generated yet.</p>
+                    <button
+                      type="button"
+                      onClick={handleManualArchiveClick}
+                      className="px-4 py-2 bg-purple-600 text-white rounded-xl text-xs font-black shadow-md cursor-pointer"
+                    >
+                      Archive Current Active Round
+                    </button>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="space-y-5">
+                  {/* Round Archives Selector Bar */}
+                  <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-[#FFE1EB] shadow-2xs flex items-center justify-between gap-3 flex-wrap">
+                    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+                      <span className="text-[11px] font-bold text-slate-400 mr-1 shrink-0">Archived Rounds:</span>
+                      {roundLogs.map(log => (
+                        <button
+                          key={log.id}
+                          type="button"
+                          onClick={() => setSelectedLogId(log.id)}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-black shrink-0 transition-all cursor-pointer ${
+                            (activeLog.id === log.id)
+                              ? 'bg-purple-600 text-white shadow-sm'
+                              : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                          }`}
+                        >
+                          {log.state} • Round #{log.roundNumber} ({new Date(log.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' })})
+                        </button>
+                      ))}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteLogClick(activeLog.id)}
+                      className="text-xs text-rose-500 font-bold hover:underline flex items-center gap-1 cursor-pointer shrink-0"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Delete Log</span>
+                    </button>
+                  </div>
+
+                  {/* Summary Metric Cards for Selected Round Archive */}
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div className="bg-white p-4 rounded-2xl border border-[#FFE1EB] shadow-2xs space-y-1">
+                      <div className="flex items-center justify-between text-slate-400">
+                        <span className="text-[10px] font-bold uppercase">Participants</span>
+                        <Users className="w-4 h-4 text-[#FF2E79]" />
+                      </div>
+                      <h3 className="text-xl font-black text-slate-900">{activeLog.totalParticipants || activeLog.participants?.length || 0}</h3>
+                      <p className="text-[10px] text-slate-400">Entered {activeLog.state}</p>
+                    </div>
+
+                    <div className="bg-white p-4 rounded-2xl border border-[#FFE1EB] shadow-2xs space-y-1">
+                      <div className="flex items-center justify-between text-slate-400">
+                        <span className="text-[10px] font-bold uppercase">Matches Formed</span>
+                        <Heart className="w-4 h-4 text-purple-600 fill-current" />
+                      </div>
+                      <h3 className="text-xl font-black text-slate-900">{activeLog.matchedPairs?.length || 0} Pairs</h3>
+                      <p className="text-[10px] text-slate-400">Mutual connections</p>
+                    </div>
+
+                    <div className="bg-white p-4 rounded-2xl border border-[#FFE1EB] shadow-2xs space-y-1">
+                      <div className="flex items-center justify-between text-slate-400">
+                        <span className="text-[10px] font-bold uppercase">Refund Records</span>
+                        <DollarSign className="w-4 h-4 text-amber-500" />
+                      </div>
+                      <h3 className="text-xl font-black text-slate-900">{activeLog.refundEntries?.length || 0} Users</h3>
+                      <p className="text-[10px] text-slate-400">Guaranteed UPI payouts</p>
+                    </div>
+
+                    <div className="bg-white p-4 rounded-2xl border border-[#FFE1EB] shadow-2xs space-y-1">
+                      <div className="flex items-center justify-between text-slate-400">
+                        <span className="text-[10px] font-bold uppercase">Round Status</span>
+                        <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                      </div>
+                      <h3 className="text-base font-black text-emerald-600 capitalize">{activeLog.status || 'Archived'}</h3>
+                      <p className="text-[10px] text-slate-400">{new Date(activeLog.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
+
+                  {/* Sub-Tabs: Participants | Matches | Refund Entries */}
+                  <div className="bg-white rounded-3xl p-5 sm:p-6 border border-[#FFE1EB] shadow-xs space-y-4">
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-3 flex-wrap gap-2">
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setLogActiveSubTab('participants')}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-black transition-colors cursor-pointer ${
+                            logActiveSubTab === 'participants' ? 'bg-[#FF2E79] text-white shadow-2xs' : 'text-slate-600 hover:bg-slate-100'
+                          }`}
+                        >
+                          👥 Participants ({activeLog.participants?.length || 0})
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setLogActiveSubTab('matches')}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-black transition-colors cursor-pointer ${
+                            logActiveSubTab === 'matches' ? 'bg-purple-600 text-white shadow-2xs' : 'text-slate-600 hover:bg-slate-100'
+                          }`}
+                        >
+                          💖 Matched Pairs ({activeLog.matchedPairs?.length || 0})
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setLogActiveSubTab('refunds')}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-black transition-colors cursor-pointer ${
+                            logActiveSubTab === 'refunds' ? 'bg-amber-500 text-white shadow-2xs' : 'text-slate-600 hover:bg-slate-100'
+                          }`}
+                        >
+                          💸 Refund Log ({activeLog.refundEntries?.length || 0})
+                        </button>
+                      </div>
+                      <span className="text-[11px] text-slate-400 italic">
+                        {activeLog.notes || 'Archived round summary'}
+                      </span>
+                    </div>
+
+                    {/* Sub-Tab 1: Participants Entered */}
+                    {logActiveSubTab === 'participants' && (
+                      <div className="overflow-x-auto no-scrollbar">
+                        <table className="w-full text-left text-xs min-w-[650px]">
+                          <thead>
+                            <tr className="border-b border-slate-100 text-slate-400 font-bold uppercase text-[10px]">
+                              <th className="pb-2.5">Candidate</th>
+                              <th className="pb-2.5">Gender</th>
+                              <th className="pb-2.5">College & State</th>
+                              <th className="pb-2.5">Tier / Plan</th>
+                              <th className="pb-2.5">UPI ID</th>
+                              <th className="pb-2.5">Payment</th>
+                              <th className="pb-2.5 text-right">Match Status</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100">
+                            {(activeLog.participants || []).map((p, pIdx) => (
+                              <tr key={p.id || pIdx} className="hover:bg-slate-50/50">
+                                <td className="py-2.5 pr-2">
+                                  <div className="flex items-center gap-2">
+                                    <img src={p.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80'} alt="" className="w-7 h-7 rounded-full object-cover" />
+                                    <span className="font-bold text-slate-900">{p.name}</span>
+                                  </div>
+                                </td>
+                                <td className="py-2.5 text-slate-600 font-medium capitalize">{p.gender || 'N/A'}</td>
+                                <td className="py-2.5 text-slate-500">{p.college || p.university || 'University'} • {p.state || activeLog.state}</td>
+                                <td className="py-2.5">
+                                  <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase bg-purple-50 text-purple-700">
+                                    {p.plan || 'basic'}
+                                  </span>
+                                </td>
+                                <td className="py-2.5 font-mono text-[11px] text-slate-600">{p.upiId || '—'}</td>
+                                <td className="py-2.5">
+                                  <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-100 text-emerald-800">
+                                    Verified
+                                  </span>
+                                </td>
+                                <td className="py-2.5 text-right font-bold">
+                                  {p.matched ? (
+                                    <span className="text-emerald-600">✓ Matched</span>
+                                  ) : (
+                                    <span className="text-amber-600">Refund Queue</span>
+                                  )}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+
+                    {/* Sub-Tab 2: Matched Pairs */}
+                    {logActiveSubTab === 'matches' && (
+                      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {(activeLog.matchedPairs || []).map((m, mIdx) => (
+                          <div key={mIdx} className="p-3.5 rounded-2xl bg-pink-50/40 border border-pink-100 space-y-2">
+                            <div className="flex items-center justify-between text-[10px] font-bold text-slate-400">
+                              <span>Match #{mIdx + 1}</span>
+                              <span className="text-[#FF2E79] font-black">{m.score || 95}% Compatibility</span>
+                            </div>
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-2">
+                                <img src={m.userA?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80'} alt="" className="w-8 h-8 rounded-full object-cover border border-[#FF2E79]" />
+                                <div>
+                                  <p className="text-xs font-black text-slate-900">{m.userA?.name || 'Candidate A'}</p>
+                                  <p className="text-[10px] text-slate-400 uppercase">{m.userA?.plan || 'basic'}</p>
+                                </div>
+                              </div>
+                              <Heart className="w-4 h-4 fill-[#FF2E79] text-[#FF2E79]" />
+                              <div className="flex items-center gap-2 text-right">
+                                <div>
+                                  <p className="text-xs font-black text-slate-900">{m.userB?.name || 'Candidate B'}</p>
+                                  <p className="text-[10px] text-slate-400 uppercase">{m.userB?.plan || 'basic'}</p>
+                                </div>
+                                <img src={m.userB?.avatar || 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=80'} alt="" className="w-8 h-8 rounded-full object-cover border border-purple-400" />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Sub-Tab 3: Refund Entries with UPI */}
+                    {logActiveSubTab === 'refunds' && (
+                      <div className="overflow-x-auto no-scrollbar">
+                        <table className="w-full text-left text-xs min-w-[650px]">
+                          <thead>
+                            <tr className="border-b border-slate-100 text-slate-400 font-bold uppercase text-[10px]">
+                              <th className="pb-2.5">Candidate</th>
+                              <th className="pb-2.5">Registered UPI ID</th>
+                              <th className="pb-2.5">Refund Amount</th>
+                              <th className="pb-2.5">Plan Tier</th>
+                              <th className="pb-2.5">Reason</th>
+                              <th className="pb-2.5 text-right">Payout Status</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100">
+                            {(activeLog.refundEntries || []).map((r, rIdx) => (
+                              <tr key={r.id || rIdx} className="hover:bg-amber-50/20">
+                                <td className="py-2.5 pr-2 font-bold text-slate-900">{r.userName || 'Candidate'}</td>
+                                <td className="py-2.5 font-mono text-[11px] text-slate-700">
+                                  <div className="flex items-center gap-1.5">
+                                    <span>{r.upiId || 'not-provided@upi'}</span>
+                                    {r.upiId && (
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          navigator.clipboard.writeText(r.upiId);
+                                          alert(`📋 Copied UPI ID: ${r.upiId}`);
+                                        }}
+                                        className="text-slate-400 hover:text-[#FF2E79] p-0.5"
+                                        title="Copy UPI ID"
+                                      >
+                                        <Copy className="w-3.5 h-3.5" />
+                                      </button>
+                                    )}
+                                  </div>
+                                </td>
+                                <td className="py-2.5 font-black text-slate-900">₹{r.amount || 449}</td>
+                                <td className="py-2.5">
+                                  <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase bg-amber-50 text-amber-800">
+                                    {r.plan || 'elite'}
+                                  </span>
+                                </td>
+                                <td className="py-2.5 text-slate-500 text-[11px]">
+                                  {r.refundReason || 'No mutual match found within 48h guarantee'}
+                                </td>
+                                <td className="py-2.5 text-right">
+                                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-100 text-emerald-800">
+                                    {r.status || 'Refunded'}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+
+                  </div>
+                </div>
+              );
+            })()}
+
           </div>
         )}
 
@@ -2650,6 +3909,62 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
               >
                 <XCircle className="w-4 h-4" />
                 <span>Confirm Rejection</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PAUSE / CANCEL ACTIVE ROUND MODAL */}
+      {showPauseModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-amber-600">
+                <AlertTriangle className="w-5 h-5" />
+                <h3 className="text-base font-black text-slate-900">Pause / Hold Active Round</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowPauseModal(false)}
+                className="text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Pausing <strong>{roundState.activeState} Round #{roundState.roundNumber || 1}</strong> freezes the countdown timer and displays a pause banner across the website and mobile app.
+            </p>
+
+            <div>
+              <label className="text-[11px] font-bold text-slate-700 block mb-1">
+                Pause Reason (Shown to candidates & team):
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. Extending submission window due to high candidate demand..."
+                value={pauseReasonInput}
+                onChange={(e) => setPauseReasonInput(e.target.value)}
+                className="w-full h-10 px-3 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:border-[#FF2E79]"
+              />
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowPauseModal(false)}
+                className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 text-xs font-bold cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmPauseRound}
+                className="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-black flex items-center justify-center gap-1.5 shadow-md shadow-amber-200 cursor-pointer transition-all active:scale-95"
+              >
+                <Pause className="w-4 h-4" />
+                <span>Confirm Pause</span>
               </button>
             </div>
           </div>

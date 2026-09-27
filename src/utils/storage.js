@@ -715,3 +715,63 @@ export const unmatchUser = (userAId, userBId) => {
   return true;
 };
 
+export const assignManualMatch = (primaryUserId, targetUserIds = [], customScore = 95) => {
+  if (!primaryUserId) return false;
+  const targetIds = Array.isArray(targetUserIds) ? targetUserIds : [targetUserIds];
+  if (targetIds.length === 0) return false;
+
+  const users = getUsers();
+  const primaryUser = users.find(u => u.id === primaryUserId);
+  if (!primaryUser) return false;
+
+  let assignedCount = 0;
+
+  targetIds.forEach(targetId => {
+    const targetUser = users.find(u => u.id === targetId);
+    if (!targetUser || targetId === primaryUserId) return;
+
+    if (!primaryUser.matches) primaryUser.matches = [];
+    if (!targetUser.matches) targetUser.matches = [];
+
+    if (!primaryUser.matches.includes(targetId)) {
+      primaryUser.matches.push(targetId);
+    }
+    if (!targetUser.matches.includes(primaryUserId)) {
+      targetUser.matches.push(primaryUserId);
+    }
+
+    primaryUser.matchScore = customScore;
+    targetUser.matchScore = customScore;
+
+    // Send in-app notification to target user
+    import('../services/notificationManager.js').then(({ addNotification }) => {
+      addNotification(targetId, {
+        type: 'match',
+        title: 'New Mutual Match! 🎉',
+        message: `You have been matched with ${primaryUser.name}! Open chat to say hello.`,
+        actionUrl: 'chat'
+      });
+      addNotification(primaryUserId, {
+        type: 'match',
+        title: 'New Mutual Match! 🎉',
+        message: `You have been matched with ${targetUser.name}! Open chat to say hello.`,
+        actionUrl: 'chat'
+      });
+    }).catch(() => {});
+
+    assignedCount++;
+  });
+
+  saveUsers(users);
+
+  const currentUser = getCurrentUser();
+  if (currentUser) {
+    if (currentUser.id === primaryUserId) setCurrentUser(primaryUser);
+    const updatedTarget = users.find(u => u.id === currentUser.id);
+    if (updatedTarget) setCurrentUser(updatedTarget);
+  }
+
+  notifyDataChanged();
+  return assignedCount > 0;
+};
+

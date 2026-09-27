@@ -797,3 +797,263 @@ export const checkAndRotateRoundAutomated = () => {
   }
 };
 
+// ─── ROUND LOGS & HISTORICAL ARCHIVE ENGINE ──────────────────────────────────
+export const ROUND_LOGS_KEY = 'cupid_round_history_logs_v1';
+
+export const getRoundLogs = () => {
+  if (typeof window === 'undefined') return [];
+  const stored = localStorage.getItem(ROUND_LOGS_KEY);
+  if (stored) {
+    try {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed)) return parsed;
+    } catch (e) {}
+  }
+
+  // Initial seed archive if no logs exist yet
+  const initialLogs = [
+    {
+      id: 'log_delhi_ncr_r1_init',
+      state: 'Delhi NCR',
+      roundNumber: 1,
+      startDate: new Date(Date.now() - 48 * 3600 * 1000).toISOString(),
+      completedDate: new Date().toISOString(),
+      status: 'completed',
+      notes: 'Official Inaugural Round for Delhi NCR',
+      totalParticipants: 48,
+      maleParticipants: 28,
+      femaleParticipants: 20,
+      participants: [
+        { id: 'p_1', name: 'Kabir Verma', gender: 'male', plan: 'elite', email: 'kabir.v@gmail.com', phone: '+91 98112 34567', university: 'Bennett University', status: 'active', matches: ['p_2'] },
+        { id: 'p_2', name: 'Ananya Sharma', gender: 'female', plan: 'free', email: 'ananya.s@gmail.com', phone: '+91 98223 45678', university: 'Bennett University', status: 'active', matches: ['p_1'] },
+        { id: 'p_3', name: 'Rohan Gupta', gender: 'male', plan: 'premium', email: 'rohan.g@gmail.com', phone: '+91 98334 56789', university: 'IIT Delhi', status: 'active', matches: ['p_4'] },
+        { id: 'p_4', name: 'Rhea Kapoor', gender: 'female', plan: 'free', email: 'rhea.k@gmail.com', phone: '+91 98445 67890', university: 'IIT Delhi', status: 'active', matches: ['p_3'] },
+        { id: 'p_5', name: 'Arjun Singhal', gender: 'male', plan: 'elite', email: 'arjun.s@gmail.com', phone: '+91 98556 78901', university: 'Sharda University', status: 'active', matches: [] }
+      ],
+      matches: [
+        {
+          male: { id: 'p_1', name: 'Kabir Verma', email: 'kabir.v@gmail.com', avatar: '/avatars/kabir.jpg', plan: 'elite' },
+          female: { id: 'p_2', name: 'Ananya Sharma', email: 'ananya.s@gmail.com', avatar: '/avatars/ananya.jpg', plan: 'free' },
+          compatibilityScore: 96,
+          matchedAt: new Date(Date.now() - 12 * 3600 * 1000).toISOString()
+        },
+        {
+          male: { id: 'p_3', name: 'Rohan Gupta', email: 'rohan.g@gmail.com', avatar: '/avatars/aarav.jpg', plan: 'premium' },
+          female: { id: 'p_4', name: 'Rhea Kapoor', email: 'rhea.k@gmail.com', avatar: '/avatars/rhea.jpg', plan: 'free' },
+          compatibilityScore: 91,
+          matchedAt: new Date(Date.now() - 10 * 3600 * 1000).toISOString()
+        }
+      ],
+      refunds: [
+        {
+          userId: 'p_5',
+          userName: 'Arjun Singhal',
+          userPhone: '+91 98556 78901',
+          userEmail: 'arjun.s@gmail.com',
+          plan: 'elite',
+          amount: 449,
+          upiId: 'arjun.singhal@okhdfcbank',
+          reason: 'No mutual match found in Round #1',
+          status: 'pending',
+          utr: null
+        }
+      ]
+    }
+  ];
+
+  localStorage.setItem(ROUND_LOGS_KEY, JSON.stringify(initialLogs));
+  return initialLogs;
+};
+
+export const archiveCurrentRound = (status = 'completed', notes = '') => {
+  const current = getRoundState();
+  const stateName = current.activeState || 'Delhi NCR';
+  const roundNum = current.roundNumber || 1;
+  const allUsers = getUsers();
+  const stateUsers = allUsers.filter(u => (u.state || '').toLowerCase() === stateName.toLowerCase());
+
+  const males = stateUsers.filter(u => (u.gender || '').toLowerCase() === 'male');
+  const females = stateUsers.filter(u => (u.gender || '').toLowerCase() === 'female');
+
+  // Collect matches
+  const matchedPairs = [];
+  const processedPairKeys = new Set();
+
+  stateUsers.forEach(u => {
+    if (Array.isArray(u.matches) && u.matches.length > 0) {
+      u.matches.forEach(mId => {
+        const partner = allUsers.find(p => p.id === mId);
+        if (partner) {
+          const key = [u.id, partner.id].sort().join('__');
+          if (!processedPairKeys.has(key)) {
+            processedPairKeys.add(key);
+            const isMaleA = (u.gender || '').toLowerCase() === 'male';
+            matchedPairs.push({
+              male: {
+                id: isMaleA ? u.id : partner.id,
+                name: isMaleA ? u.name : partner.name,
+                email: isMaleA ? u.email : partner.email,
+                avatar: (isMaleA ? u.avatar : partner.avatar) || (isMaleA ? u.photos?.[0] : partner.photos?.[0]),
+                plan: isMaleA ? u.plan : partner.plan
+              },
+              female: {
+                id: !isMaleA ? u.id : partner.id,
+                name: !isMaleA ? u.name : partner.name,
+                email: !isMaleA ? u.email : partner.email,
+                avatar: (!isMaleA ? u.avatar : partner.avatar) || (!isMaleA ? u.photos?.[0] : partner.photos?.[0]),
+                plan: !isMaleA ? u.plan : partner.plan
+              },
+              compatibilityScore: u.matchScore || partner.matchScore || 92,
+              matchedAt: new Date().toISOString()
+            });
+          }
+        }
+      });
+    }
+  });
+
+  // Collect refunds
+  const refundItems = stateUsers
+    .filter(u => u.refundEligible === true || u.refundStatus || u.status === 'refund_requested' || u.status === 'refunded')
+    .map(u => ({
+      userId: u.id,
+      userName: u.name,
+      userPhone: u.phone,
+      userEmail: u.email,
+      plan: u.plan || 'elite',
+      amount: u.refundAmount || (u.plan === 'elite' ? 449 : u.plan === 'premium' ? 250 : 100),
+      upiId: u.refundUpi || u.phone || 'upi@bank',
+      reason: u.refundReason || 'No mutual match found',
+      status: u.refundStatus || 'pending',
+      utr: u.refundUtr || null
+    }));
+
+  const newLogEntry = {
+    id: `log_${stateName.toLowerCase().replace(/[^a-z0-9]/g, '_')}_r${roundNum}_${Date.now()}`,
+    state: stateName,
+    roundNumber: roundNum,
+    startDate: current.roundStartDate || current.phaseStartedAt || new Date().toISOString(),
+    completedDate: new Date().toISOString(),
+    status,
+    notes: notes || `Archived on ${new Date().toLocaleDateString()}`,
+    totalParticipants: stateUsers.length,
+    maleParticipants: males.length,
+    femaleParticipants: females.length,
+    participants: stateUsers.map(u => ({
+      id: u.id,
+      name: u.name,
+      gender: u.gender,
+      email: u.email,
+      phone: u.phone,
+      plan: u.plan,
+      avatar: u.avatar || u.photos?.[0],
+      university: u.university,
+      branch: u.branch,
+      status: u.status,
+      paymentVerified: u.paymentVerified,
+      refundEligible: u.refundEligible,
+      refundStatus: u.refundStatus,
+      refundUpi: u.refundUpi,
+      matches: u.matches || []
+    })),
+    matches: matchedPairs,
+    refunds: refundItems
+  };
+
+  const logs = getRoundLogs();
+  logs.unshift(newLogEntry);
+  localStorage.setItem(ROUND_LOGS_KEY, JSON.stringify(logs));
+
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('cupid_round_state_changed'));
+    window.dispatchEvent(new CustomEvent('cupid_data_changed'));
+  }
+
+  return newLogEntry;
+};
+
+export const deleteRoundLog = (logId) => {
+  const logs = getRoundLogs();
+  const filtered = logs.filter(l => l.id !== logId);
+  localStorage.setItem(ROUND_LOGS_KEY, JSON.stringify(filtered));
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('cupid_data_changed'));
+  }
+  return filtered;
+};
+
+// ─── ROUND TIMING & PHASE ALTERATION CONTROLS ────────────────────────────────
+export const alterRoundTiming = ({
+  newPhase = null,
+  extendHours = null,
+  customStartDate = null,
+  customPhaseDate = null,
+  customRoundNumber = null,
+  customDurationHours = null
+}) => {
+  const current = getRoundState();
+  const updated = { ...current };
+
+  if (newPhase) {
+    updated.currentPhase = newPhase;
+    updated.phaseStartedAt = new Date().toISOString();
+  }
+
+  if (customRoundNumber !== null && customRoundNumber !== undefined) {
+    updated.roundNumber = Number(customRoundNumber) || updated.roundNumber;
+  }
+
+  if (customStartDate) {
+    updated.roundStartDate = new Date(customStartDate).toISOString();
+  }
+
+  if (customPhaseDate) {
+    updated.phaseStartedAt = new Date(customPhaseDate).toISOString();
+  }
+
+  if (extendHours && typeof extendHours === 'number') {
+    // Extending current phase by pushing phaseStartedAt forward
+    const currentStart = new Date(updated.phaseStartedAt || Date.now());
+    currentStart.setHours(currentStart.getHours() + extendHours);
+    updated.phaseStartedAt = currentStart.toISOString();
+  }
+
+  if (customDurationHours) {
+    updated.customDurationHours = Number(customDurationHours);
+  }
+
+  saveRoundState(updated);
+  return updated;
+};
+
+export const pauseOrCancelActiveRound = (reason = 'Round temporarily paused by administration') => {
+  const current = getRoundState();
+  const updated = {
+    ...current,
+    isPaused: true,
+    pauseReason: reason,
+    pausedAt: new Date().toISOString()
+  };
+  saveRoundState(updated);
+  return updated;
+};
+
+export const resumeActiveRound = () => {
+  const current = getRoundState();
+  const updated = {
+    ...current,
+    isPaused: false,
+    pauseReason: null,
+    phaseStartedAt: new Date().toISOString()
+  };
+  saveRoundState(updated);
+  return updated;
+};
+
+export const skipActiveRound = (notes = 'Skipped by admin') => {
+  // Archive current round snapshot before skipping
+  archiveCurrentRound('skipped', notes);
+  // Force rotate to next state
+  return forceRotateToNextState();
+};
+
