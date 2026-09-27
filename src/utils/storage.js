@@ -433,6 +433,7 @@ export const initializeStorage = () => {
     try {
       const currentList = JSON.parse(existingUsersJson);
       const mockIds = new Set(['girl_priya', 'girl_sophia', 'girl_ananya', 'girl_riya', 'girl_isha', 'girl_meera', 'boy_rohan', 'boy_aditya', 'boy_kabir', 'boy_henry', 'boy_arjun']);
+      let modified = false;
       const realUsersOnly = currentList.filter(u => 
         u && 
         !mockIds.has(u.id) && 
@@ -440,8 +441,23 @@ export const initializeStorage = () => {
         !u.id?.startsWith('boy_') && 
         !u.id?.startsWith('mock_') &&
         !u.isMock
-      );
-      if (realUsersOnly.length !== currentList.length) {
+      ).map(u => {
+        // Reset any glitched user profiles that bypassed onboarding without real photos
+        if (u.role !== 'admin' && u.id !== 'test_onboarding_user') {
+          const hasRealPhotos = Array.isArray(u.photos) && u.photos.length >= 2 && !u.photos.some(p => typeof p === 'string' && p.includes('unsplash'));
+          if (!hasRealPhotos && u.status === 'active') {
+            modified = true;
+            return {
+              ...u,
+              status: 'onboarding',
+              avatar: (u.avatar && typeof u.avatar === 'string' && u.avatar.includes('unsplash')) ? null : u.avatar,
+              photos: (Array.isArray(u.photos) && !u.photos.some(p => typeof p === 'string' && p.includes('unsplash'))) ? u.photos : []
+            };
+          }
+        }
+        return u;
+      });
+      if (modified || realUsersOnly.length !== currentList.length) {
         localStorage.setItem(KEYS.USERS, JSON.stringify(realUsersOnly));
       }
     } catch (e) {
@@ -506,13 +522,23 @@ export const getCurrentUser = () => {
       return null;
     }
     const users = getUsers();
-    const freshUser = users.find(u => u && u.id === sessionUser.id);
-    
-    if (freshUser) {
-      localStorage.setItem(KEYS.CURRENT_USER, JSON.stringify(freshUser));
-      return freshUser;
+    let freshUser = users.find(u => u && u.id === sessionUser.id) || sessionUser;
+
+    // Check if non-admin user has completed full onboarding (real photos uploaded)
+    const isSpecial = freshUser.role === 'admin' || freshUser.id === 'test_onboarding_user';
+    const hasRealPhotos = Array.isArray(freshUser.photos) && freshUser.photos.length >= 2 && !freshUser.photos.some(p => typeof p === 'string' && p.includes('unsplash'));
+
+    if (!isSpecial && !hasRealPhotos && freshUser.status !== 'waitlisted') {
+      freshUser = {
+        ...freshUser,
+        status: 'onboarding',
+        avatar: (freshUser.avatar && typeof freshUser.avatar === 'string' && freshUser.avatar.includes('unsplash')) ? null : freshUser.avatar,
+        photos: (Array.isArray(freshUser.photos) && !freshUser.photos.some(p => typeof p === 'string' && p.includes('unsplash'))) ? freshUser.photos : []
+      };
     }
-    return sessionUser;
+    
+    localStorage.setItem(KEYS.CURRENT_USER, JSON.stringify(freshUser));
+    return freshUser;
   } catch (e) {
     localStorage.removeItem(KEYS.CURRENT_USER);
     return null;

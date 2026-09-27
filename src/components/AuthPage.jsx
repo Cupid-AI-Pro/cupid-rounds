@@ -146,7 +146,7 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
     }, 450);
   };
 
-  // Handle standard registration (Guaranteed forward navigation directly into UserDashboard)
+  // Handle standard registration — initializes onboarding profile and routes to OnboardingForm
   const handleRegister = (e) => {
     e.preventDefault();
     setError('');
@@ -171,44 +171,55 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
     const isFemaleReg = (regGender || '').toLowerCase() === 'female';
 
     if (existingIndex !== -1) {
-      // If user already exists in storage, update with newly entered details and proceed directly to dashboard
+      const existing = users[existingIndex];
+      // Check if user already completed full onboarding in the past (has real photos and is active)
+      const hasCompletedOnboarding = existing.status === 'active' && Array.isArray(existing.photos) && existing.photos.length >= 2 && !existing.avatar?.includes('unsplash');
+
+      if (hasCompletedOnboarding) {
+        setError('An account with this email is already registered and active. Please switch to the Sign In tab.');
+        return;
+      }
+
+      // If user had an incomplete or glitched registration, update credentials and route them to onboarding:
       users[existingIndex] = {
-        ...users[existingIndex],
-        name: cleanName || users[existingIndex].name,
-        password: regPassword || users[existingIndex].password || '123456',
-        gender: regGender || users[existingIndex].gender,
-        state: regState || users[existingIndex].state,
-        plan: isFemaleReg ? 'free' : (users[existingIndex].plan && users[existingIndex].plan !== 'free' ? users[existingIndex].plan : 'elite'),
-        status: isStateActive ? 'active' : 'waitlisted'
+        ...existing,
+        name: cleanName || existing.name,
+        password: regPassword || existing.password || '123456',
+        gender: regGender || existing.gender || 'male',
+        state: regState || existing.state || currentActiveState,
+        plan: isFemaleReg ? 'free' : (existing.plan && existing.plan !== 'free' ? existing.plan : 'elite'),
+        avatar: (existing.avatar && !existing.avatar.includes('unsplash')) ? existing.avatar : null,
+        photos: (Array.isArray(existing.photos) && !existing.photos.some(p => typeof p === 'string' && p.includes('unsplash'))) ? existing.photos : [],
+        status: isStateActive ? 'onboarding' : 'waitlisted'
       };
       userToProceed = users[existingIndex];
       saveUsers(users);
     } else {
-      // Create new user profile with active status so user enters UserDashboard directly
+      // Create new user profile with 'onboarding' status so user is guided through the 26-step OnboardingForm:
+      // Real photos upload, college/branch details, plan selection, and payment verification!
       const newUser = {
-        id: `user_${cleanEmail.replace(/[^a-zA-Z0-9]/g, '')}`,
+        id: `user_${cleanEmail.replace(/[^a-zA-Z0-9]/g, '') || Date.now()}`,
         name: cleanName,
         email: cleanEmail,
         password: regPassword || '123456',
-        gender: regGender,
-        state: regState,
+        gender: regGender || 'male',
+        state: regState || currentActiveState,
         plan: isFemaleReg ? 'free' : 'elite',
-        bio: 'Looking for a genuine connection',
-        occupation: 'Student / Professional',
-        income: '12 LPA',
-        university: 'Bennett University',
-        branch: 'Computer Science (CSE)',
-        avatar: isFemaleReg 
-          ? 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&auto=format&fit=crop&q=80' 
-          : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&auto=format&fit=crop&q=80',
-        interests: ['Travel', 'Music', 'Fitness'],
-        contact: '@user_insta',
+        avatar: null,
+        photos: [],
+        bio: '',
+        occupation: '',
+        income: '',
+        university: '',
+        branch: '',
+        interests: [],
+        contact: '',
         likedProfiles: [],
         receivedLikes: [],
         matches: [],
         declinedMatches: [],
         suggestedMatches: [],
-        status: isStateActive ? 'active' : 'waitlisted'
+        status: isStateActive ? 'onboarding' : 'waitlisted'
       };
       users.push(newUser);
       saveUsers(users);
@@ -321,51 +332,27 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
         return;
       }
 
-      // Ensure signing in activates account so user lands directly in UserDashboard!
-      matchedUser.status = 'active';
-      saveUsers(users);
+      // Check if user has completed full onboarding (real photos uploaded and verified)
+      const hasCompletedOnboarding = matchedUser.status === 'active' && Array.isArray(matchedUser.photos) && matchedUser.photos.length >= 2 && !matchedUser.avatar?.includes('unsplash');
+
+      if (!hasCompletedOnboarding && matchedUser.role !== 'admin') {
+        // Enforce onboarding form (photos upload, profile questionnaire, and UPI payment)
+        matchedUser.status = 'onboarding';
+        if (matchedUser.avatar && matchedUser.avatar.includes('unsplash')) {
+          matchedUser.avatar = null;
+        }
+        if (matchedUser.photos && matchedUser.photos.some(p => typeof p === 'string' && p.includes('unsplash'))) {
+          matchedUser.photos = [];
+        }
+        saveUsers(users);
+      }
+
       setCurrentUser(matchedUser);
       onLoginSuccess(matchedUser);
     } else {
-      // If account is not found, automatically initialize user profile with smart gender detection
-      const isEmail = cleanInput.includes('@');
-      const cleanName = isEmail 
-        ? cleanInput.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-        : cleanInput.replace(/\b\w/g, l => l.toUpperCase());
-
-      const isLikelyFemale = /^(sneha|ananya|sophia|rhea|priya|pooja|neha|kavya|simran|ritu|aarti|divya|aastha|muskan|ishita|tanya|isha|khushi|aditi|shreya|riya|sakshi|megha|shruti|radhika|divya|swati|tanvi|diksha|kajal|twinkle|payal|sonam|deepika|aanya)/i.test(cleanQuery);
-      const userGender = isLikelyFemale ? 'female' : 'male';
-
-      const newUser = {
-        id: `user_${cleanInput.replace(/[^a-zA-Z0-9]/g, '') || Date.now()}`,
-        name: cleanName || 'User',
-        email: isEmail ? cleanInput : `${cleanInput.toLowerCase()}@cupid.com`,
-        password: loginPassword || '123456',
-        gender: userGender,
-        state: roundState?.activeState || activeState || 'Delhi NCR',
-        plan: userGender === 'female' ? 'free' : 'elite',
-        bio: 'Looking for a genuine connection on Cupid',
-        occupation: 'Student / Professional',
-        income: '12 LPA',
-        university: 'Bennett University',
-        branch: 'Computer Science (CSE)',
-        avatar: userGender === 'female'
-          ? 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&auto=format&fit=crop&q=80'
-          : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&auto=format&fit=crop&q=80',
-        interests: ['Travel', 'Music', 'Fitness'],
-        contact: '@user_insta',
-        likedProfiles: [],
-        receivedLikes: [],
-        matches: [],
-        declinedMatches: [],
-        suggestedMatches: [],
-        status: 'active'
-      };
-
-      users.push(newUser);
-      saveUsers(users);
-      setCurrentUser(newUser);
-      onLoginSuccess(newUser);
+      // Account not found - DO NOT auto-create a fake user! Show clear error to switch to Create Profile tab.
+      setError('No account found with this email or User ID. Please switch to the "Create Profile" tab above to register and participate in the round.');
+      return;
     }
   };
 
