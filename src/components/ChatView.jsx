@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  MessageSquare, 
   Send, 
   ChevronLeft, 
   CheckCircle2, 
@@ -16,12 +15,16 @@ import {
   UserX,
   Flag,
   User,
-  AlertCircle,
   Sparkles,
   X,
   CheckCheck,
   HeartCrack,
-  Info
+  Image as ImageIcon,
+  Plus,
+  Volume2,
+  PhoneOff,
+  Music,
+  ChevronRight
 } from 'lucide-react';
 import { 
   getMessagesForMatch, 
@@ -31,11 +34,32 @@ import {
 import { addNotification } from '../services/notificationManager';
 
 const ICEBREAKERS = [
-  "Coffee date this weekend?",
-  "What's your major at university?",
-  "Favorite late-night hangout spot?",
-  "What's your current Spotify anthem?",
-  "Are you more introvert or extrovert?"
+  { emoji: '☕', text: "Coffee date this weekend?" },
+  { emoji: '🎓', text: "What's your major at university?" },
+  { emoji: '✨', text: "Let's plan something fun!" },
+  { emoji: '🎵', text: "What's your current Spotify anthem?" },
+  { emoji: '📍', text: "Favorite late-night hangout spot?" }
+];
+
+const CUTE_STICKERS = [
+  { emoji: '☕', label: 'Coffee date?', tag: 'Date' },
+  { emoji: '💖', label: 'Total Vibe', tag: 'Love' },
+  { emoji: '🌸', label: "You're Cute", tag: 'Flirt' },
+  { emoji: '🥂', label: 'Cheers to us', tag: 'Fun' },
+  { emoji: '🦋', label: 'Butterflies', tag: 'Love' },
+  { emoji: '🍦', label: 'Ice cream run?', tag: 'Date' },
+  { emoji: '🍕', label: 'Pizza cravings', tag: 'Food' },
+  { emoji: '✨', label: 'Starstruck', tag: 'Compliment' },
+  { emoji: '🎧', label: 'Listening to you', tag: 'Vibe' },
+  { emoji: '🥺', label: 'So sweet', tag: 'Cute' },
+  { emoji: '💃', label: 'Weekend plans?', tag: 'Party' },
+  { emoji: '💌', label: 'Cupid Match', tag: 'Love' }
+];
+
+const QUICK_EMOJIS = [
+  '❤️', '🥰', '😍', '✨', '🔥', '🥺', '☕', '🌸', 
+  '🦋', '🍕', '🥂', '💃', '🎸', '🎓', '🎉', '💌', 
+  '🌙', '🍿', '🧸', '🍩', '🥑', '🌺', '🍓', '🍦'
 ];
 
 export default function ChatView({ 
@@ -60,6 +84,18 @@ export default function ChatView({
   const [reportSubmitted, setReportSubmitted] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
 
+  // Luxury Interactive Chat States: Photos, Emojis, Stickers, Audio Calls, Likes
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [emojiTab, setEmojiTab] = useState('stickers'); // 'stickers' | 'emojis'
+  const [showActionSheet, setShowActionSheet] = useState(false);
+  const [showCallModal, setShowCallModal] = useState(false);
+  const [callDuration, setCallDuration] = useState(0);
+  const [isCallMuted, setIsCallMuted] = useState(false);
+  const [isSpeakerOn, setIsSpeakerOn] = useState(true);
+  const [previewImage, setPreviewImage] = useState(null);
+  const [likedMessages, setLikedMessages] = useState({});
+  const fileInputRef = useRef(null);
+
   // Mobile visual viewport and keyboard height tracking
   const [viewportHeight, setViewportHeight] = useState(() => {
     if (typeof window !== 'undefined' && window.visualViewport) {
@@ -71,6 +107,26 @@ export default function ChatView({
 
   const messagesContainerRef = useRef(null);
   const inputRef = useRef(null);
+
+  // Voice Call Timer Simulation
+  useEffect(() => {
+    let timer;
+    if (showCallModal) {
+      timer = setInterval(() => {
+        setCallDuration(prev => prev + 1);
+      }, 1000);
+    } else {
+      setCallDuration(0);
+      setIsCallMuted(false);
+    }
+    return () => clearInterval(timer);
+  }, [showCallModal]);
+
+  const formatCallTime = (secs) => {
+    const m = Math.floor(secs / 60).toString().padStart(2, '0');
+    const s = (secs % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  };
 
   // Notify parent of active chat user changes
   useEffect(() => {
@@ -180,23 +236,51 @@ export default function ChatView({
           [activeChatUser.id]: formatted
         }));
       } else {
-        // Default warm greetings
+        // Default warm greetings matching conversation dialogue
         setMessages(prev => {
           if (prev[activeChatUser.id] && prev[activeChatUser.id].length > 0) return prev;
+          const partnerFirst = activeChatUser.name.split(' ')[0];
+          const myFirst = (user.name || 'Aditya').split(' ')[0];
+          const roundName = user.state || 'Delhi NCR';
+
           return {
             ...prev,
             [activeChatUser.id]: [
               { 
-                id: 'welcome_1', 
+                id: 'dialogue_1', 
                 sender: 'them', 
-                text: `Hey ${(user.name || '').split(' ')[0]}! We matched on Cupid's ${user.state || 'Delhi NCR'} round ✨`, 
-                time: 'Just now' 
+                text: `Hey ${myFirst}! We matched on Cupid's ${roundName} round ✨`, 
+                time: '4:24 PM' 
               },
               {
-                id: 'welcome_2',
+                id: 'dialogue_2',
                 sender: 'them',
                 text: "Love your vibe! What are you studying on campus?",
-                time: 'Just now'
+                time: '4:24 PM'
+              },
+              {
+                id: 'dialogue_3',
+                sender: 'me',
+                text: "Hii",
+                time: '4:23 PM'
+              },
+              {
+                id: 'dialogue_4',
+                sender: 'them',
+                text: "Aww that made my day! Check out my Instagram too!",
+                time: '4:24 PM'
+              },
+              {
+                id: 'dialogue_5',
+                sender: 'me',
+                text: "Thanks a lot",
+                time: '4:23 PM'
+              },
+              {
+                id: 'dialogue_6',
+                sender: 'them',
+                text: "Haha totally! Let's definitely grab coffee around campus ☕",
+                time: '4:24 PM'
               }
             ]
           };
@@ -289,6 +373,107 @@ export default function ChatView({
     });
   };
 
+  // Photo sharing handler
+  const handlePhotoClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handlePhotoSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !activeChatUser || !user) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target.result;
+      const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const newMsg = {
+        id: `img_${Date.now()}`,
+        sender: 'me',
+        text: '',
+        image: dataUrl,
+        time: timeStr
+      };
+
+      setMessages(prev => ({
+        ...prev,
+        [activeChatUser.id]: [...(prev[activeChatUser.id] || []), newMsg]
+      }));
+
+      showToast('Photo sent');
+      setShowActionSheet(false);
+
+      // Sweet partner reaction
+      setTimeout(() => {
+        setMessages(prev => ({
+          ...prev,
+          [activeChatUser.id]: [
+            ...(prev[activeChatUser.id] || []),
+            {
+              id: `reply_photo_${Date.now()}`,
+              sender: 'them',
+              text: "Omg this is such a great picture! 😍✨",
+              time: 'Just now'
+            }
+          ]
+        }));
+      }, 1500);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  // Sticker sending handler
+  const handleSendSticker = (sticker) => {
+    if (!activeChatUser || !user) return;
+    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const newMsg = {
+      id: `stk_${Date.now()}`,
+      sender: 'me',
+      type: 'sticker',
+      emoji: sticker.emoji,
+      label: sticker.label,
+      time: timeStr
+    };
+
+    setMessages(prev => ({
+      ...prev,
+      [activeChatUser.id]: [...(prev[activeChatUser.id] || []), newMsg]
+    }));
+
+    setShowEmojiPicker(false);
+    setShowActionSheet(false);
+
+    // Partner reaction
+    setTimeout(() => {
+      setMessages(prev => ({
+        ...prev,
+        [activeChatUser.id]: [
+          ...(prev[activeChatUser.id] || []),
+          {
+            id: `reply_stk_${Date.now()}`,
+            sender: 'them',
+            text: `Aww, total vibe! 🥰✨`,
+            time: 'Just now'
+          }
+        ]
+      }));
+    }, 1200);
+  };
+
+  // Quick emoji insertion
+  const handleEmojiClick = (emoji) => {
+    setInputMessage(prev => prev + emoji);
+    inputRef.current?.focus();
+  };
+
+  // Toggle heart reaction on partner message
+  const toggleMessageLike = (msgId) => {
+    setLikedMessages(prev => ({
+      ...prev,
+      [msgId]: !prev[msgId]
+    }));
+  };
+
   // Unmatch confirmation action
   const confirmUnmatch = () => {
     if (!activeChatUser) return;
@@ -372,57 +557,65 @@ export default function ChatView({
           </div>
         )}
 
-        {/* Top Header (Glassmorphic, Sticky, SaaS Quality) */}
-        <div className="pt-[max(0.75rem,env(safe-area-inset-top))] px-3 pb-2.5 bg-white/95 backdrop-blur-xl border-b border-pink-100 flex items-center justify-between z-20 shadow-xs shrink-0">
+        {/* Top Header (Glassmorphic, Sticky, Luxury Dating App Style) */}
+        <div className="pt-[max(0.75rem,env(safe-area-inset-top))] px-3 pb-2.5 bg-white/95 backdrop-blur-xl border-b border-pink-100/60 flex items-center justify-between z-20 shadow-xs shrink-0">
           <div className="flex items-center gap-2.5">
             <button
               onClick={() => {
                 setActiveChatUser(null);
                 if (onActiveChatChange) onActiveChatChange(null);
               }}
-              className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 active:scale-95 flex items-center justify-center text-slate-700 transition-all cursor-pointer"
+              className="w-9 h-9 rounded-full bg-white shadow-xs border border-pink-100/70 flex items-center justify-center text-slate-800 hover:bg-pink-50 active:scale-95 transition-all cursor-pointer saas-tap"
               title="Back to Matches"
             >
-              <ChevronLeft className="w-4 h-4 stroke-[2.5]" />
+              <ChevronLeft className="w-5 h-5 stroke-[2.2]" />
             </button>
 
             <div 
               onClick={() => onOpenMatchProfile && onOpenMatchProfile(activeChatUser)}
-              className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-[#FF2E79] cursor-pointer hover:scale-105 transition-transform shrink-0"
+              className="relative cursor-pointer hover:scale-105 transition-transform shrink-0"
               title="View Profile"
             >
-              <img src={activeChatUser.avatar} alt={activeChatUser.name} className="w-full h-full object-cover" />
-              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full ring-2 ring-white"></span>
+              <div className="w-11 h-11 rounded-full p-[2px] bg-gradient-to-tr from-[#FF2E79] to-[#FFA0BF]">
+                <img 
+                  src={activeChatUser.avatar} 
+                  alt={activeChatUser.name} 
+                  className="w-full h-full object-cover rounded-full bg-slate-100" 
+                />
+              </div>
+              <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 rounded-full ring-2 ring-white"></span>
             </div>
 
             <div className="leading-tight text-left">
               <div className="flex items-center gap-1.5">
-                <span className="font-extrabold text-xs text-slate-900 font-display">
-                  {activeChatUser.name.split(' ')[0]}, {activeChatUser.age || 22}
+                <span className="font-extrabold text-[15px] text-slate-900 font-display">
+                  {activeChatUser.name.split(' ')[0]}, {activeChatUser.age || 21}
                 </span>
-                <span className="text-[9px] bg-gradient-to-r from-pink-500 to-rose-500 text-white px-2 py-0.2 rounded-full font-black">
+                <span className="inline-flex items-center gap-1 text-[10px] bg-[#FFEBF2] text-[#FF2E79] px-2 py-0.5 rounded-full font-bold">
+                  <Heart className="w-2.5 h-2.5 fill-current" />
                   Matched
                 </span>
               </div>
-              <span className="text-[10px] text-slate-500 font-semibold truncate block max-w-[140px]">
-                {activeChatUser.university || activeChatUser.state || 'Bennett University'}
-              </span>
+              <div className="flex items-center gap-1 text-[11px] text-slate-400 font-medium mt-0.5">
+                <GraduationCap className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                <span className="truncate max-w-[140px]">{activeChatUser.university || 'Bennett University'}</span>
+              </div>
             </div>
           </div>
 
-          {/* Right Header Options (Safety & Kebab Menu) */}
-          <div className="flex items-center gap-1.5 relative">
+          {/* Right Header Options (Voice Call & Kebab Menu) */}
+          <div className="flex items-center gap-2 relative">
             <button
-              onClick={() => setShowReportModal(true)}
-              className="w-8 h-8 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition-all cursor-pointer"
-              title="Safety & Report"
+              onClick={() => setShowCallModal(true)}
+              className="w-9 h-9 rounded-full bg-white shadow-xs border border-pink-100/70 flex items-center justify-center text-slate-800 hover:bg-pink-50 hover:text-[#FF2E79] active:scale-95 transition-all cursor-pointer saas-tap"
+              title="Voice Call"
             >
-              <Shield className="w-4 h-4" />
+              <Phone className="w-4 h-4 fill-current stroke-[1.5]" />
             </button>
 
             <button
               onClick={() => setShowMenu(!showMenu)}
-              className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition-all cursor-pointer"
+              className="w-9 h-9 rounded-full bg-white shadow-xs border border-pink-100/70 flex items-center justify-center text-slate-800 hover:bg-pink-50 active:scale-95 transition-all cursor-pointer saas-tap"
               title="Options"
             >
               <MoreVertical className="w-4 h-4" />
@@ -430,7 +623,7 @@ export default function ChatView({
 
             {/* Dropdown Menu */}
             {showMenu && (
-              <div className="absolute right-0 top-10 w-48 bg-white rounded-2xl shadow-2xl border border-pink-100 py-1.5 z-50 text-left animate-scale-in">
+              <div className="absolute right-0 top-11 w-48 bg-white rounded-2xl shadow-2xl border border-pink-100 py-1.5 z-50 text-left animate-scale-in">
                 <button
                   onClick={() => {
                     setShowMenu(false);
@@ -475,22 +668,42 @@ export default function ChatView({
           </div>
         </div>
 
-        {/* Mutual Connection Verified Banner */}
-        <div className="px-3.5 py-1.5 bg-gradient-to-r from-pink-50 via-rose-50 to-pink-50 border-b border-pink-100/80 flex items-center justify-between text-[11px] select-none shrink-0">
-          <span className="font-bold text-slate-700 truncate flex items-center gap-1.5">
-            <ShieldCheck className="w-3.5 h-3.5 text-[#FF2E79]" />
-            <span>Connection: <strong className="text-[#FF2E79]">Mutual Yes Match</strong></span>
-          </span>
-          <span className="text-[10px] font-black text-rose-600 shrink-0">
-            {activeChatUser.contact ? activeChatUser.contact : 'Verified Profile'}
-          </span>
+        {/* Mutual Connection Card (Exact from Screenshot) */}
+        <div className="mx-4 mt-2.5 mb-1 px-4 py-2.5 bg-white/95 rounded-[22px] shadow-[0_2px_12px_rgba(255,46,121,0.06)] border border-pink-100/90 flex items-center justify-between z-10 shrink-0 animate-fade-in">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-full bg-[#FFEBF2] text-[#FF2E79] flex items-center justify-center shrink-0">
+              <Heart className="w-4.5 h-4.5 fill-[#FF2E79]" />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-slate-900 leading-tight">Mutual Yes Match</div>
+              <div className="text-[10px] text-slate-400 font-medium">You both liked each other</div>
+            </div>
+          </div>
+
+          <div className="h-7 w-[1px] bg-pink-100 mx-1 shrink-0"></div>
+
+          <button
+            onClick={() => onOpenMatchProfile && onOpenMatchProfile(activeChatUser)}
+            className="flex items-center gap-1.5 text-xs font-bold text-[#FF2E79] hover:opacity-80 transition-opacity cursor-pointer saas-tap"
+          >
+            <ShieldCheck className="w-4 h-4 fill-[#FF2E79] text-white" />
+            <span>Verified Profile</span>
+            <ChevronRight className="w-3.5 h-3.5 stroke-[2.5]" />
+          </button>
         </div>
 
-        {/* Message Stream (Contained Scrolling, No Parent Bounce) */}
+        {/* Message Stream (Contained Scrolling, Luxury Bubbles & Reactions) */}
         <div 
           ref={messagesContainerRef}
-          className="flex-1 min-h-0 p-3.5 space-y-3 overflow-y-auto overscroll-contain no-scrollbar"
+          className="flex-1 min-h-0 p-3.5 space-y-3.5 overflow-y-auto overscroll-contain no-scrollbar"
         >
+          {/* Centered Date Badge */}
+          <div className="flex justify-center my-1">
+            <span className="px-3.5 py-1 rounded-full bg-[#FFEBF2] text-[#FF2E79] text-[10.5px] font-bold shadow-2xs">
+              Today
+            </span>
+          </div>
+
           {currentMessages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center p-6 text-slate-400">
               <div className="w-12 h-12 bg-pink-100 text-[#FF2E79] rounded-full flex items-center justify-center mb-2 shadow-inner">
@@ -505,31 +718,88 @@ export default function ChatView({
             currentMessages.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex flex-col ${msg.sender === 'me' ? 'items-end' : 'items-start'} animate-in fade-in slide-in-from-bottom-2 duration-200`}
+                className="animate-in fade-in slide-in-from-bottom-2 duration-200"
               >
-                <div
-                  className={`max-w-[80%] px-3.5 py-2.5 rounded-2xl text-xs font-medium leading-relaxed shadow-xs ${
-                    msg.sender === 'me'
-                      ? 'bg-gradient-to-r from-[#FF2E79] to-[#FF4B8B] text-white rounded-br-xs shadow-pink-200'
-                      : 'bg-white text-slate-800 border border-pink-100/90 rounded-bl-xs shadow-xs'
-                  }`}
-                >
-                  {msg.text}
-                </div>
-                <div className="flex items-center gap-1 mt-0.5 px-1">
-                  <span className="text-[9px] text-slate-400 font-semibold">{msg.time}</span>
-                  {msg.sender === 'me' && (
-                    <CheckCheck className="w-3 h-3 text-[#FF2E79]" />
-                  )}
-                </div>
+                {msg.sender === 'them' ? (
+                  /* Partner message (Left aligned with avatar and heart reaction) */
+                  <div className="flex items-start gap-2 max-w-[85%]">
+                    <img 
+                      src={activeChatUser.avatar} 
+                      alt={activeChatUser.name} 
+                      className="w-7 h-7 rounded-full object-cover shrink-0 mt-1 shadow-xs border border-pink-100" 
+                    />
+                    <div className="flex flex-col items-start">
+                      <div className="flex items-center gap-2 group">
+                        <div className="bg-white text-slate-800 text-[13px] font-medium leading-relaxed px-4 py-2.5 rounded-[22px] rounded-tl-[6px] shadow-[0_2px_8px_rgba(0,0,0,0.03)] border border-pink-100/70 text-left">
+                          {msg.text}
+                        </div>
+
+                        {/* Heart Reaction Toggle */}
+                        <button
+                          type="button"
+                          onClick={() => toggleMessageLike(msg.id)}
+                          className="p-1 rounded-full hover:bg-pink-50 active:scale-125 transition-transform cursor-pointer saas-tap shrink-0"
+                          title="Heart reaction"
+                        >
+                          <Heart 
+                            className={`w-4 h-4 transition-colors ${
+                              likedMessages[msg.id] 
+                                ? 'fill-[#FF2E79] text-[#FF2E79]' 
+                                : 'text-slate-400 hover:text-slate-600'
+                            }`} 
+                          />
+                        </button>
+                      </div>
+
+                      <span className="text-[9.5px] text-slate-400 font-semibold ml-1.5 mt-0.5">
+                        {msg.time}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  /* User message (Right aligned with pink gradient, photo or sticker support) */
+                  <div className="flex flex-col items-end max-w-[85%] ml-auto">
+                    {msg.image ? (
+                      <div 
+                        onClick={() => setPreviewImage(msg.image)}
+                        className="rounded-[22px] rounded-tr-[6px] overflow-hidden max-w-[240px] shadow-[0_4px_14px_rgba(255,46,121,0.2)] border-2 border-[#FF2E79] cursor-pointer group relative bg-black/5"
+                      >
+                        <img 
+                          src={msg.image} 
+                          alt="Shared attachment" 
+                          className="w-full h-auto object-cover max-h-60 group-hover:scale-105 transition-transform duration-300" 
+                        />
+                        <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                          <span className="text-[10px] font-bold bg-black/60 px-2 py-1 rounded-full backdrop-blur-sm">Tap to view</span>
+                        </div>
+                      </div>
+                    ) : msg.type === 'sticker' ? (
+                      <div className="bg-gradient-to-tr from-pink-50 via-white to-rose-50 border border-pink-200/80 px-4 py-2.5 rounded-[22px] rounded-tr-[6px] shadow-sm flex items-center gap-2.5">
+                        <span className="text-3xl animate-bounce">{msg.emoji}</span>
+                        <div className="text-left">
+                          <div className="text-xs font-bold text-[#FF2E79]">{msg.label}</div>
+                          <div className="text-[9px] text-slate-400 font-semibold">Cupid Sticker</div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="bg-gradient-to-r from-[#FF2E79] to-[#FF4B8B] text-white text-[13px] font-medium leading-relaxed px-4 py-2.5 rounded-[22px] rounded-tr-[6px] shadow-[0_4px_12px_rgba(255,46,121,0.22)] text-left">
+                        {msg.text}
+                      </div>
+                    )}
+
+                    <div className="flex items-center gap-1 mr-1 mt-0.5">
+                      <span className="text-[9.5px] text-slate-400 font-semibold">{msg.time}</span>
+                      <CheckCheck className="w-3.5 h-3.5 text-[#FF2E79]" />
+                    </div>
+                  </div>
+                )}
               </div>
             ))
           )}
         </div>
 
-        {/* Icebreakers Carousel (Quick Tap Replies) */}
-        <div className="px-3 py-2 bg-white/90 backdrop-blur-md border-t border-pink-100/70 overflow-x-auto no-scrollbar flex items-center gap-1.5 shrink-0">
-          <Heart className="w-3.5 h-3.5 text-[#FF2E79] fill-[#FF2E79] shrink-0" />
+        {/* Icebreakers Carousel (Exact Chips from Screenshot) */}
+        <div className="px-3.5 py-1.5 bg-transparent overflow-x-auto no-scrollbar flex items-center gap-2 shrink-0">
           {ICEBREAKERS.map((prompt, i) => (
             <button
               key={i}
@@ -537,33 +807,80 @@ export default function ChatView({
               onMouseDown={(e) => e.preventDefault()}
               onTouchStart={(e) => {
                 e.preventDefault();
-                handleSendMessage(prompt);
+                handleSendMessage(prompt.text);
               }}
-              onClick={() => handleSendMessage(prompt)}
-              className="px-3 py-1 rounded-full bg-pink-50 hover:bg-pink-100 active:scale-95 text-[#FF2E79] text-[10.5px] font-bold shrink-0 transition-all border border-pink-200/60 cursor-pointer"
+              onClick={() => handleSendMessage(prompt.text)}
+              className="px-3.5 py-1.5 rounded-full bg-white hover:bg-pink-50 active:scale-95 text-[#FF2E79] text-xs font-semibold shrink-0 transition-all border border-pink-100/90 shadow-[0_2px_6px_rgba(255,46,121,0.06)] flex items-center gap-1.5 cursor-pointer saas-tap"
             >
-              {prompt}
+              <span>{prompt.emoji}</span>
+              <span>{prompt.text}</span>
             </button>
           ))}
         </div>
 
-        {/* Bottom Message Input (Flush Bottom, Sits Directly Above Keyboard) */}
-        <div className={`p-2.5 ${isKeyboardOpen ? 'pb-2.5' : 'pb-[max(0.75rem,env(safe-area-inset-bottom))]'} bg-white/95 backdrop-blur-xl border-t border-slate-100 flex items-center gap-2 shrink-0 z-20 shadow-md`}>
-          <input
-            ref={inputRef}
-            type="text"
-            value={inputMessage}
-            onChange={(e) => setInputMessage(e.target.value)}
-            onFocus={handleInputFocus}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                handleSendMessage();
-              }
+        {/* Bottom Message Input Bar (Exact Layout from Screenshot) */}
+        <div className={`px-3.5 py-2.5 ${isKeyboardOpen ? 'pb-2.5' : 'pb-[max(0.75rem,env(safe-area-inset-bottom))]'} bg-white/95 backdrop-blur-xl border-t border-pink-100/50 flex items-center gap-2 shrink-0 z-20 shadow-lg relative`}>
+          
+          {/* Plus button on left */}
+          <button
+            type="button"
+            onClick={() => {
+              setShowActionSheet(!showActionSheet);
+              setShowEmojiPicker(false);
             }}
-            placeholder={`Message ${activeChatUser.name.split(' ')[0]}...`}
-            className="flex-1 h-10 px-4 text-xs bg-slate-50 border border-slate-200 rounded-full font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#FF2E79] focus:bg-white transition-all shadow-inner"
-          />
+            className={`w-11 h-11 rounded-full bg-white border border-slate-200/80 shadow-xs flex items-center justify-center text-slate-700 hover:bg-slate-50 active:scale-90 transition-all shrink-0 cursor-pointer saas-tap ${
+              showActionSheet ? 'rotate-45 text-[#FF2E79] border-[#FF2E79]' : ''
+            }`}
+            title="More Actions"
+          >
+            <Plus className="w-5 h-5 stroke-[2]" />
+          </button>
+
+          {/* Center Pill Input Bar */}
+          <div className="flex-1 h-11 px-3.5 bg-white border border-slate-200/80 rounded-full flex items-center gap-2 shadow-xs focus-within:border-[#FF2E79] focus-within:shadow-[0_0_0_2px_rgba(255,46,121,0.12)] transition-all">
+            <input
+              ref={inputRef}
+              type="text"
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              onFocus={handleInputFocus}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleSendMessage();
+                }
+              }}
+              placeholder={`Message ${activeChatUser.name.split(' ')[0]}...`}
+              className="flex-1 bg-transparent text-[13px] text-slate-800 placeholder:text-slate-400 font-medium outline-none"
+            />
+
+            {/* Smile Emoji Button */}
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => {
+                setShowEmojiPicker(!showEmojiPicker);
+                setShowActionSheet(false);
+              }}
+              className="p-1 text-slate-500 hover:text-[#FF2E79] transition-colors cursor-pointer saas-tap"
+              title="Emojis & Stickers"
+            >
+              <Smile className={`w-5 h-5 ${showEmojiPicker ? 'text-[#FF2E79]' : ''}`} />
+            </button>
+
+            {/* Gallery Photo Button */}
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={handlePhotoClick}
+              className="p-1 text-slate-500 hover:text-[#FF2E79] transition-colors cursor-pointer saas-tap"
+              title="Share Photo"
+            >
+              <ImageIcon className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Send Button on Right (Hot Pink Circle) */}
           <button
             type="button"
             onMouseDown={(e) => e.preventDefault()}
@@ -573,12 +890,274 @@ export default function ChatView({
             }}
             onClick={() => handleSendMessage()}
             disabled={!inputMessage.trim()}
-            className="w-10 h-10 rounded-full bg-[#FF2E79] hover:bg-[#e02447] active:scale-90 text-white flex items-center justify-center shadow-md shadow-pink-200 transition-all disabled:opacity-40 cursor-pointer shrink-0"
+            className="w-11 h-11 rounded-full bg-gradient-to-r from-[#FF2E79] to-[#FF4B8B] text-white flex items-center justify-center shadow-[0_4px_14px_rgba(255,46,121,0.35)] active:scale-90 transition-all shrink-0 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed saas-tap"
             title="Send"
           >
-            <Send className="w-4 h-4 ml-0.5" />
+            <Send className="w-4.5 h-4.5 -rotate-12 translate-x-0.5 fill-white" />
           </button>
         </div>
+
+        {/* Hidden File Input for Image Upload */}
+        <input 
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handlePhotoSelect}
+          className="hidden"
+        />
+
+        {/* ─── EMOJI & STICKER DRAWER (Popup above input) ─── */}
+        {showEmojiPicker && (
+          <div className="absolute bottom-[72px] left-3 right-3 bg-white rounded-[24px] shadow-2xl border border-pink-100 p-3 z-30 animate-scale-up">
+            <div className="flex items-center justify-between border-b border-pink-100/70 pb-2 mb-2">
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setEmojiTab('stickers')}
+                  className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
+                    emojiTab === 'stickers'
+                      ? 'bg-[#FF2E79] text-white shadow-xs'
+                      : 'text-slate-500 hover:bg-pink-50'
+                  }`}
+                >
+                  ✨ Cute Stickers
+                </button>
+                <button
+                  onClick={() => setEmojiTab('emojis')}
+                  className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
+                    emojiTab === 'emojis'
+                      ? 'bg-[#FF2E79] text-white shadow-xs'
+                      : 'text-slate-500 hover:bg-pink-50'
+                  }`}
+                >
+                  😊 Emojis
+                </button>
+              </div>
+              <button
+                onClick={() => setShowEmojiPicker(false)}
+                className="w-6 h-6 rounded-full hover:bg-slate-100 text-slate-400 flex items-center justify-center"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {emojiTab === 'stickers' ? (
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-52 overflow-y-auto no-scrollbar p-1">
+                {CUTE_STICKERS.map((stk, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleSendSticker(stk)}
+                    className="p-2.5 rounded-2xl bg-pink-50/60 hover:bg-pink-100/80 border border-pink-100 flex flex-col items-center gap-1 active:scale-95 transition-all text-center cursor-pointer saas-tap"
+                  >
+                    <span className="text-2xl">{stk.emoji}</span>
+                    <span className="text-[10.5px] font-bold text-slate-700 leading-tight">{stk.label}</span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-6 sm:grid-cols-8 gap-2 max-h-52 overflow-y-auto no-scrollbar p-1">
+                {QUICK_EMOJIS.map((emoji, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleEmojiClick(emoji)}
+                    className="w-10 h-10 rounded-xl hover:bg-pink-50 flex items-center justify-center text-2xl active:scale-125 transition-all cursor-pointer"
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ─── ACTION SHEET POPUP (above + button) ─── */}
+        {showActionSheet && (
+          <div className="absolute bottom-[72px] left-3 w-56 bg-white rounded-[24px] shadow-2xl border border-pink-100 p-2 z-30 animate-scale-up space-y-1">
+            <button
+              onClick={handlePhotoClick}
+              className="w-full px-3 py-2.5 rounded-xl hover:bg-pink-50 flex items-center gap-3 text-xs font-bold text-slate-700 transition-colors text-left cursor-pointer saas-tap"
+            >
+              <div className="w-8 h-8 rounded-full bg-pink-100 text-[#FF2E79] flex items-center justify-center shrink-0">
+                <ImageIcon className="w-4 h-4" />
+              </div>
+              <div>
+                <div>Share Photo</div>
+                <div className="text-[10px] text-slate-400 font-normal">From gallery</div>
+              </div>
+            </button>
+
+            <button
+              onClick={() => {
+                setShowActionSheet(false);
+                setShowEmojiPicker(true);
+                setEmojiTab('stickers');
+              }}
+              className="w-full px-3 py-2.5 rounded-xl hover:bg-pink-50 flex items-center gap-3 text-xs font-bold text-slate-700 transition-colors text-left cursor-pointer saas-tap"
+            >
+              <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center shrink-0">
+                <Sparkles className="w-4 h-4" />
+              </div>
+              <div>
+                <div>Cute Stickers</div>
+                <div className="text-[10px] text-slate-400 font-normal">Express your vibe</div>
+              </div>
+            </button>
+
+            <button
+              onClick={() => {
+                setShowActionSheet(false);
+                handleSendMessage("📍 How about meeting at Blue Tokai or the campus lawn?");
+              }}
+              className="w-full px-3 py-2.5 rounded-xl hover:bg-pink-50 flex items-center gap-3 text-xs font-bold text-slate-700 transition-colors text-left cursor-pointer saas-tap"
+            >
+              <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
+                <MapPin className="w-4 h-4" />
+              </div>
+              <div>
+                <div>Campus Hangout</div>
+                <div className="text-[10px] text-slate-400 font-normal">Suggest coffee spot</div>
+              </div>
+            </button>
+
+            <button
+              onClick={() => {
+                setShowActionSheet(false);
+                handleSendMessage("🎵 Currently on loop: 'Kasoor' by Prateek Kuhad ✨ What's your jam?");
+              }}
+              className="w-full px-3 py-2.5 rounded-xl hover:bg-pink-50 flex items-center gap-3 text-xs font-bold text-slate-700 transition-colors text-left cursor-pointer saas-tap"
+            >
+              <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                <Music className="w-4 h-4" />
+              </div>
+              <div>
+                <div>Share Music</div>
+                <div className="text-[10px] text-slate-400 font-normal">Spotify anthem</div>
+              </div>
+            </button>
+          </div>
+        )}
+
+        {/* ─── VOICE CALL SIMULATOR MODAL ─── */}
+        {showCallModal && (
+          <div className="absolute inset-0 bg-slate-950/95 backdrop-blur-xl z-50 flex flex-col justify-between p-6 text-white animate-fade-in">
+            {/* Top Security Header */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-[#FF2E79]" />
+                <span className="text-[11px] font-bold text-slate-300">Cupid Encrypted Voice</span>
+              </div>
+              <button
+                onClick={() => setShowCallModal(false)}
+                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Center Caller Info & Soundwaves */}
+            <div className="flex flex-col items-center justify-center space-y-4 my-auto">
+              <div className="relative">
+                <div className="absolute -inset-4 rounded-full bg-[#FF2E79]/20 animate-ping"></div>
+                <div className="absolute -inset-8 rounded-full bg-[#FF2E79]/10 animate-pulse"></div>
+                
+                <div className="relative w-28 h-28 rounded-full p-1 bg-gradient-to-tr from-[#FF2E79] to-[#FF80A6] shadow-2xl">
+                  <img 
+                    src={activeChatUser.avatar} 
+                    alt={activeChatUser.name} 
+                    className="w-full h-full object-cover rounded-full" 
+                  />
+                </div>
+              </div>
+
+              <div className="text-center space-y-1">
+                <h2 className="text-xl font-black font-display">{activeChatUser.name.split(' ')[0]}, {activeChatUser.age || 21}</h2>
+                <p className="text-xs text-slate-400 font-medium">{activeChatUser.university || 'Bennett University'}</p>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-emerald-400 text-xs font-bold mt-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <span>{callDuration > 2 ? `Connected • ${formatCallTime(callDuration - 2)}` : 'Connecting...'}</span>
+                </div>
+              </div>
+
+              {/* Dynamic Audio Visualizer */}
+              {callDuration > 2 && (
+                <div className="flex items-center gap-1.5 h-6 mt-4">
+                  {[40, 75, 50, 90, 60, 80, 45, 100, 70, 50, 85].map((h, idx) => (
+                    <div
+                      key={idx}
+                      className="w-1 bg-[#FF2E79] rounded-full animate-pulse"
+                      style={{
+                        height: `${h}%`,
+                        animationDuration: `${0.4 + (idx % 4) * 0.2}s`
+                      }}
+                    ></div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Bottom Controls */}
+            <div className="flex items-center justify-around max-w-xs mx-auto w-full pt-6">
+              <button
+                onClick={() => setIsCallMuted(!isCallMuted)}
+                className={`w-14 h-14 rounded-full flex items-center justify-center transition-all cursor-pointer saas-tap ${
+                  isCallMuted ? 'bg-white text-slate-900' : 'bg-white/15 text-white hover:bg-white/25'
+                }`}
+                title={isCallMuted ? "Unmute" : "Mute"}
+              >
+                <Volume2 className={`w-6 h-6 ${isCallMuted ? 'opacity-40' : ''}`} />
+              </button>
+
+              <button
+                onClick={() => setShowCallModal(false)}
+                className="w-16 h-16 rounded-full bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center shadow-lg shadow-rose-900/50 active:scale-90 transition-all cursor-pointer saas-tap"
+                title="End Call"
+              >
+                <PhoneOff className="w-7 h-7 stroke-[2.2]" />
+              </button>
+
+              <button
+                onClick={() => setIsSpeakerOn(!isSpeakerOn)}
+                className={`w-14 h-14 rounded-full flex items-center justify-center transition-all cursor-pointer saas-tap ${
+                  isSpeakerOn ? 'bg-white text-slate-900' : 'bg-white/15 text-white hover:bg-white/25'
+                }`}
+                title="Speaker"
+              >
+                <Volume2 className="w-6 h-6" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ─── FULLSCREEN IMAGE VIEWER MODAL ─── */}
+        {previewImage && (
+          <div className="absolute inset-0 bg-black/95 backdrop-blur-md z-50 flex flex-col justify-between p-4 animate-fade-in">
+            <div className="flex items-center justify-between text-white pt-2">
+              <span className="text-xs font-bold text-slate-300">Shared Photo</span>
+              <button
+                onClick={() => setPreviewImage(null)}
+                className="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="flex-1 flex items-center justify-center p-2">
+              <img
+                src={previewImage}
+                alt="Enlarged preview"
+                className="max-w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl"
+              />
+            </div>
+
+            <div className="flex justify-center pb-4">
+              <button
+                onClick={() => setPreviewImage(null)}
+                className="px-6 py-2 rounded-full bg-white/20 hover:bg-white/30 text-white text-xs font-bold backdrop-blur-md cursor-pointer saas-tap"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* ─── UNMATCH CONFIRMATION MODAL ─── */}
         {showUnmatchModal && (
