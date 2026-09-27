@@ -471,10 +471,6 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
           <path d="M-20 340 C110 290, 290 440, 430 350" stroke="#FF6584" strokeWidth="2.2" strokeOpacity="0.22" />
           <path d="M-40 690 C140 630, 230 790, 440 710" stroke="#FF2E79" strokeWidth="2.5" strokeOpacity="0.2" />
         </svg>
-
-        <div className="absolute top-14 right-20 animate-float opacity-75 z-0">
-          <Heart className="w-12 h-12 fill-rose-300/70 text-rose-300/90 drop-shadow-md transform rotate-12" />
-        </div>
       </div>
 
       {/* Floating In-App Notification Toast */}
@@ -789,9 +785,12 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
                 <div className="bg-white/95 backdrop-blur-md rounded-full p-1 border border-pink-100 shadow-2xs flex items-center shrink-0">
                   <button
                     type="button"
-                    onClick={() => setActiveFilter('nearby')}
+                    onClick={() => {
+                      setActiveFilter('nearby');
+                      setCurrentTab('radar');
+                    }}
                     className={`flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-full text-xs whitespace-nowrap transition-all cursor-pointer ${
-                      activeFilter === 'nearby'
+                      currentTab === 'radar'
                         ? 'bg-gradient-to-r from-[#FF2E79] to-pink-600 text-white font-black shadow-sm shadow-pink-300/40'
                         : 'text-slate-600 font-bold hover:text-slate-900'
                     }`}
@@ -802,9 +801,12 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
 
                   <button
                     type="button"
-                    onClick={() => setActiveFilter('forYou')}
+                    onClick={() => {
+                      setActiveFilter('forYou');
+                      setCurrentTab('explore');
+                    }}
                     className={`flex items-center justify-center gap-1.5 py-1.5 px-3.5 rounded-full text-xs whitespace-nowrap transition-all cursor-pointer ${
-                      activeFilter === 'forYou'
+                      currentTab === 'explore' && activeFilter === 'forYou'
                         ? 'bg-gradient-to-r from-[#FF2E79] to-pink-600 text-white font-black shadow-sm shadow-pink-300/40'
                         : 'text-slate-600 font-bold hover:text-slate-900'
                     }`}

@@ -11,6 +11,7 @@ import {
   MoreHorizontal,
   Crown
 } from 'lucide-react';
+import CupidLogo from './CupidLogo';
 
 export default function SwipeableDeck({ 
   candidates = [], 
@@ -61,8 +62,8 @@ export default function SwipeableDeck({
   if (!candidates || candidates.length === 0) {
     return (
       <div className="w-full h-full flex flex-col justify-center items-center text-center p-6 bg-white/90 backdrop-blur-xl border border-rose-100 rounded-[32px] select-none shadow-lg">
-        <div className="w-14 h-14 rounded-2xl bg-rose-50 text-[#FF2E79] flex items-center justify-center mb-3 border border-rose-100">
-          <Heart className="w-7 h-7 fill-[#FF2E79]/20" />
+        <div className="w-16 h-16 rounded-3xl bg-rose-50/90 text-[#FF2E79] flex items-center justify-center mb-3 border border-rose-100 shadow-xs">
+          <CupidLogo size="lg" showText={false} />
         </div>
         <h4 className="text-lg font-black text-slate-900 font-display">All Caught Up!</h4>
         <p className="text-xs text-slate-500 max-w-[240px] mt-1 leading-relaxed">
