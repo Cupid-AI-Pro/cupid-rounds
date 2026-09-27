@@ -171,29 +171,8 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
     const isFemaleReg = (regGender || '').toLowerCase() === 'female';
 
     if (existingIndex !== -1) {
-      const existing = users[existingIndex];
-      // Check if user already completed full onboarding in the past (has real photos and is active)
-      const hasCompletedOnboarding = existing.status === 'active' && Array.isArray(existing.photos) && existing.photos.length >= 2 && !existing.avatar?.includes('unsplash');
-
-      if (hasCompletedOnboarding) {
-        setError('An account with this email is already registered and active. Please switch to the Sign In tab.');
-        return;
-      }
-
-      // If user had an incomplete or glitched registration, update credentials and route them to onboarding:
-      users[existingIndex] = {
-        ...existing,
-        name: cleanName || existing.name,
-        password: regPassword || existing.password || '123456',
-        gender: regGender || existing.gender || 'male',
-        state: regState || existing.state || currentActiveState,
-        plan: isFemaleReg ? 'free' : (existing.plan && existing.plan !== 'free' ? existing.plan : 'elite'),
-        avatar: (existing.avatar && !existing.avatar.includes('unsplash')) ? existing.avatar : null,
-        photos: (Array.isArray(existing.photos) && !existing.photos.some(p => typeof p === 'string' && p.includes('unsplash'))) ? existing.photos : [],
-        status: isStateActive ? 'onboarding' : 'waitlisted'
-      };
-      userToProceed = users[existingIndex];
-      saveUsers(users);
+      setError('An account with this email is already registered. Please switch to the "Sign In" tab.');
+      return;
     } else {
       // Create new user profile with 'onboarding' status so user is guided through the 26-step OnboardingForm:
       // Real photos upload, college/branch details, plan selection, and payment verification!
@@ -219,7 +198,8 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
         matches: [],
         declinedMatches: [],
         suggestedMatches: [],
-        status: isStateActive ? 'onboarding' : 'waitlisted'
+        status: isStateActive ? 'onboarding' : 'waitlisted',
+        isNewRegistration: true
       };
       users.push(newUser);
       saveUsers(users);
@@ -332,19 +312,16 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
         return;
       }
 
-      // Check if user has completed full onboarding (real photos uploaded and verified)
-      const hasCompletedOnboarding = matchedUser.status === 'active' && Array.isArray(matchedUser.photos) && matchedUser.photos.length >= 2 && !matchedUser.avatar?.includes('unsplash');
-
-      if (!hasCompletedOnboarding && matchedUser.role !== 'admin') {
-        // Enforce onboarding form (photos upload, profile questionnaire, and UPI payment)
-        matchedUser.status = 'onboarding';
-        if (matchedUser.avatar && matchedUser.avatar.includes('unsplash')) {
-          matchedUser.avatar = null;
+      // Existing user logging in: Always set to active and navigate directly to UserDashboard!
+      if (matchedUser.role !== 'admin') {
+        matchedUser.status = 'active';
+        delete matchedUser.isNewRegistration;
+        const userIdx = users.findIndex(u => u.id === matchedUser.id);
+        if (userIdx !== -1) {
+          users[userIdx] = { ...users[userIdx], status: 'active' };
+          delete users[userIdx].isNewRegistration;
+          saveUsers(users);
         }
-        if (matchedUser.photos && matchedUser.photos.some(p => typeof p === 'string' && p.includes('unsplash'))) {
-          matchedUser.photos = [];
-        }
-        saveUsers(users);
       }
 
       setCurrentUser(matchedUser);

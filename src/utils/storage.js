@@ -442,18 +442,13 @@ export const initializeStorage = () => {
         !u.id?.startsWith('mock_') &&
         !u.isMock
       ).map(u => {
-        // Reset any glitched user profiles that bypassed onboarding without real photos
-        if (u.role !== 'admin' && u.id !== 'test_onboarding_user') {
-          const hasRealPhotos = Array.isArray(u.photos) && u.photos.length >= 2 && !u.photos.some(p => typeof p === 'string' && p.includes('unsplash'));
-          if (!hasRealPhotos && u.status === 'active') {
-            modified = true;
-            return {
-              ...u,
-              status: 'onboarding',
-              avatar: (u.avatar && typeof u.avatar === 'string' && u.avatar.includes('unsplash')) ? null : u.avatar,
-              photos: (Array.isArray(u.photos) && !u.photos.some(p => typeof p === 'string' && p.includes('unsplash'))) ? u.photos : []
-            };
-          }
+        // If an existing registered user has email or name and was demoted to onboarding, restore them to active
+        if (u.role !== 'admin' && (u.email || u.name) && u.status === 'onboarding' && !u.isNewRegistration) {
+          modified = true;
+          return {
+            ...u,
+            status: 'active'
+          };
         }
         return u;
       });
@@ -524,20 +519,15 @@ export const getCurrentUser = () => {
     const users = getUsers();
     let freshUser = users.find(u => u && u.id === sessionUser.id) || sessionUser;
 
-    // Check if non-admin user has completed full onboarding (real photos uploaded)
-    const isSpecial = freshUser.role === 'admin' || freshUser.id === 'test_onboarding_user';
-    const hasRealPhotos = Array.isArray(freshUser.photos) && freshUser.photos.length >= 2 && !freshUser.photos.some(p => typeof p === 'string' && p.includes('unsplash'));
-
-    if (!isSpecial && !hasRealPhotos && freshUser.status !== 'waitlisted') {
+    // Preserve active session status for existing users
+    if (freshUser.role !== 'admin' && freshUser.status === 'onboarding' && !freshUser.isNewRegistration && (freshUser.name || freshUser.email)) {
       freshUser = {
         ...freshUser,
-        status: 'onboarding',
-        avatar: (freshUser.avatar && typeof freshUser.avatar === 'string' && freshUser.avatar.includes('unsplash')) ? null : freshUser.avatar,
-        photos: (Array.isArray(freshUser.photos) && !freshUser.photos.some(p => typeof p === 'string' && p.includes('unsplash'))) ? freshUser.photos : []
+        status: 'active'
       };
+      localStorage.setItem(KEYS.CURRENT_USER, JSON.stringify(freshUser));
     }
-    
-    localStorage.setItem(KEYS.CURRENT_USER, JSON.stringify(freshUser));
+
     return freshUser;
   } catch (e) {
     localStorage.removeItem(KEYS.CURRENT_USER);
