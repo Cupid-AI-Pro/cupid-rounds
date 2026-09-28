@@ -423,6 +423,68 @@ export const rejectRefund = (userId, reason = 'Criteria for 100% money-back guar
   return false;
 };
 
+/**
+ * Claim 100% Refund for Paid Users (Elite ₹449 / Premium ₹250)
+ * Rules:
+ * 1. User cannot claim refund if a match is already formed.
+ * 2. Can only be claimed once per round.
+ * 3. Only Elite and Premium plans are eligible.
+ */
+export const claimUserRefund = (userId, reason = 'User requested refund during matching window') => {
+  const allUsers = getUsers();
+  const uIdx = allUsers.findIndex(u => u.id === userId);
+  if (uIdx === -1) return { success: false, message: 'User not found' };
+
+  const user = allUsers[uIdx];
+
+  // Rule 1: Cannot claim refund if match formed
+  if (Array.isArray(user.matches) && user.matches.length > 0) {
+    return { success: false, message: 'You have formed mutual match(es) this round. As per terms, refund cannot be claimed after matching!' };
+  }
+
+  // Rule 2: Can only claim once per round
+  if (user.refundClaimedInRound || user.refundStatus === 'pending' || user.refundStatus === 'processed') {
+    return { success: false, message: 'Refund has already been claimed for your profile in this round!' };
+  }
+
+  // Rule 3: Plan qualification
+  if (user.plan !== 'elite' && user.plan !== 'premium') {
+    return { success: false, message: 'Only Elite (₹449) and Premium (₹250) plans are covered by our 100% Money-Back Guarantee. Basic plans are non-refundable.' };
+  }
+
+  const refundAmt = user.plan === 'elite' ? 449 : 250;
+
+  user.refundEligible = true;
+  user.refundStatus = 'pending';
+  user.refundRequested = true;
+  user.refundAmount = refundAmt;
+  user.refundReason = reason;
+  user.refundClaimedInRound = true;
+  user.refundRequestedAt = new Date().toISOString();
+  user.refundClaimedAt = new Date().toISOString();
+
+  saveUsers(allUsers);
+
+  // Sync current user session
+  const current = getCurrentUser();
+  if (current && current.id === userId) {
+    setCurrentUser(user);
+  }
+
+  // Notify user
+  import('../services/notificationManager.js').then(({ addNotification }) => {
+    addNotification(userId, {
+      type: 'refund',
+      title: `Refund Request Submitted (₹${refundAmt})`,
+      message: `Your 100% money-back request for ₹${refundAmt} has been logged and sent to Admin for direct UPI/gateway reversal!`,
+      actionUrl: 'profile'
+    });
+  }).catch(() => {});
+
+  notifyDataChanged();
+  return { success: true, message: `Your 100% refund request for ₹${refundAmt} has been submitted to Admin!`, user };
+};
+
 
 export const initializeStorage = () => {
   const existingUsersJson = localStorage.getItem(KEYS.USERS);
@@ -622,6 +684,14 @@ export const createMatch = (userAId, userBId) => {
     if (userA.suggestedMatches) userA.suggestedMatches = userA.suggestedMatches.filter(id => id !== userBId);
     if (userB.suggestedMatches) userB.suggestedMatches = userB.suggestedMatches.filter(id => id !== userAId);
     
+    // Once matched, 100% money-back guarantee is fulfilled (refund disabled)
+    userA.refundEligible = false;
+    userA.refundRequested = false;
+    if (userA.refundStatus === 'pending') userA.refundStatus = null;
+    userB.refundEligible = false;
+    userB.refundRequested = false;
+    if (userB.refundStatus === 'pending') userB.refundStatus = null;
+
     saveUsers(users);
     
     // Sync current session

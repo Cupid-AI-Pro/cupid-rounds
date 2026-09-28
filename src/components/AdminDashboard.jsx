@@ -50,7 +50,8 @@ import {
   alterRoundTiming,
   pauseOrCancelActiveRound,
   resumeActiveRound,
-  skipActiveRound
+  skipActiveRound,
+  checkAndRotateRoundAutomated
 } from '../utils/roundManager';
 import { PLANS_INFO } from '../data/mockData';
 import { supabase, isSupabaseConfigured } from '../services/supabaseClient';
@@ -235,7 +236,16 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
       const now = Date.now();
       const elapsedSecs = Math.max(0, Math.floor((now - phaseStart) / 1000));
       
-      const phaseDurationSecs = (rs.customDurationHours ? rs.customDurationHours * 3600 : 24 * 3600);
+      let phaseDurationSecs = 24 * 3600; // Phase 1: 24h
+      if (rs.customDurationHours) {
+        phaseDurationSecs = rs.customDurationHours * 3600;
+      } else if (rs.currentPhase === ROUND_PHASES.ELITE_MATCHING || rs.currentPhase === 'live_matching') {
+        phaseDurationSecs = 16 * 3600; // Phase 2: 16h
+      } else if (rs.currentPhase === ROUND_PHASES.PREMIUM_MATCHING) {
+        phaseDurationSecs = 8 * 3600;  // Phase 3: 8h
+      } else if (rs.currentPhase === ROUND_PHASES.BASIC_SETTLEMENT || rs.currentPhase === ROUND_PHASES.COMPLETED) {
+        phaseDurationSecs = 0;
+      }
       const remainingSecs = Math.max(0, phaseDurationSecs - elapsedSecs);
       
       const hrs = Math.floor(remainingSecs / 3600);
@@ -248,6 +258,10 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
         secs: String(secs).padStart(2, '0'),
         totalSecs: remainingSecs
       });
+
+      if (remainingSecs === 0 && rs.currentPhase !== ROUND_PHASES.COMPLETED && !rs.isPaused) {
+        checkAndRotateRoundAutomated();
+      }
     };
 
     updateCountdown();
@@ -1077,15 +1091,23 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
               const upcomingStates = stateSchedules.filter(s => s.state.toLowerCase() !== currentActiveState.toLowerCase());
               const nextStateObj = upcomingStates[0] || stateSchedules[1] || { state: 'Maharashtra', nextRoundDate: 'In 2 Days' };
               
-              // Delhi NCR Live Entries Calculation
-              const delhiEntries = users.filter(u => (u.state || '').toLowerCase().includes('delhi'));
-              const delhiMaleCount = delhiEntries.filter(u => u.gender === 'male').length;
-              const delhiFemaleCount = delhiEntries.filter(u => u.gender === 'female').length;
-              const delhiEliteCount = delhiEntries.filter(u => u.plan === 'elite').length;
-              const delhiPremiumCount = delhiEntries.filter(u => u.plan === 'premium').length;
-              const delhiBasicCount = delhiEntries.filter(u => !u.plan || u.plan === 'basic').length;
-              const delhiVerifiedCount = delhiEntries.filter(u => u.paymentStatus === 'verified' || u.isVerified).length;
-              const activeMatchesSlice = matchedPairs.slice(0, 3);
+              // Dynamic Active State Live Entries Calculation (User requested: no hardcoded/dummy values, fully linked to active round state)
+              const liveStateEntries = users.filter(u => {
+                const uSt = (u.state || u.hometown || '').toLowerCase();
+                const actSt = currentActiveState.toLowerCase();
+                return uSt.includes(actSt) || actSt.includes(uSt);
+              });
+              const liveStateMaleCount = liveStateEntries.filter(u => (u.gender || '').toLowerCase() === 'male').length;
+              const liveStateFemaleCount = liveStateEntries.filter(u => (u.gender || '').toLowerCase() === 'female').length;
+              const liveStateEliteCount = liveStateEntries.filter(u => u.plan === 'elite').length;
+              const liveStatePremiumCount = liveStateEntries.filter(u => u.plan === 'premium').length;
+              const liveStateBasicCount = liveStateEntries.filter(u => !u.plan || u.plan === 'basic').length;
+              const liveStateVerifiedCount = liveStateEntries.filter(u => u.paymentVerified || u.autoApproved || u.status === 'active').length;
+              const activeMatchesSlice = matchedPairs.filter(p => {
+                const pState = (p.state || p.userA?.state || p.userB?.state || '').toLowerCase();
+                const actSt = currentActiveState.toLowerCase();
+                return pState.includes(actSt) || actSt.includes(pState);
+              }).slice(0, 3);
 
               return (
                 <div className="bg-white rounded-3xl p-5 sm:p-6 border border-[#FFE1EB] shadow-xs space-y-5 text-slate-800">
@@ -1229,9 +1251,9 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <button
                             type="button"
-                            onClick={() => handleSwitchPhaseDirect('entries_submission')}
+                            onClick={() => handleSwitchPhaseDirect(ROUND_PHASES.ENTRIES_COLLECTION)}
                             className={`px-3 py-1 rounded-xl text-[10px] font-black uppercase transition-all cursor-pointer ${
-                              currentPhase === 'entries_submission' 
+                              currentPhase === ROUND_PHASES.ENTRIES_COLLECTION || currentPhase === 'entries_submission' 
                                 ? 'bg-[#FF2E79] text-white shadow-xs border border-[#FF2E79]' 
                                 : 'bg-white text-slate-700 border border-slate-200 hover:border-pink-300'
                             }`}
@@ -1240,25 +1262,36 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                           </button>
                           <button
                             type="button"
-                            onClick={() => handleSwitchPhaseDirect('live_matching')}
+                            onClick={() => handleSwitchPhaseDirect(ROUND_PHASES.ELITE_MATCHING)}
                             className={`px-3 py-1 rounded-xl text-[10px] font-black uppercase transition-all cursor-pointer ${
-                              currentPhase === 'live_matching' 
+                              currentPhase === ROUND_PHASES.ELITE_MATCHING || currentPhase === 'live_matching' 
                                 ? 'bg-purple-600 text-white shadow-xs border border-purple-600' 
                                 : 'bg-white text-slate-700 border border-slate-200 hover:border-purple-300'
                             }`}
                           >
-                            2. Matching (Day 2)
+                            2. Elite (16h)
                           </button>
                           <button
                             type="button"
-                            onClick={() => handleSwitchPhaseDirect('results_settlement')}
+                            onClick={() => handleSwitchPhaseDirect(ROUND_PHASES.PREMIUM_MATCHING)}
                             className={`px-3 py-1 rounded-xl text-[10px] font-black uppercase transition-all cursor-pointer ${
-                              currentPhase === 'results_settlement' 
+                              currentPhase === ROUND_PHASES.PREMIUM_MATCHING 
+                                ? 'bg-amber-600 text-white shadow-xs border border-amber-600' 
+                                : 'bg-white text-slate-700 border border-slate-200 hover:border-amber-300'
+                            }`}
+                          >
+                            3. Premium (8h)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleSwitchPhaseDirect(ROUND_PHASES.BASIC_SETTLEMENT)}
+                            className={`px-3 py-1 rounded-xl text-[10px] font-black uppercase transition-all cursor-pointer ${
+                              currentPhase === ROUND_PHASES.BASIC_SETTLEMENT 
                                 ? 'bg-emerald-600 text-white shadow-xs border border-emerald-600' 
                                 : 'bg-white text-slate-700 border border-slate-200 hover:border-emerald-300'
                             }`}
                           >
-                            3. Settlement (Hour 48)
+                            4. Settlement
                           </button>
                         </div>
                       </div>
@@ -1295,50 +1328,50 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                     </div>
                   </div>
 
-                  {/* Bottom Grid: Delhi NCR Live Entries Breakdown & Live Matched Pairs Preview */}
+                  {/* Bottom Grid: Dynamic Active State Live Entries Breakdown & Live Matched Pairs Preview */}
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-1">
-                    {/* Delhi NCR Live Entries Card */}
+                    {/* Dynamic Active State Live Entries Card */}
                     <div className="bg-[#FFF9FA] rounded-2xl p-4 sm:p-5 border border-[#FFE1EB] space-y-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-xl bg-pink-100 text-[#FF2E79] flex items-center justify-center font-black text-xs">
-                            DL
+                          <div className="w-8 h-8 rounded-xl bg-pink-100 text-[#FF2E79] flex items-center justify-center font-black text-xs uppercase">
+                            {currentActiveState.split(' ').map(w => w[0]).join('').slice(0, 3)}
                           </div>
                           <div>
-                            <h4 className="text-xs font-black text-slate-900">Delhi NCR Live Entries</h4>
+                            <h4 className="text-xs font-black text-slate-900">{currentActiveState} Live Entries</h4>
                             <p className="text-[10px] text-slate-500">Current round entry stats & plan tiers</p>
                           </div>
                         </div>
                         <span className="px-3 py-1 rounded-full bg-pink-50 text-[#FF2E79] font-black text-xs border border-pink-200">
-                          {delhiEntries.length} Total Registered
+                          {liveStateEntries.length} Total Registered
                         </span>
                       </div>
 
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
                         <div className="bg-white p-2.5 rounded-xl border border-pink-100 shadow-2xs">
                           <span className="text-[10px] text-slate-400 font-bold block uppercase">Males</span>
-                          <span className="text-base font-black text-blue-600">{delhiMaleCount}</span>
+                          <span className="text-base font-black text-blue-600">{liveStateMaleCount}</span>
                         </div>
                         <div className="bg-white p-2.5 rounded-xl border border-pink-100 shadow-2xs">
                           <span className="text-[10px] text-slate-400 font-bold block uppercase">Females</span>
-                          <span className="text-base font-black text-pink-600">{delhiFemaleCount}</span>
+                          <span className="text-base font-black text-pink-600">{liveStateFemaleCount}</span>
                         </div>
                         <div className="bg-white p-2.5 rounded-xl border border-pink-100 shadow-2xs">
                           <span className="text-[10px] text-slate-400 font-bold block uppercase">Elite (₹449)</span>
-                          <span className="text-base font-black text-purple-700">{delhiEliteCount}</span>
+                          <span className="text-base font-black text-purple-700">{liveStateEliteCount}</span>
                         </div>
                         <div className="bg-white p-2.5 rounded-xl border border-pink-100 shadow-2xs">
                           <span className="text-[10px] text-slate-400 font-bold block uppercase">Premium (₹250)</span>
-                          <span className="text-base font-black text-amber-700">{delhiPremiumCount}</span>
+                          <span className="text-base font-black text-amber-700">{liveStatePremiumCount}</span>
                         </div>
                       </div>
 
                       <div className="flex items-center justify-between text-[11px] text-slate-600 pt-2 border-t border-pink-100">
-                        <span>Auto-Approved / Verified: <strong className="text-emerald-700">{delhiVerifiedCount}</strong></span>
+                        <span>Auto-Approved / Verified: <strong className="text-emerald-700">{liveStateVerifiedCount}</strong></span>
                         <button
                           type="button"
                           onClick={() => setActiveNav('verifications')}
-                          className="text-[#FF2E79] font-bold hover:underline"
+                          className="text-[#FF2E79] font-bold hover:underline cursor-pointer"
                         >
                           Review Screenshots →
                         </button>
@@ -2357,12 +2390,12 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                     <h4 className="text-xs font-bold text-slate-800">Direct Phase Jump</h4>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     <button
                       type="button"
-                      onClick={() => handleSwitchPhaseDirect('entries_submission')}
+                      onClick={() => handleSwitchPhaseDirect(ROUND_PHASES.ENTRIES_COLLECTION)}
                       className={`p-2.5 rounded-xl text-center text-xs font-black border transition-all cursor-pointer ${
-                        roundState.currentPhase === 'entries_submission'
+                        roundState.currentPhase === ROUND_PHASES.ENTRIES_COLLECTION || roundState.currentPhase === 'entries_submission'
                           ? 'bg-[#FF2E79] text-white border-[#FF2E79] shadow-sm'
                           : 'bg-white text-slate-700 border-pink-200 hover:border-[#FF2E79]'
                       }`}
@@ -2372,26 +2405,38 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleSwitchPhaseDirect('live_matching')}
+                      onClick={() => handleSwitchPhaseDirect(ROUND_PHASES.ELITE_MATCHING)}
                       className={`p-2.5 rounded-xl text-center text-xs font-black border transition-all cursor-pointer ${
-                        roundState.currentPhase === 'live_matching'
+                        roundState.currentPhase === ROUND_PHASES.ELITE_MATCHING || roundState.currentPhase === 'live_matching'
                           ? 'bg-purple-600 text-white border-purple-600 shadow-sm'
                           : 'bg-white text-slate-700 border-pink-200 hover:border-purple-600'
                       }`}
                     >
                       <span className="block text-[10px] opacity-75 uppercase">Phase 2</span>
-                      <span>Matching (24h)</span>
+                      <span>Elite (16h)</span>
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleSwitchPhaseDirect('results_settlement')}
+                      onClick={() => handleSwitchPhaseDirect(ROUND_PHASES.PREMIUM_MATCHING)}
                       className={`p-2.5 rounded-xl text-center text-xs font-black border transition-all cursor-pointer ${
-                        roundState.currentPhase === 'results_settlement'
+                        roundState.currentPhase === ROUND_PHASES.PREMIUM_MATCHING
+                          ? 'bg-amber-600 text-white border-amber-600 shadow-sm'
+                          : 'bg-white text-slate-700 border-pink-200 hover:border-amber-600'
+                      }`}
+                    >
+                      <span className="block text-[10px] opacity-75 uppercase">Phase 3</span>
+                      <span>Premium (8h)</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSwitchPhaseDirect(ROUND_PHASES.BASIC_SETTLEMENT)}
+                      className={`p-2.5 rounded-xl text-center text-xs font-black border transition-all cursor-pointer ${
+                        roundState.currentPhase === ROUND_PHASES.BASIC_SETTLEMENT
                           ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
                           : 'bg-white text-slate-700 border-pink-200 hover:border-emerald-600'
                       }`}
                     >
-                      <span className="block text-[10px] opacity-75 uppercase">Phase 3</span>
+                      <span className="block text-[10px] opacity-75 uppercase">Phase 4</span>
                       <span>Settlement</span>
                     </button>
                   </div>
@@ -2445,78 +2490,102 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                 </div>
               </div>
 
-              {/* 3 Step 48-Hour Lifecycle Visualizer */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+              {/* 4 Step Lifecycle Visualizer */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
                 
                 {/* Step 1: Day 1 (0-24h) */}
                 <div className={`p-4 rounded-2xl border transition-all ${
-                  (roundState.currentPhase === 'entries_submission' || roundState.currentPhase === 'registration')
+                  (roundState.currentPhase === ROUND_PHASES.ENTRIES_COLLECTION || roundState.currentPhase === 'entries_submission' || roundState.currentPhase === 'registration')
                     ? 'bg-[#FFF5F8] border-2 border-[#FF2E79] shadow-xs'
                     : 'bg-slate-50/70 border-slate-200 text-slate-500'
                 }`}>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[10px] font-black uppercase tracking-wider text-[#FF2E79] bg-pink-100/70 px-2 py-0.5 rounded-md">
-                      Day 1 (0 - 24 Hours)
+                      24 Hours
                     </span>
                     <span className="text-xs font-bold text-slate-400">Phase 1</span>
                   </div>
-                  <h4 className="text-sm font-black text-slate-900 mb-1">Entries & Auto-Approval</h4>
+                  <h4 className="text-sm font-black text-slate-900 mb-1">Entries Collection</h4>
                   <p className="text-[11px] text-slate-600 leading-relaxed">
-                    Users submit profiles and payment proofs. Male payments are <strong>Auto-Approved</strong> by default. Admin reviews screenshots to manually revoke fraudulent entries.
+                    Users submit entries with auto-approval. Candidate profiles are locked on user dashboards until entries close.
                   </p>
                   <div className="mt-3 pt-2 border-t border-slate-200/80 flex items-center justify-between text-[11px]">
                     <span className="text-slate-400">Status:</span>
                     <span className="font-extrabold text-emerald-600">
-                      {(roundState.currentPhase === 'entries_submission' || roundState.currentPhase === 'registration') ? '● Active Now' : 'Completed / Standby'}
+                      {(roundState.currentPhase === ROUND_PHASES.ENTRIES_COLLECTION || roundState.currentPhase === 'entries_submission' || roundState.currentPhase === 'registration') ? '● Active Now' : 'Completed / Standby'}
                     </span>
                   </div>
                 </div>
 
-                {/* Step 2: Day 2 (24-48h) */}
+                {/* Step 2: Elite Matching (16h) */}
                 <div className={`p-4 rounded-2xl border transition-all ${
-                  (roundState.currentPhase === 'live_matching' || roundState.currentPhase === 'browsing_matching')
+                  (roundState.currentPhase === ROUND_PHASES.ELITE_MATCHING || roundState.currentPhase === 'live_matching')
                     ? 'bg-purple-50/80 border-2 border-purple-400 shadow-xs'
                     : 'bg-slate-50/70 border-slate-200 text-slate-500'
                 }`}>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[10px] font-black uppercase tracking-wider text-purple-700 bg-purple-100 px-2 py-0.5 rounded-md">
-                      Day 2 (24 - 48 Hours)
+                      16 Hours
                     </span>
                     <span className="text-xs font-bold text-slate-400">Phase 2</span>
                   </div>
-                  <h4 className="text-sm font-black text-slate-900 mb-1">Live Browsing & Matching</h4>
+                  <h4 className="text-sm font-black text-slate-900 mb-1">Elite Spotlight (₹449)</h4>
                   <p className="text-[11px] text-slate-600 leading-relaxed">
-                    Candidates browse and like. <strong>16-Hour Timer</strong> for Elite, <strong>8-Hour Timer</strong> for Premium users, followed by Basic settlement.
+                    Top 5 Elite males sent to females (pick up to 2). Males get notified and decide. Unmatched claim ₹449 refund.
                   </p>
                   <div className="mt-3 pt-2 border-t border-slate-200/80 flex items-center justify-between text-[11px]">
                     <span className="text-slate-400">Status:</span>
                     <span className="font-extrabold text-purple-700">
-                      {(roundState.currentPhase === 'live_matching' || roundState.currentPhase === 'browsing_matching') ? '● Matching Live' : 'Pending Day 1'}
+                      {(roundState.currentPhase === ROUND_PHASES.ELITE_MATCHING || roundState.currentPhase === 'live_matching') ? '● Active' : 'Standby'}
                     </span>
                   </div>
                 </div>
 
-                {/* Step 3: Hour 48 Settlement */}
-                <div className="p-4 rounded-2xl border bg-emerald-50/40 border-emerald-200 text-slate-700">
+                {/* Step 3: Premium Matching (8h) */}
+                <div className={`p-4 rounded-2xl border transition-all ${
+                  (roundState.currentPhase === ROUND_PHASES.PREMIUM_MATCHING)
+                    ? 'bg-amber-50/80 border-2 border-amber-400 shadow-xs'
+                    : 'bg-slate-50/70 border-slate-200 text-slate-500'
+                }`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-amber-700 bg-amber-100 px-2 py-0.5 rounded-md">
+                      8 Hours
+                    </span>
+                    <span className="text-xs font-bold text-slate-400">Phase 3</span>
+                  </div>
+                  <h4 className="text-sm font-black text-slate-900 mb-1">Premium Window (₹250)</h4>
+                  <p className="text-[11px] text-slate-600 leading-relaxed">
+                    Top 4-7 remaining females sent to Premium males. 8h timer to match or claim 100% refund.
+                  </p>
+                  <div className="mt-3 pt-2 border-t border-slate-200/80 flex items-center justify-between text-[11px]">
+                    <span className="text-slate-400">Status:</span>
+                    <span className="font-extrabold text-amber-700">
+                      {(roundState.currentPhase === ROUND_PHASES.PREMIUM_MATCHING) ? '● Active' : 'Standby'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Step 4: Basic Settlement */}
+                <div className={`p-4 rounded-2xl border transition-all ${
+                  (roundState.currentPhase === ROUND_PHASES.BASIC_SETTLEMENT || roundState.currentPhase === ROUND_PHASES.COMPLETED)
+                    ? 'bg-emerald-50/80 border-2 border-emerald-400 shadow-xs'
+                    : 'bg-slate-50/70 border-slate-200 text-slate-500'
+                }`}>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[10px] font-black uppercase tracking-wider text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-md">
-                      Hour 48.00 Settlement
+                      Settlement
                     </span>
-                    <span className="text-xs font-bold text-slate-400">Settlement</span>
+                    <span className="text-xs font-bold text-slate-400">Phase 4</span>
                   </div>
-                  <h4 className="text-sm font-black text-slate-900 mb-1">Mutual Matches & Refunds</h4>
+                  <h4 className="text-sm font-black text-slate-900 mb-1">Basic Allocation & Closure</h4>
                   <p className="text-[11px] text-slate-600 leading-relaxed">
-                    Matches are finalized instantly. Unmatched users & users who selected 0 candidates are routed to the <strong>Refund Queue</strong> with their UPI IDs for payout.
+                    Remaining pairs matched algorithmically. Unmatched basic notified to upgrade next round. Snapshot archived.
                   </p>
-                  <div className="mt-3 pt-2 border-t border-emerald-200/60 flex items-center justify-between text-[11px]">
-                    <span className="text-slate-500">Refund Guarantee:</span>
-                    <button
-                      type="button"
-                      onClick={() => setActiveNav('refunds')}
-                      className="font-extrabold text-amber-700 hover:underline cursor-pointer"
-                    >
-                      View Refund Queue →
-                    </button>
+                  <div className="mt-3 pt-2 border-t border-slate-200/80 flex items-center justify-between text-[11px]">
+                    <span className="text-slate-400">Status:</span>
+                    <span className="font-extrabold text-emerald-700">
+                      {(roundState.currentPhase === ROUND_PHASES.BASIC_SETTLEMENT || roundState.currentPhase === ROUND_PHASES.COMPLETED) ? '● Complete' : 'Standby'}
+                    </span>
                   </div>
                 </div>
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getUsers, saveUsers, updateUser, createMatch, unmatchUser } from '../utils/storage';
+import { getUsers, saveUsers, updateUser, createMatch, unmatchUser, claimUserRefund } from '../utils/storage';
 import { 
   Heart, 
   X, 
@@ -16,7 +16,11 @@ import {
   ChevronRight,
   DollarSign,
   Zap,
-  Clock
+  Clock,
+  Sparkles,
+  ShieldCheck,
+  CheckCircle2,
+  AlertCircle
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import SwipeableDeck from './SwipeableDeck';
@@ -30,7 +34,7 @@ import InteractiveTourGuide from './InteractiveTourGuide';
 import NotificationsModal from './NotificationsModal';
 import ReEntryModal from './ReEntryModal';
 import InAppNotificationToast from './InAppNotificationToast';
-import { getRoundState, ROUND_PHASES, joinRound, getStateUpcomingMins, getStateRoundSchedule, fetchRoundStateFromSupabase, isStateEnabled, getEnabledStates } from '../utils/roundManager';
+import { getRoundState, ROUND_PHASES, joinRound, getStateUpcomingMins, getStateRoundSchedule, fetchRoundStateFromSupabase, isStateEnabled, getEnabledStates, checkAndRotateRoundAutomated } from '../utils/roundManager';
 import { calculateCompatibilityScore } from '../utils/compatibility';
 import { 
   getNotifications, 
@@ -72,6 +76,7 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
   const [showReEntryModal, setShowReEntryModal] = useState(false);
   const [reEntryPlan, setReEntryPlan] = useState('elite');
   const [countdown, setCountdown] = useState({ days: '08', hours: '14', mins: '40', secs: '22' });
+  const [phaseCountdown, setPhaseCountdown] = useState({ hours: '24', mins: '00', secs: '00' });
 
   useEffect(() => {
     const updateCountdown = () => {
@@ -114,6 +119,36 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
           mins: String(m).padStart(2, '0'),
           secs: String(s).padStart(2, '0')
         });
+
+        // Dynamic Active Round Phase Countdown Calculation
+        const rs = getRoundState();
+        const phaseStart = new Date(rs?.phaseStartedAt || rs?.roundStartDate || Date.now()).getTime();
+        let phaseSecs = 24 * 3600; // Phase 1: 24h
+        if (rs?.customDurationHours) {
+          phaseSecs = rs.customDurationHours * 3600;
+        } else if (rs?.currentPhase === ROUND_PHASES.ELITE_MATCHING || rs?.currentPhase === 'live_matching') {
+          phaseSecs = 16 * 3600; // Phase 2: 16h
+        } else if (rs?.currentPhase === ROUND_PHASES.PREMIUM_MATCHING) {
+          phaseSecs = 8 * 3600;  // Phase 3: 8h
+        } else if (rs?.currentPhase === ROUND_PHASES.BASIC_SETTLEMENT || rs?.currentPhase === ROUND_PHASES.COMPLETED) {
+          phaseSecs = 0;
+        }
+
+        const elapsedPhaseSecs = Math.max(0, Math.floor((nowMs - phaseStart) / 1000));
+        const remPhaseSecs = Math.max(0, phaseSecs - elapsedPhaseSecs);
+        const phH = Math.floor(remPhaseSecs / 3600);
+        const phM = Math.floor((remPhaseSecs % 3600) / 60);
+        const phS = remPhaseSecs % 60;
+
+        setPhaseCountdown({
+          hours: String(phH).padStart(2, '0'),
+          mins: String(phM).padStart(2, '0'),
+          secs: String(phS).padStart(2, '0')
+        });
+
+        if (remPhaseSecs === 0 && rs?.currentPhase !== ROUND_PHASES.COMPLETED && !rs?.isPaused) {
+          checkAndRotateRoundAutomated();
+        }
       } catch (err) {
         console.warn('Countdown update notice:', err);
       }
@@ -365,6 +400,68 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
       return (b.matchScore || 0) - (a.matchScore || 0);
     });
 
+    // Phase & Tier Distribution Engine strictly adhering to User Lifecycle
+    const phase = roundState?.currentPhase || ROUND_PHASES.ENTRIES_COLLECTION;
+
+    // Phase 1 (Entries Collection - 24 Hours): Dashboard shows NO PROFILES. Collecting entries only.
+    if (phase === ROUND_PHASES.ENTRIES_COLLECTION || phase === 'entries_submission' || phase === 'registration') {
+      setCandidates([]);
+      return;
+    }
+
+    // Phase 2 (Elite Matching Window - 16 Hours):
+    if (phase === ROUND_PHASES.ELITE_MATCHING || phase === 'live_matching') {
+      if (isFemale) {
+        // Send top 5 Elite male profiles to females based on mutual preferences (if fewer than 5, send all available)
+        const eliteMales = stateCandidates.filter(c => (c.gender || '').toLowerCase() === 'male' && c.plan === 'elite');
+        eliteMales.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
+        setCandidates(eliteMales.slice(0, 5));
+        return;
+      } else if (isEliteMale) {
+        // Elite Male sees the females who picked/liked his profile during this 16h window
+        const interestedFemales = stateCandidates.filter(c => 
+          (c.gender || '').toLowerCase() === 'female' &&
+          (c.hasLikedYou || (user.receivedLikes && user.receivedLikes.includes(c.id)) || (c.likes && c.likes.includes(user.id)))
+        );
+        interestedFemales.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
+        setCandidates(interestedFemales);
+        return;
+      } else {
+        // Premium & Basic males wait for Phase 2 to conclude
+        setCandidates([]);
+        return;
+      }
+    }
+
+    // Phase 3 (Premium Matching Window - 8 Hours):
+    if (phase === ROUND_PHASES.PREMIUM_MATCHING) {
+      if (isPremiumMale) {
+        // Send top 4 to 7 remaining females (< 2 matches) based on mutual preferences (if fewer, all remaining)
+        const availableFemales = stateCandidates.filter(c => (c.gender || '').toLowerCase() === 'female' && (!c.matches || c.matches.length < 2));
+        availableFemales.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
+        const pickCount = Math.min(Math.max(4, Math.min(7, availableFemales.length)), availableFemales.length);
+        setCandidates(availableFemales.slice(0, pickCount));
+        return;
+      } else if (isFemale) {
+        if (femaleMatchesCount >= 2) {
+          setCandidates([]);
+        } else {
+          setCandidates(stateCandidates.slice(0, 5));
+        }
+        return;
+      } else {
+        // Elite males (already matched or auto-refunded) and Basic males (awaiting settlement)
+        setCandidates([]);
+        return;
+      }
+    }
+
+    // Phase 4 (Basic Settlement & Completed):
+    if (phase === ROUND_PHASES.BASIC_SETTLEMENT || phase === ROUND_PHASES.COMPLETED) {
+      setCandidates([]);
+      return;
+    }
+
     setCandidates(stateCandidates);
   };
 
@@ -373,12 +470,21 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
     let isMutualMatch = false;
     let updatedMatches = [...(user.matches || [])];
 
+    // Track female selections on male profile so he can review and match in his decision window
+    const allUsers = getUsers();
+    const candObj = allUsers.find(u => u.id === candidate.id);
+    if (candObj) {
+      if (!candObj.receivedLikes) candObj.receivedLikes = [];
+      if (!candObj.receivedLikes.includes(user.id)) candObj.receivedLikes.push(user.id);
+      saveUsers(allUsers);
+    }
+
     // Trigger Like Notification for Candidate
     addNotification(candidate.id, {
       type: 'like',
-      title: 'Someone Liked Your Profile',
-      message: `${user.name} from ${user.university || user.state || 'your region'} liked your profile. Check your match radar!`,
-      actionUrl: 'radar'
+      title: `${user.name} Liked Your Profile! 💖`,
+      message: `${user.name} from ${user.university || user.state || 'your region'} selected your profile! Check your Explore dashboard to confirm match.`,
+      actionUrl: 'explore'
     });
 
     // Record swipe in Supabase cloud database
@@ -401,15 +507,15 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
       // Trigger Mutual Match Notifications for Both Users
       addNotification(user.id, {
         type: 'match',
-        title: "Mutual Match Confirmed",
-        message: `You and ${candidate.name} liked each other! Tap to start chatting now.`,
+        title: "Mutual Match Confirmed! 💖",
+        message: `You and ${candidate.name} liked each other! Direct chat is now unlocked.`,
         actionUrl: 'chat'
       });
 
       addNotification(candidate.id, {
         type: 'match',
-        title: "Mutual Match Confirmed",
-        message: `You and ${user.name} liked each other! Tap to start chatting now.`,
+        title: "Mutual Match Confirmed! 💖",
+        message: `You and ${user.name} liked each other! Direct chat is now unlocked.`,
         actionUrl: 'chat'
       });
       
@@ -454,13 +560,16 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
 
   const handleRequestRefund = () => {
     if (!user) return;
-    const updated = {
-      ...user,
-      refundRequested: true,
-      refundReason: 'No matches in active round'
-    };
-    updateUser(updated);
-    onUpdateUser(updated);
+    const res = claimUserRefund(user.id, 'User claimed 100% money-back guarantee in active matching round');
+    if (res.success) {
+      if (res.user) {
+        updateUser(res.user);
+        onUpdateUser(res.user);
+      }
+      alert(`✅ ${res.message}`);
+    } else {
+      alert(`⚠️ ${res.message}`);
+    }
   };
 
   const getMatchedUsers = () => {
@@ -885,39 +994,433 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
                 </button>
               </div>
 
-              {/* Card Deck Container */}
-              {isFemaleLimitReached ? (
-                <div className="flex-1 flex flex-col items-center justify-center p-6 bg-white/90 backdrop-blur-md rounded-[28px] border border-white text-center shadow-sm">
-                  <div className="w-14 h-14 bg-pink-50 text-[#FF2E79] rounded-full flex items-center justify-center mb-3">
-                    <Heart className="w-7 h-7 fill-current" />
+              {/* Dynamic Phase-Aware Candidate Deck Container */}
+              {(() => {
+                const phase = roundState?.currentPhase || ROUND_PHASES.ENTRIES_COLLECTION;
+
+                // ─────────────────────────────────────────────────────────────
+                // PHASE 1: Entries Collection (First 24 Hours)
+                // Dashboard shows NO PROFILES. Collecting entries countdown only!
+                // ─────────────────────────────────────────────────────────────
+                if (phase === ROUND_PHASES.ENTRIES_COLLECTION || phase === 'entries_submission' || phase === 'registration') {
+                  return (
+                    <div className="flex-1 flex flex-col items-center justify-center text-center px-4 py-5 bg-white/90 backdrop-blur-md rounded-[28px] border border-white shadow-sm space-y-4 animate-fade-in my-auto">
+                      <div className="relative w-20 h-20 mx-auto flex items-center justify-center">
+                        <div className="absolute inset-0 rounded-full bg-pink-300/30 animate-ping" />
+                        <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-[#FF2E79] to-pink-500 text-white flex items-center justify-center shadow-lg shadow-pink-300/50 relative z-10">
+                          <Users className="w-8 h-8" />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1 max-w-xs mx-auto">
+                        <span className="px-2.5 py-0.5 rounded-full bg-pink-50 text-[#FF2E79] border border-pink-200 text-[10px] font-black uppercase tracking-wider inline-block">
+                          Phase 1: Entry Window Live
+                        </span>
+                        <h3 className="text-xl font-black text-slate-900 font-display">
+                          We are Collecting Entries
+                        </h3>
+                        <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                          Profiles from {roundState?.activeState || user?.state || 'your region'} are registering and being indexed by Cupid AI. Matchmaking will officially begin in:
+                        </p>
+                      </div>
+
+                      {/* 3-Box Countdown Clock */}
+                      <div className="bg-gradient-to-r from-pink-50 via-rose-50 to-pink-50 rounded-2xl p-3 border border-pink-200/80 w-full max-w-xs flex items-center justify-around shadow-2xs">
+                        <div className="flex flex-col items-center">
+                          <span className="text-2xl font-black text-slate-900 font-mono">{phaseCountdown.hours}</span>
+                          <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">Hours</span>
+                        </div>
+                        <div className="text-xl font-black text-[#FF2E79] animate-pulse">:</div>
+                        <div className="flex flex-col items-center">
+                          <span className="text-2xl font-black text-slate-900 font-mono">{phaseCountdown.mins}</span>
+                          <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">Mins</span>
+                        </div>
+                        <div className="text-xl font-black text-[#FF2E79] animate-pulse">:</div>
+                        <div className="flex flex-col items-center">
+                          <span className="text-2xl font-black text-[#FF2E79] font-mono">{phaseCountdown.secs}</span>
+                          <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">Secs</span>
+                        </div>
+                      </div>
+
+                      {/* User Entry Confirmation Badge */}
+                      <div className="p-3 rounded-2xl bg-white border border-pink-100 w-full max-w-xs text-left flex items-center justify-between shadow-2xs">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                            <CheckCircle2 className="w-5 h-5 stroke-[2.5]" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                              <span>Entry Confirmed</span>
+                              <span className="text-[10px] font-extrabold text-[#FF2E79] uppercase">({user?.plan || 'Basic'})</span>
+                            </p>
+                            <p className="text-[10px] text-slate-400 font-medium">Round #{roundState?.roundNumber || 1} • {user?.university || user?.state}</p>
+                          </div>
+                        </div>
+                        {(user?.plan === 'elite' || user?.plan === 'premium') && (
+                          <span className="text-[9.5px] font-black text-purple-700 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-full shrink-0">
+                            100% Refundable
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                }
+
+                // ─────────────────────────────────────────────────────────────
+                // PHASE 2: Elite Matching Window (Next 16 Hours)
+                // ─────────────────────────────────────────────────────────────
+                if (phase === ROUND_PHASES.ELITE_MATCHING || phase === 'live_matching') {
+                  if (isFemale) {
+                    if (isFemaleLimitReached) {
+                      return (
+                        <div className="flex-1 flex flex-col items-center justify-center p-6 bg-white/90 backdrop-blur-md rounded-[28px] border border-white text-center shadow-sm space-y-3">
+                          <div className="w-14 h-14 bg-pink-50 text-[#FF2E79] rounded-full flex items-center justify-center mx-auto">
+                            <Heart className="w-7 h-7 fill-current" />
+                          </div>
+                          <h3 className="text-base font-extrabold text-slate-900 font-display">2/2 Matches Selected!</h3>
+                          <p className="text-xs text-slate-500 max-w-[240px] leading-relaxed">
+                            You've picked your 2 matches for Round {roundState.roundNumber}. Chat directly in the Chat tab!
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveDirectChatUser(null);
+                              setIsDirectChatActive(false);
+                              setCurrentTab('chat');
+                            }}
+                            className="mt-2 px-6 py-2.5 bg-[#FF2E79] text-white rounded-full text-xs font-extrabold shadow-md shadow-rose-300 cursor-pointer"
+                          >
+                            Open Chats ({user?.matches?.length || 0})
+                          </button>
+                        </div>
+                      );
+                    }
+                    return (
+                      <div className="flex-1 flex flex-col h-full min-h-0">
+                        {/* 16h Elite Banner for Females */}
+                        <div className="mb-2 px-3 py-1.5 rounded-xl bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 flex items-center justify-between text-xs text-purple-900 shrink-0">
+                          <span className="font-extrabold flex items-center gap-1">
+                            <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+                            <span>Top 5 Elite Picks (Pick up to 2)</span>
+                          </span>
+                          <span className="font-black text-[#FF2E79] bg-white px-2 py-0.5 rounded-lg border border-pink-100 shadow-2xs font-mono">
+                            ⏱️ {phaseCountdown.hours}:{phaseCountdown.mins}:{phaseCountdown.secs}
+                          </span>
+                        </div>
+                        <div className="flex-1 relative overflow-visible min-h-0 pb-1">
+                          <SwipeableDeck
+                            candidates={candidates}
+                            user={user}
+                            onLike={handleLike}
+                            onDecline={handleDecline}
+                            onOpenDetail={(c) => setExpandedCandidate(c)}
+                          />
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  if (isEliteMale) {
+                    return (
+                      <div className="flex-1 flex flex-col h-full min-h-0">
+                        {/* 16h Elite Banner for Elite Males */}
+                        <div className="mb-2 px-3 py-1.5 rounded-xl bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 flex items-center justify-between text-xs text-purple-900 shrink-0">
+                          <span className="font-extrabold flex items-center gap-1">
+                            <Zap className="w-3.5 h-3.5 text-purple-600" />
+                            <span>16-Hour Decision Window</span>
+                          </span>
+                          <span className="font-black text-[#FF2E79] bg-white px-2 py-0.5 rounded-lg border border-pink-100 shadow-2xs font-mono">
+                            ⏱️ {phaseCountdown.hours}:{phaseCountdown.mins}:{phaseCountdown.secs}
+                          </span>
+                        </div>
+
+                        {candidates.length > 0 ? (
+                          <div className="flex-1 flex flex-col min-h-0">
+                            <p className="text-[11px] font-bold text-slate-600 mb-1 text-center">
+                              💖 {candidates.length} female(s) selected your Elite profile! Like them to confirm mutual match.
+                            </p>
+                            <div className="flex-1 relative overflow-visible min-h-0 pb-1">
+                              <SwipeableDeck
+                                candidates={candidates}
+                                user={user}
+                                onLike={handleLike}
+                                onDecline={handleDecline}
+                                onOpenDetail={(c) => setExpandedCandidate(c)}
+                              />
+                            </div>
+                            {/* Claim Refund Option */}
+                            {(!user?.matches || user.matches.length === 0) && (
+                              <div className="pt-2 text-center shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={handleRequestRefund}
+                                  className="text-xs font-bold text-slate-500 hover:text-rose-600 underline cursor-pointer"
+                                >
+                                  Not interested in these profiles? Claim 100% Refund (₹449)
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="flex-1 flex flex-col items-center justify-center p-6 bg-white/90 backdrop-blur-md rounded-[28px] border border-white text-center shadow-sm space-y-4 my-auto">
+                            <div className="w-16 h-16 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center mx-auto border border-purple-100">
+                              <Clock className="w-8 h-8" />
+                            </div>
+                            <div className="space-y-1 max-w-xs mx-auto">
+                              <h3 className="text-base font-black text-slate-900 font-display">
+                                16h Elite Spotlight Active
+                              </h3>
+                              <p className="text-xs text-slate-500 leading-relaxed font-medium">
+                                Females in {roundState.activeState} are reviewing top Elite profiles. When a female picks your profile, she will appear right here!
+                              </p>
+                            </div>
+                            <div className="text-xs font-black text-purple-700 bg-purple-50 border border-purple-200 px-3 py-1.5 rounded-xl font-mono">
+                              Window Closes in: {phaseCountdown.hours}:{phaseCountdown.mins}:{phaseCountdown.secs}
+                            </div>
+                            {(!user?.matches || user.matches.length === 0) && !user?.refundRequested && (
+                              <button
+                                type="button"
+                                onClick={handleRequestRefund}
+                                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-[#FF2E79] border border-slate-200 text-xs font-extrabold transition-all cursor-pointer"
+                              >
+                                Claim 100% Refund (₹449)
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+
+                  // Premium & Basic Males waiting for Phase 2 to conclude
+                  return (
+                    <div className="flex-1 flex flex-col items-center justify-center p-6 bg-white/90 backdrop-blur-md rounded-[28px] border border-white text-center shadow-sm space-y-4 my-auto">
+                      <div className="w-16 h-16 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto border border-amber-100">
+                        <Clock className="w-8 h-8" />
+                      </div>
+                      <div className="space-y-1 max-w-xs mx-auto">
+                        <span className="px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200 text-[10px] font-black uppercase tracking-wider inline-block">
+                          Elite Matching Live (16h)
+                        </span>
+                        <h3 className="text-base font-black text-slate-900 font-display">
+                          {isPremiumMale ? 'Your Premium Window Opens Next' : 'Matching Underway'}
+                        </h3>
+                        <p className="text-xs text-slate-500 leading-relaxed font-medium">
+                          {isPremiumMale 
+                            ? 'Top 4-7 curated female profiles will be sent to your dashboard in the next window.'
+                            : 'Basic algorithm matching will settle at the end of the round.'}
+                        </p>
+                      </div>
+                      <div className="text-xs font-black text-purple-700 bg-purple-50 border border-purple-200 px-3 py-1.5 rounded-xl font-mono">
+                        Next Window Starts in: {phaseCountdown.hours}:{phaseCountdown.mins}:{phaseCountdown.secs}
+                      </div>
+                    </div>
+                  );
+                }
+
+                // ─────────────────────────────────────────────────────────────
+                // PHASE 3: Premium Matching Window (Next 8 Hours)
+                // ─────────────────────────────────────────────────────────────
+                if (phase === ROUND_PHASES.PREMIUM_MATCHING) {
+                  if (isPremiumMale) {
+                    return (
+                      <div className="flex-1 flex flex-col h-full min-h-0">
+                        {/* 8h Premium Banner */}
+                        <div className="mb-2 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-50 to-pink-50 border border-amber-200 flex items-center justify-between text-xs text-amber-900 shrink-0">
+                          <span className="font-extrabold flex items-center gap-1">
+                            <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                            <span>Top 4-7 Curated Profiles</span>
+                          </span>
+                          <span className="font-black text-[#FF2E79] bg-white px-2 py-0.5 rounded-lg border border-pink-100 shadow-2xs font-mono">
+                            ⏱️ {phaseCountdown.hours}:{phaseCountdown.mins}:{phaseCountdown.secs}
+                          </span>
+                        </div>
+
+                        {candidates.length > 0 ? (
+                          <div className="flex-1 flex flex-col min-h-0">
+                            <div className="flex-1 relative overflow-visible min-h-0 pb-1">
+                              <SwipeableDeck
+                                candidates={candidates}
+                                user={user}
+                                onLike={handleLike}
+                                onDecline={handleDecline}
+                                onOpenDetail={(c) => setExpandedCandidate(c)}
+                              />
+                            </div>
+                            {(!user?.matches || user.matches.length === 0) && (
+                              <div className="pt-2 text-center shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={handleRequestRefund}
+                                  className="text-xs font-bold text-slate-500 hover:text-rose-600 underline cursor-pointer"
+                                >
+                                  Claim 100% Refund (₹250)
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="flex-1 flex flex-col items-center justify-center p-6 bg-white/90 backdrop-blur-md rounded-[28px] border border-white text-center shadow-sm space-y-4 my-auto">
+                            <h3 className="text-base font-black text-slate-900 font-display">
+                              All Profiles Reviewed
+                            </h3>
+                            <p className="text-xs text-slate-500 max-w-xs leading-relaxed">
+                              If you did not form a match, you can claim your 100% money-back refund before the 8h window expires.
+                            </p>
+                            {(!user?.matches || user.matches.length === 0) && !user?.refundRequested && (
+                              <button
+                                type="button"
+                                onClick={handleRequestRefund}
+                                className="px-5 py-2.5 rounded-xl bg-[#FF2E79] text-white text-xs font-extrabold shadow-md shadow-pink-300 cursor-pointer"
+                              >
+                                Claim 100% Refund (₹250)
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+
+                  // For Females in Phase 3
+                  if (isFemale) {
+                    if (isFemaleLimitReached) {
+                      return (
+                        <div className="flex-1 flex flex-col items-center justify-center p-6 bg-white/90 backdrop-blur-md rounded-[28px] border border-white text-center shadow-sm space-y-3">
+                          <div className="w-14 h-14 bg-pink-50 text-[#FF2E79] rounded-full flex items-center justify-center mx-auto">
+                            <Heart className="w-7 h-7 fill-current" />
+                          </div>
+                          <h3 className="text-base font-extrabold text-slate-900 font-display">2/2 Matches Selected</h3>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveDirectChatUser(null);
+                              setIsDirectChatActive(false);
+                              setCurrentTab('chat');
+                            }}
+                            className="mt-2 px-6 py-2.5 bg-[#FF2E79] text-white rounded-full text-xs font-extrabold shadow-md shadow-rose-300 cursor-pointer"
+                          >
+                            Open Chats ({user?.matches?.length || 0})
+                          </button>
+                        </div>
+                      );
+                    }
+                    return (
+                      <div className="flex-1 relative overflow-visible h-full min-h-0 pb-1">
+                        <SwipeableDeck
+                          candidates={candidates}
+                          user={user}
+                          onLike={handleLike}
+                          onDecline={handleDecline}
+                          onOpenDetail={(c) => setExpandedCandidate(c)}
+                        />
+                      </div>
+                    );
+                  }
+
+                  // Basic males or Elite males during Phase 3
+                  return (
+                    <div className="flex-1 flex flex-col items-center justify-center p-6 bg-white/90 backdrop-blur-md rounded-[28px] border border-white text-center shadow-sm space-y-4 my-auto">
+                      <div className="w-16 h-16 rounded-2xl bg-pink-50 text-[#FF2E79] flex items-center justify-center mx-auto border border-pink-100">
+                        <Users className="w-8 h-8" />
+                      </div>
+                      <div className="space-y-1 max-w-xs mx-auto">
+                        <span className="px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[10px] font-black uppercase tracking-wider inline-block">
+                          Premium Window Live (8h)
+                        </span>
+                        <h3 className="text-base font-black text-slate-900 font-display">
+                          {isEliteMale ? '16h Elite Window Finished' : 'Basic Matchmaking Underway'}
+                        </h3>
+                        <p className="text-xs text-slate-500 leading-relaxed font-medium">
+                          {isEliteMale 
+                            ? (user?.matches && user.matches.length > 0 
+                                ? 'Your mutual match is confirmed! Open the Chat tab.' 
+                                : 'If unmatched, your ₹449 auto-refund has been queued to Admin.')
+                            : 'Basic algorithmic pairs will be calculated and finalized upon round settlement.'}
+                        </p>
+                      </div>
+                      <div className="text-xs font-black text-amber-700 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-xl font-mono">
+                        Settlement in: {phaseCountdown.hours}:{phaseCountdown.mins}:{phaseCountdown.secs}
+                      </div>
+                    </div>
+                  );
+                }
+
+                // ─────────────────────────────────────────────────────────────
+                // PHASE 4: Basic Settlement & Completed
+                // ─────────────────────────────────────────────────────────────
+                if (phase === ROUND_PHASES.BASIC_SETTLEMENT || phase === ROUND_PHASES.COMPLETED) {
+                  // If user got matched
+                  if (user?.matches && user.matches.length > 0) {
+                    return (
+                      <div className="flex-1 flex flex-col items-center justify-center p-6 bg-white/90 backdrop-blur-md rounded-[28px] border border-white text-center shadow-sm space-y-4 my-auto">
+                        <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-[#FF2E79] to-pink-500 text-white flex items-center justify-center mx-auto shadow-lg shadow-pink-300">
+                          <Heart className="w-8 h-8 fill-current" />
+                        </div>
+                        <h3 className="text-lg font-black text-slate-900 font-display">
+                          Mutual Match Confirmed!
+                        </h3>
+                        <p className="text-xs text-slate-500 max-w-xs leading-relaxed">
+                          Your round is complete. Start a conversation with your match in the Chat tab!
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveDirectChatUser(null);
+                            setIsDirectChatActive(false);
+                            setCurrentTab('chat');
+                          }}
+                          className="px-6 py-2.5 bg-[#FF2E79] text-white rounded-full text-xs font-black shadow-md shadow-pink-300 cursor-pointer"
+                        >
+                          Open Chat ({user.matches.length})
+                        </button>
+                      </div>
+                    );
+                  }
+
+                  // If Basic Male with NO matches -> Show the requested Apology Card!
+                  if (!isFemale && (!user?.plan || user.plan === 'basic')) {
+                    return (
+                      <div className="flex-1 flex flex-col items-center justify-center p-6 bg-white/95 backdrop-blur-md rounded-[28px] border border-pink-100 text-center shadow-md space-y-4 my-auto animate-fade-in">
+                        <div className="w-16 h-16 rounded-2xl bg-rose-50 text-[#FF2E79] flex items-center justify-center mx-auto border border-rose-100">
+                          <AlertCircle className="w-8 h-8" />
+                        </div>
+                        <div className="space-y-1.5 max-w-xs mx-auto">
+                          <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-wider inline-block">
+                            Round Complete
+                          </span>
+                          <h3 className="text-base font-black text-slate-900 font-display">
+                            No Match Found This Round
+                          </h3>
+                          <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                            We're sorry, no mutual match could be found for your profile this round. Next time, choose our <strong>Refundable Plans (Elite or Premium)</strong> for priority matching and 100% money-back guarantee!
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setShowReEntryModal(true)}
+                          className="px-6 py-3 rounded-full bg-gradient-to-r from-[#FF2E79] to-pink-600 text-white text-xs font-black shadow-md shadow-pink-300 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                        >
+                          Join Next Round with Refundable Plan →
+                        </button>
+                      </div>
+                    );
+                  }
+                }
+
+                // Default Fallback: Deck
+                return (
+                  <div className="flex-1 relative overflow-visible h-full min-h-0 pb-1" style={{ minHeight: 0 }}>
+                    <SwipeableDeck
+                      candidates={candidates}
+                      user={user}
+                      onLike={handleLike}
+                      onDecline={handleDecline}
+                      onOpenDetail={(c) => setExpandedCandidate(c)}
+                    />
                   </div>
-                  <h3 className="text-base font-extrabold text-slate-900 font-display">2/2 Matches Selected</h3>
-                  <p className="text-xs text-slate-500 max-w-[240px] mt-1 leading-relaxed">
-                    You have selected your 2 matches for Round {roundState.roundNumber}. Chat directly with them in the Chat tab!
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveDirectChatUser(null);
-                      setIsDirectChatActive(false);
-                      setCurrentTab('chat');
-                    }}
-                    className="mt-4 px-6 py-2.5 bg-[#FF2E79] text-white rounded-full text-xs font-extrabold shadow-md shadow-rose-300 cursor-pointer"
-                  >
-                    Open Chats ({user?.matches?.length || 0})
-                  </button>
-                </div>
-              ) : (
-                <div className="flex-1 relative overflow-visible h-full min-h-0 pb-1" style={{ minHeight: 0 }}>
-                  <SwipeableDeck
-                    candidates={candidates}
-                    user={user}
-                    onLike={handleLike}
-                    onDecline={handleDecline}
-                    onOpenDetail={(c) => setExpandedCandidate(c)}
-                  />
-                </div>
-              )}
+                );
+              })()}
             </>
           )}
 

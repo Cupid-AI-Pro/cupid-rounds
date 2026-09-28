@@ -1,4 +1,14 @@
-import { getUsers, saveUsers, getActiveState, setActiveState, createMatch, getCurrentUser, setCurrentUser, getStatesList } from './storage.js';
+import { 
+  getUsers, 
+  saveUsers, 
+  getActiveState, 
+  setActiveState, 
+  createMatch, 
+  getCurrentUser, 
+  setCurrentUser, 
+  getStatesList,
+  claimUserRefund 
+} from './storage.js';
 import { PLANS_INFO } from '../data/mockData.js';
 import { supabase, isSupabaseConfigured } from '../services/supabaseClient.js';
 
@@ -60,41 +70,62 @@ export const getRotationConfig = () => {
 };
 
 /**
- * 2-Day (48-Hour) Round Lifecyle:
- * - Day 1 (0 to 24 Hours): Entries & Payment Submission (Auto-approved by default; Admin can reject fake payments)
- * - Day 2 (24 to 48 Hours): Live Browsing & Matching (Elite 16h early spotlight, Premium 8h, Basic Open)
- * - Hour 48: Instant Matching Delivered & Refund queue populated for unmatched paid users
+ * Automated 4-Phase Round Lifecycle:
+ * 1. Day 1 (0 to 24 Hours): Entries Collection Only (Dashboard shows collecting entries countdown, no candidate profiles)
+ * 2. Day 2 (Next 16 Hours): Elite Tier Spotlight Matching (Top 5 Elite males to Females, females pick up to 2, males decide)
+ * 3. Day 2 (Next 8 Hours): Premium Tier Matching (Remaining females [top 4-7] sent to Premium males with 8h window)
+ * 4. Settlement: Basic Allocation (Remaining pairs matched algorithmically; unmatched basic informed; round finalized)
  */
 export const ROUND_PHASES = {
-  ENTRIES_SUBMISSION: 'entries_submission', // Day 1: 24h Registration, Profiles & Auto-Approved Payments
-  LIVE_MATCHING: 'live_matching',           // Day 2: 24h Live Browsing (Elite 16h, Premium 8h, Basic Open)
-  COMPLETED: 'completed',                    // Hour 48: Round closed, matches revealed, refunds queued
-  
-  // Backward-compatible aliases for legacy imports
-  REGISTRATION: 'entries_submission',
-  ELITE_WINDOW: 'live_matching',
-  PREMIUM_WINDOW: 'live_matching',
-  BASIC_SETTLEMENT: 'live_matching'
+  ENTRIES_COLLECTION: 'entries_collection', // Day 1: 24h Registration & Entries only
+  ELITE_MATCHING: 'elite_matching',         // Day 2 (16 Hours): Top 5 Elite males to females
+  PREMIUM_MATCHING: 'premium_matching',     // Day 2 (8 Hours): Remaining females to premium males
+  BASIC_SETTLEMENT: 'basic_settlement',     // Day 2 Settlement: Basic allocation & closure
+  COMPLETED: 'completed',                    // Round finalized, logs archived, rotates to next state
+
+  // Backward-compatible aliases for legacy components
+  ENTRIES_SUBMISSION: 'entries_collection',
+  LIVE_MATCHING: 'elite_matching',
+  REGISTRATION: 'entries_collection',
+  ELITE_WINDOW: 'elite_matching',
+  PREMIUM_WINDOW: 'premium_matching'
 };
 
 export const PHASE_LABELS = {
-  [ROUND_PHASES.ENTRIES_SUBMISSION]: { 
-    title: 'Entries & Payment Submission', 
-    subtitle: 'Profiles & Auto-Approved Payments Open (Admin Manual Rejection)', 
+  [ROUND_PHASES.ENTRIES_COLLECTION]: { 
+    title: 'Entries & Profile Indexing', 
+    subtitle: 'Collecting Entries for Matchmaking (Profiles locked until window closes)', 
     duration: '24 Hours (Day 1)', 
+    durationHours: 24,
     step: 1 
   },
-  [ROUND_PHASES.LIVE_MATCHING]: { 
-    title: 'Live Browsing & Matching Window', 
-    subtitle: 'Elite (16h Window), Premium (8h Window) & Basic Allocation', 
-    duration: '24 Hours (Day 2)', 
+  [ROUND_PHASES.ELITE_MATCHING]: { 
+    title: 'Elite Tier Matching Window', 
+    subtitle: 'Top 5 Elite Males sent to Females (Pick up to 2). Males get notified & decide.', 
+    duration: '16 Hours', 
+    durationHours: 16,
     step: 2 
+  },
+  [ROUND_PHASES.PREMIUM_MATCHING]: { 
+    title: 'Premium Tier Matching Window', 
+    subtitle: 'Remaining Females (Top 4-7) sent to Premium Males with 8h Decision Window.', 
+    duration: '8 Hours', 
+    durationHours: 8,
+    step: 3 
+  },
+  [ROUND_PHASES.BASIC_SETTLEMENT]: { 
+    title: 'Basic Matching & Round Settlement', 
+    subtitle: 'Remaining Pairs Matched Algorithmically & Round Archives Finalized.', 
+    duration: 'Instant Settlement', 
+    durationHours: 0,
+    step: 4 
   },
   [ROUND_PHASES.COMPLETED]: { 
     title: 'Round Complete & Matches Delivered', 
-    subtitle: '100% Mutual Matches Revealed. Refunds ready for unmatched paid entries.', 
+    subtitle: '100% Mutual Matches Revealed. Next state in pipeline ready.', 
     duration: 'Finalized', 
-    step: 3 
+    durationHours: 0,
+    step: 5 
   }
 };
 
@@ -428,33 +459,211 @@ export const getAllStateSchedules = () => {
 };
 
 /**
- * PHASE TRANSITION LOGIC: Advance round to next phase
+ * PHASE TRANSITION & AUTOMATED DISTRIBUTION ENGINES
  */
 import { calculateCompatibilityScore } from './compatibility.js';
+
+/**
+ * TIER 1: Elite Profile Distribution to Females (16-Hour Matching Window)
+ * - Ranks Elite males by mutual preference compatibility with each female.
+ * - Sends top 5 (or all available) Elite males to female's assignedCandidates.
+ * - Notifies females: "Choose your match! Top 5 Elite profiles are ready."
+ */
+export const distributeEliteProfilesToFemales = (targetStateName) => {
+  const stateName = targetStateName || getRoundState().activeState || 'Delhi NCR';
+  const allUsers = getUsers();
+  const stateUsers = allUsers.filter(u => (u.state || '').toLowerCase() === stateName.toLowerCase() && u.status === 'active');
+
+  const females = stateUsers.filter(u => (u.gender || '').toLowerCase() === 'female');
+  const eliteMales = stateUsers.filter(u => (u.gender || '').toLowerCase() === 'male' && u.plan === 'elite');
+
+  females.forEach(female => {
+    // Score all elite males against this female's preferences
+    const scoredMales = eliteMales.map(male => ({
+      male,
+      score: calculateCompatibilityScore(male, female)
+    })).sort((a, b) => b.score - a.score);
+
+    // Pick top 5 (or all available if < 5)
+    const top5 = scoredMales.slice(0, 5).map(item => item.male.id);
+    female.assignedCandidates = top5;
+    female.assignedEliteCandidates = top5;
+
+    // Send in-app and push notification
+    import('../services/notificationManager').then(({ addNotification }) => {
+      addNotification(female.id, {
+        type: 'match_ready',
+        title: 'Profiles Are Ready! 💖',
+        message: `Top ${top5.length} Elite profiles curated for you in Round #${getRoundState().roundNumber || 1}. Choose up to 2 matches within 16 hours!`,
+        actionUrl: 'explore'
+      });
+    }).catch(() => {});
+  });
+
+  saveUsers(allUsers);
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('cupid_data_changed'));
+  }
+  return { femaleCount: females.length, eliteMaleCount: eliteMales.length };
+};
+
+/**
+ * TIER 2: Premium Profile Distribution to Males (8-Hour Matching Window)
+ * - Auto-refunds any Elite males who got 0 matches during 16h window.
+ * - Identifies remaining available females (< 2 matches).
+ * - Sends top 4 to 7 females to each Premium male based on preferences.
+ * - Notifies Premium males: "Profiles ready! Choose your match within 8 hours."
+ */
+export const distributePremiumProfilesToMales = (targetStateName) => {
+  const stateName = targetStateName || getRoundState().activeState || 'Delhi NCR';
+  const allUsers = getUsers();
+  const stateUsers = allUsers.filter(u => (u.state || '').toLowerCase() === stateName.toLowerCase() && u.status === 'active');
+
+  // 1. Auto-refund Elite males who didn't get any mutual matches
+  const eliteMales = stateUsers.filter(u => (u.gender || '').toLowerCase() === 'male' && u.plan === 'elite');
+  eliteMales.forEach(male => {
+    const hasMatch = Array.isArray(male.matches) && male.matches.length > 0;
+    if (!hasMatch && !male.refundClaimedInRound) {
+      claimUserRefund(male.id, 'Auto-refund: 16h Elite matching window expired without a mutual match');
+    }
+  });
+
+  // 2. Find remaining available females (less than 2 matches)
+  const availableFemales = stateUsers.filter(u => (u.gender || '').toLowerCase() === 'female' && (!u.matches || u.matches.length < 2));
+  const premiumMales = stateUsers.filter(u => (u.gender || '').toLowerCase() === 'male' && u.plan === 'premium' && (!u.matches || u.matches.length === 0));
+
+  premiumMales.forEach(male => {
+    const scoredFemales = availableFemales.map(female => ({
+      female,
+      score: calculateCompatibilityScore(male, female)
+    })).sort((a, b) => b.score - a.score);
+
+    // Pick top 4 to 7 females (or all remaining if < 4)
+    const countToPick = Math.min(Math.max(4, Math.min(7, scoredFemales.length)), scoredFemales.length);
+    const topCandidates = scoredFemales.slice(0, countToPick).map(item => item.female.id);
+    male.assignedCandidates = topCandidates;
+    male.assignedPremiumCandidates = topCandidates;
+
+    import('../services/notificationManager').then(({ addNotification }) => {
+      addNotification(male.id, {
+        type: 'match_ready',
+        title: 'Premium Profiles Ready! ✨',
+        message: `Top ${topCandidates.length} profiles waiting for your review in Round #${getRoundState().roundNumber || 1}. 8 hours remaining to select!`,
+        actionUrl: 'explore'
+      });
+    }).catch(() => {});
+  });
+
+  saveUsers(allUsers);
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('cupid_data_changed'));
+  }
+  return { availableFemalesCount: availableFemales.length, premiumMalesCount: premiumMales.length };
+};
+
+/**
+ * TIER 3: Basic Settlement & Completion
+ * - Auto-refunds any Premium males who got 0 matches during 8h window.
+ * - Algorithmically pairs remaining females with Basic males.
+ * - Delivers confirmed matches immediately to dashboards.
+ * - Informs unmatched Basic males with polite notice ("Next time choose refundable plans").
+ * - Archives round snapshot to Round Logs!
+ */
+export const settleBasicUsersMatching = (targetStateName) => {
+  const stateName = targetStateName || getRoundState().activeState || 'Delhi NCR';
+  const allUsers = getUsers();
+  const stateUsers = allUsers.filter(u => (u.state || '').toLowerCase() === stateName.toLowerCase() && u.status === 'active');
+
+  // 1. Auto-refund Premium males who didn't get any mutual matches
+  const premiumMales = stateUsers.filter(u => (u.gender || '').toLowerCase() === 'male' && u.plan === 'premium');
+  premiumMales.forEach(male => {
+    const hasMatch = Array.isArray(male.matches) && male.matches.length > 0;
+    if (!hasMatch && !male.refundClaimedInRound) {
+      claimUserRefund(male.id, 'Auto-refund: 8h Premium matching window expired without a match');
+    }
+  });
+
+  // 2. Remaining available females & Basic males
+  const freshUsers = getUsers();
+  const remainingFemales = freshUsers.filter(u => (u.state || '').toLowerCase() === stateName.toLowerCase() && u.status === 'active' && (u.gender || '').toLowerCase() === 'female' && (!u.matches || u.matches.length < 2));
+  const remainingBasicMales = freshUsers.filter(u => (u.state || '').toLowerCase() === stateName.toLowerCase() && u.status === 'active' && (u.gender || '').toLowerCase() === 'male' && (!u.plan || u.plan === 'basic') && (!u.matches || u.matches.length === 0));
+
+  let basicMatchesCount = 0;
+  const candidatePairs = [];
+  remainingBasicMales.forEach(m => {
+    remainingFemales.forEach(f => {
+      const score = calculateCompatibilityScore(m, f);
+      candidatePairs.push({ male: m, female: f, score });
+    });
+  });
+
+  candidatePairs.sort((a, b) => b.score - a.score);
+
+  candidatePairs.forEach(pair => {
+    const freshM = freshUsers.find(u => u.id === pair.male.id);
+    const freshF = freshUsers.find(u => u.id === pair.female.id);
+    if (freshM && freshF) {
+      const maleHasMatch = freshM.matches && freshM.matches.length >= 1;
+      const femaleHasMatches = freshF.matches && freshF.matches.length >= 2;
+      const alreadyMatched = freshM.matches && freshM.matches.includes(freshF.id);
+
+      if (!maleHasMatch && !femaleHasMatches && !alreadyMatched) {
+        createMatch(freshM.id, freshF.id);
+        freshM.matchScore = pair.score;
+        freshF.matchScore = pair.score;
+        basicMatchesCount++;
+      }
+    }
+  });
+
+  // 3. Notify unmatched Basic males
+  const finalUsers = getUsers();
+  const unmatchedBasic = finalUsers.filter(u => (u.state || '').toLowerCase() === stateName.toLowerCase() && u.status === 'active' && (u.gender || '').toLowerCase() === 'male' && (!u.plan || u.plan === 'basic') && (!u.matches || u.matches.length === 0));
+  unmatchedBasic.forEach(u => {
+    u.unmatchedNotice = true;
+    import('../services/notificationManager').then(({ addNotification }) => {
+      addNotification(u.id, {
+        type: 'round_complete',
+        title: 'Round Complete',
+        message: "We're sorry, no mutual match could be found for your profile this round. Next time, choose our Refundable Plans (Elite or Premium) for priority matching and 100% money-back guarantee!",
+        actionUrl: 'profile'
+      });
+    }).catch(() => {});
+  });
+
+  saveUsers(finalUsers);
+
+  // 4. Archive snapshot to Round Logs
+  archiveCurrentRound('completed', `Automated round completed for ${stateName}`);
+
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('cupid_data_changed'));
+  }
+
+  return { basicMatches: basicMatchesCount };
+};
 
 export const advanceRoundPhase = () => {
   const current = getRoundState();
   let nextPhase = current.currentPhase;
 
-  if (current.currentPhase === ROUND_PHASES.REGISTRATION) {
-    // Transition from Registration (24h) -> Elite Window (16h)
-    nextPhase = ROUND_PHASES.ELITE_WINDOW;
-    runAlgorithmicMatchEngine(current.activeState);
+  if (current.currentPhase === ROUND_PHASES.ENTRIES_COLLECTION || current.currentPhase === 'entries_submission') {
+    // Transition: Entries (24h) -> Elite Tier Matching (16h)
+    nextPhase = ROUND_PHASES.ELITE_MATCHING;
+    distributeEliteProfilesToFemales(current.activeState);
 
-  } else if (current.currentPhase === ROUND_PHASES.ELITE_WINDOW) {
-    // Transition from Elite -> Premium Window (8h)
-    nextPhase = ROUND_PHASES.PREMIUM_WINDOW;
-    runAlgorithmicMatchEngine(current.activeState);
+  } else if (current.currentPhase === ROUND_PHASES.ELITE_MATCHING || current.currentPhase === 'live_matching') {
+    // Transition: Elite (16h) -> Premium Tier Matching (8h)
+    nextPhase = ROUND_PHASES.PREMIUM_MATCHING;
+    distributePremiumProfilesToMales(current.activeState);
 
-  } else if (current.currentPhase === ROUND_PHASES.PREMIUM_WINDOW) {
-    // Transition from Premium -> Basic Settlement
+  } else if (current.currentPhase === ROUND_PHASES.PREMIUM_MATCHING) {
+    // Transition: Premium (8h) -> Basic Settlement
     nextPhase = ROUND_PHASES.BASIC_SETTLEMENT;
-    runAlgorithmicMatchEngine(current.activeState);
+    settleBasicUsersMatching(current.activeState);
 
   } else if (current.currentPhase === ROUND_PHASES.BASIC_SETTLEMENT || current.currentPhase === ROUND_PHASES.COMPLETED) {
-    // Current state round is completed! Run matching engine & rotate state to NEXT state in rotation list!
-    runAlgorithmicMatchEngine(current.activeState);
-
+    // Completed! Rotate state to next state in fixed 10-day cycle!
     const states = getStatesList();
     const currentIdx = states.findIndex(s => s.toLowerCase() === (current.activeState || '').toLowerCase());
     const nextIdx = (currentIdx + 1) % states.length;
@@ -478,7 +687,7 @@ export const advanceRoundPhase = () => {
  */
 export const forceRotateToNextState = () => {
   const current = getRoundState();
-  runAlgorithmicMatchEngine(current.activeState);
+  settleBasicUsersMatching(current.activeState);
 
   const states = getStatesList();
   const currentIdx = states.findIndex(s => s.toLowerCase() === (current.activeState || '').toLowerCase());
@@ -495,7 +704,7 @@ export const forceRotateToNextState = () => {
         addNotification(u.id, {
           type: 'round_live',
           title: 'Live Round Start',
-          message: `Round ${updated.roundNumber || 1} for ${nextState} is now LIVE! Join now to view matches.`,
+          message: `Round ${updated.roundNumber || 1} for ${nextState} is now LIVE! Join now to submit your entry.`,
           actionUrl: 'explore'
         });
       });
@@ -505,152 +714,14 @@ export const forceRotateToNextState = () => {
   return updated;
 };
 
-/**
- * 3-Tier Algorithmic Matching Engine for Cupid Rounds
- * 1. Elite (₹449) Spotlight Window -> Highest compatibility Elite Boys shown to Females first.
- * 2. Premium (₹250) Window -> High compatibility Premium Boys shown to remaining available Females (< 2 matches).
- * 3. Basic (₹100) Allocation -> Mutual compatibility scoring across remaining pairs.
- * Enforces female max 2 matches and male max 1 match per round.
- */
 export const runAlgorithmicMatchEngine = (targetStateName) => {
-  const stateName = targetStateName || getRoundState().activeState || 'Delhi NCR';
-  const allUsers = getUsers();
-  const stateUsers = allUsers.filter(u => u.state === stateName && u.status === 'active');
-
-  const males = stateUsers.filter(u => (u.gender || '').toLowerCase() === 'male');
-  const females = stateUsers.filter(u => (u.gender || '').toLowerCase() === 'female');
-
-  let eliteMatchCount = 0;
-  let premiumMatchCount = 0;
-  let basicMatchCount = 0;
-
-  // --------------------------------------------------------------------------
-  // TIER 1: ELITE PLAN (₹449) SPOTLIGHT MATCHING
-  // --------------------------------------------------------------------------
-  const eliteMales = males.filter(m => m.plan === 'elite');
-
-  eliteMales.forEach((male) => {
-    if (male.matches && male.matches.length >= 1) return;
-
-    const availableFemales = females.filter(f => !f.matches || f.matches.length < 2);
-
-    const scoredFemales = availableFemales.map(female => ({
-      female,
-      score: calculateCompatibilityScore(male, female)
-    })).sort((a, b) => b.score - a.score);
-
-    for (const item of scoredFemales) {
-      const f = item.female;
-      if (!f.matches) f.matches = [];
-      if (f.matches.length < 2 && !f.matches.includes(male.id)) {
-        createMatch(male.id, f.id);
-        male.matchScore = item.score;
-        f.matchScore = item.score;
-        eliteMatchCount++;
-        break; // Male gets max 1 match
-      }
-    }
-  });
-
-  // --------------------------------------------------------------------------
-  // TIER 2: PREMIUM PLAN (₹250) BROWSING MATCHING
-  // --------------------------------------------------------------------------
-  const freshUsers1 = getUsers();
-  const premiumMales = freshUsers1.filter(u => u.state === stateName && u.status === 'active' && (u.gender || '').toLowerCase() === 'male' && u.plan === 'premium');
-
-  premiumMales.forEach((male) => {
-    if (male.matches && male.matches.length >= 1) return;
-
-    const availableFemales = freshUsers1.filter(u => u.state === stateName && u.status === 'active' && (u.gender || '').toLowerCase() === 'female' && (!u.matches || u.matches.length < 2));
-
-    const scoredFemales = availableFemales.map(female => ({
-      female,
-      score: calculateCompatibilityScore(male, female)
-    })).sort((a, b) => b.score - a.score);
-
-    for (const item of scoredFemales) {
-      const f = item.female;
-      if (!f.matches) f.matches = [];
-      if (f.matches.length < 2 && !f.matches.includes(male.id)) {
-        createMatch(male.id, f.id);
-        male.matchScore = item.score;
-        f.matchScore = item.score;
-        premiumMatchCount++;
-        break;
-      }
-    }
-  });
-
-  // --------------------------------------------------------------------------
-  // TIER 3: BASIC PLAN (₹100) & REMAINING PAIRS AUTO-SETTLEMENT
-  // --------------------------------------------------------------------------
-  const freshUsers2 = getUsers();
-  const remainingMales = freshUsers2.filter(u => u.state === stateName && u.status === 'active' && (u.gender || '').toLowerCase() === 'male' && (!u.matches || u.matches.length < 1));
-  const remainingFemales = freshUsers2.filter(u => u.state === stateName && u.status === 'active' && (u.gender || '').toLowerCase() === 'female' && (!u.matches || u.matches.length < 2));
-
-  const candidatePairs = [];
-  remainingMales.forEach(m => {
-    remainingFemales.forEach(f => {
-      const score = calculateCompatibilityScore(m, f);
-      candidatePairs.push({ male: m, female: f, score });
-    });
-  });
-
-  candidatePairs.sort((a, b) => b.score - a.score);
-
-  candidatePairs.forEach(pair => {
-    const freshM = freshUsers2.find(u => u.id === pair.male.id);
-    const freshF = freshUsers2.find(u => u.id === pair.female.id);
-
-    if (freshM && freshF) {
-      const maleHasMatch = freshM.matches && freshM.matches.length >= 1;
-      const femaleHasMatches = freshF.matches && freshF.matches.length >= 2;
-      const alreadyMatched = freshM.matches && freshM.matches.includes(freshF.id);
-
-      if (!maleHasMatch && !femaleHasMatches && !alreadyMatched) {
-        createMatch(freshM.id, freshF.id);
-        freshM.matchScore = pair.score;
-        freshF.matchScore = pair.score;
-        basicMatchCount++;
-      }
-    }
-  });
-
-  // Check refund eligibility for Elite/Premium/Basic males who got no matches
-  const finalUsers = getUsers();
-  finalUsers.forEach(u => {
-    if (u.state === stateName && u.status === 'active' && (u.gender || '').toLowerCase() === 'male') {
-      const hasMatch = u.matches && u.matches.length > 0;
-      if (!hasMatch) {
-        if (u.plan === 'elite' || u.plan === 'premium' || u.plan === 'basic') {
-          const refundAmt = u.plan === 'elite' ? 449 : (u.plan === 'premium' ? 250 : 100);
-          u.refundEligible = true;
-          u.refundStatus = 'pending';
-          u.refundAmount = refundAmt;
-          u.refundReason = `No mutual match found for Round #${getRoundState().roundNumber || 1}`;
-
-          import('../services/notificationManager').then(({ addNotification }) => {
-            addNotification(u.id, {
-              type: 'refund',
-              title: 'Round Complete - Refund Eligible',
-              message: `No mutual match could be formed for this round. Your plan payment of ₹${refundAmt} is eligible for a full refund. Admin has been notified.`,
-              actionUrl: 'profile'
-            });
-          });
-        }
-      }
-    }
-  });
-  saveUsers(finalUsers);
-
-  return {
-    stateName,
-    eliteMatches: eliteMatchCount,
-    premiumMatches: premiumMatchCount,
-    basicMatches: basicMatchCount,
-    totalMatchedPairs: eliteMatchCount + premiumMatchCount + basicMatchCount
-  };
+  const state = targetStateName || getRoundState().activeState || 'Delhi NCR';
+  distributeEliteProfilesToFemales(state);
+  distributePremiumProfilesToMales(state);
+  return settleBasicUsersMatching(state);
 };
+
+
 
 /**
  * Start a brand new round for the state (Round 2, Round 3, etc.)
@@ -740,60 +811,35 @@ export const joinRound = (userId, planName = 'basic') => {
  */
 export const checkAndRotateRoundAutomated = () => {
   const current = getRoundState();
-  if (!current) return;
+  if (!current || current.isPaused) return;
 
-  const now = new Date();
-  const roundStart = new Date(current.roundStartDate || current.phaseStartedAt || Date.now());
-  const totalRoundElapsedMins = Math.max(0, (now.getTime() - roundStart.getTime()) / (1000 * 60));
+  const now = Date.now();
+  const phaseStart = new Date(current.phaseStartedAt || current.roundStartDate || Date.now()).getTime();
+  const elapsedSecs = Math.max(0, Math.floor((now - phaseStart) / 1000));
 
   const isFastDemo = typeof window !== 'undefined' && localStorage.getItem('cupid_demo_rotation_speed') === 'fast';
-  const isAutoRotationEnabled = typeof window !== 'undefined' && localStorage.getItem('cupid_auto_rotation_enabled') === 'true';
 
-  // 48 hours = 2880 mins in standard real-time mode; 4 mins in fast demo mode
-  const maxRoundDurationMins = isFastDemo ? 4 : 2880;
-  const day1DurationMins = isFastDemo ? 2 : 1440; // 24 hours
-
-  // If automated rotation is not explicitly enabled and not in demo mode, preserve state
-  if (!isAutoRotationEnabled && !isFastDemo) {
-    return;
+  // Strict User-Specified Phase Durations:
+  // Phase 1 (Entries Collection): 24 Hours = 86400s (or 120s in demo)
+  // Phase 2 (Elite Matching): 16 Hours = 57600s (or 120s in demo)
+  // Phase 3 (Premium Matching): 8 Hours = 28800s (or 60s in demo)
+  // Phase 4 (Basic Settlement): Settlement & Rotation
+  let phaseDurationSecs = 86400; // default 24h
+  if (current.customDurationHours) {
+    phaseDurationSecs = current.customDurationHours * 3600;
+  } else if (current.currentPhase === ROUND_PHASES.ENTRIES_COLLECTION || current.currentPhase === 'entries_submission') {
+    phaseDurationSecs = isFastDemo ? 120 : 86400; // 24 Hours
+  } else if (current.currentPhase === ROUND_PHASES.ELITE_MATCHING || current.currentPhase === 'live_matching') {
+    phaseDurationSecs = isFastDemo ? 120 : 57600; // 16 Hours
+  } else if (current.currentPhase === ROUND_PHASES.PREMIUM_MATCHING) {
+    phaseDurationSecs = isFastDemo ? 60 : 28800; // 8 Hours
+  } else if (current.currentPhase === ROUND_PHASES.BASIC_SETTLEMENT || current.currentPhase === ROUND_PHASES.COMPLETED) {
+    phaseDurationSecs = isFastDemo ? 30 : 3600;
   }
 
-  // 1. If 48 hours (or demo 4 mins) elapsed: Deliver matches and rotate state in 10-day cycle!
-  if (totalRoundElapsedMins >= maxRoundDurationMins) {
-    const states = getStatesList();
-    const currentIdx = states.findIndex(s => s.toLowerCase() === (current.activeState || '').toLowerCase());
-    const safeCurrentIdx = currentIdx !== -1 ? currentIdx : 0;
-    
-    // Complete matches and populate refund queue
-    runAlgorithmicMatchEngine(current.activeState);
-
-    // Find next state in fixed 10-day rotation
-    let nextIdx = (safeCurrentIdx + 1) % states.length;
-    let nextState = states[nextIdx];
-
-    // If next state is toggled off, keep advancing cycle day without shifting schedule
-    if (!isStateEnabled(nextState)) {
-      console.log(`[Cupid Rotation] State "${nextState}" is toggled OFF by Admin. Round skipped for this cycle.`);
-    }
-
-    startNextRoundForState(nextState);
-    return;
-  }
-
-  // 2. Phase calculation within the 48-Hour round window
-  let expectedPhase = ROUND_PHASES.ENTRIES_SUBMISSION;
-  if (totalRoundElapsedMins >= day1DurationMins) {
-    // Hour 24+ -> Day 2: Live Browsing & Matching (Elite 16h, Premium 8h)
-    expectedPhase = ROUND_PHASES.LIVE_MATCHING;
-  }
-
-  if (current.currentPhase !== expectedPhase) {
-    const updated = {
-      ...current,
-      currentPhase: expectedPhase,
-      phaseStartedAt: new Date().toISOString()
-    };
-    saveRoundState(updated);
+  // If time in current phase has elapsed, transition automatically!
+  if (elapsedSecs >= phaseDurationSecs) {
+    advanceRoundPhase();
   }
 };
 
@@ -997,6 +1043,15 @@ export const alterRoundTiming = ({
   if (newPhase) {
     updated.currentPhase = newPhase;
     updated.phaseStartedAt = new Date().toISOString();
+
+    // Trigger distribution logic immediately for the selected phase
+    if (newPhase === ROUND_PHASES.ELITE_MATCHING || newPhase === 'elite_matching') {
+      distributeEliteProfilesToFemales(updated.activeState);
+    } else if (newPhase === ROUND_PHASES.PREMIUM_MATCHING || newPhase === 'premium_matching') {
+      distributePremiumProfilesToMales(updated.activeState);
+    } else if (newPhase === ROUND_PHASES.BASIC_SETTLEMENT || newPhase === 'basic_settlement') {
+      settleBasicUsersMatching(updated.activeState);
+    }
   }
 
   if (customRoundNumber !== null && customRoundNumber !== undefined) {
