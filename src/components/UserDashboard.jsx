@@ -582,19 +582,12 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
   const matchedUsers = getMatchedUsers();
 
   return (
-    <div className={`flex-1 flex flex-col h-full relative justify-between select-none overflow-hidden ${currentTab === 'chat' && (isDirectChatActive || activeDirectChatUser) ? 'pb-0' : 'pb-20'} bg-gradient-to-b from-[#FFF0F4] via-[#FFEBEF] to-[#FFF5F8]`}>
+    <div className={`flex-1 flex flex-col h-full relative justify-between select-none overflow-hidden ${currentTab === 'chat' && (isDirectChatActive || activeDirectChatUser) ? 'pb-0' : 'pb-20'} bg-[#FBF9FA]`}>
       
-      {/* Background Organic Wave Curves & Floating Soft Pink Heart (Exact Match to Image 1) */}
+      {/* Subtle Ambient Pearl Lighting */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 select-none">
-        <div className="absolute -top-12 -left-12 w-72 h-72 bg-rose-200/40 rounded-full blur-3xl" />
-        <div className="absolute top-[18%] -right-16 w-80 h-80 bg-pink-300/30 rounded-full blur-3xl" />
-        <div className="absolute bottom-[-40px] left-[10%] w-96 h-96 bg-rose-200/30 rounded-full blur-3xl" />
-
-        <svg className="absolute inset-0 w-full h-full opacity-40" viewBox="0 0 390 844" fill="none">
-          <path d="M-60 140 C80 90, 240 200, 450 110" stroke="#FF2E79" strokeWidth="1.8" strokeOpacity="0.25" />
-          <path d="M-20 340 C110 290, 290 440, 430 350" stroke="#FF6584" strokeWidth="2.2" strokeOpacity="0.22" />
-          <path d="M-40 690 C140 630, 230 790, 440 710" stroke="#FF2E79" strokeWidth="2.5" strokeOpacity="0.2" />
-        </svg>
+        <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-96 h-96 bg-rose-200/20 rounded-full blur-3xl" />
+        <div className="absolute bottom-10 right-0 w-80 h-80 bg-pink-100/30 rounded-full blur-3xl" />
       </div>
 
       {/* Floating In-App Notification Toast */}
@@ -637,24 +630,26 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
       {currentTab === 'explore' && (
         <div className="flex-1 flex flex-col px-4 pt-2 pb-2 h-full overflow-hidden z-10 animate-screen-enter">
           
-          {/* Top Header Row (Exact Match to Image 1) */}
+          {/* Top Header Row */}
           <div className="flex items-center justify-between select-none mb-3">
             <div className="flex items-center gap-3">
               <div 
                 onClick={() => setCurrentTab('profile')}
-                className="w-12 h-12 rounded-full p-[2px] bg-gradient-to-tr from-[#FF2E79] via-pink-400 to-rose-300 shadow-md ring-2 ring-pink-100/60 cursor-pointer hover:scale-105 transition-transform shrink-0 saas-tap"
+                className="w-11 h-11 rounded-full p-[2px] bg-gradient-to-tr from-[#FF2E79] to-rose-400 shadow-xs cursor-pointer hover:scale-105 transition-transform shrink-0"
               >
                 <img src={user?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400'} alt={user?.name || 'User'} className="w-full h-full object-cover rounded-full bg-white" />
               </div>
 
               <div className="flex flex-col">
-                <h1 className="text-lg font-black text-slate-900 leading-tight flex items-center">
-                  <span className="font-cursive text-[#FF2E79] text-2xl font-normal tracking-wide mr-1.5">Hello,</span>
-                  <span>{(user?.name || 'User').split(' ')[0]}</span>
-                </h1>
-                <div className="flex items-center gap-1 text-[11px] text-slate-500 font-bold mt-0.5">
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-xs font-semibold text-slate-400">Hello,</span>
+                  <h1 className="text-base font-bold text-slate-900 leading-tight">
+                    {(user?.name || 'User').split(' ')[0]}
+                  </h1>
+                </div>
+                <div className="flex items-center gap-1 text-[11px] text-slate-500 font-medium mt-0.5">
                   <MapPin className="w-3 h-3 text-[#FF2E79]" />
-                  <span>{user?.university ? user.university.split(' ')[0] : 'Bennett'}</span>
+                  <span>{user?.university ? user.university.split(' ')[0] : (user?.state || 'Campus')}</span>
                 </div>
               </div>
             </div>
@@ -751,189 +746,107 @@ export default function UserDashboard({ user, onUpdateUser, onLogout }) {
           {/* DYNAMIC HOME TAB VIEW BASED ON USER STATE ROUND STATUS            */}
           {/* ----------------------------------------------------------------- */}
           
-          {/* CASE 1: USER'S STATE ROUND IS NOT LIVE YET (EXACT MATCH TO IMAGE 1) */}
+          {/* CASE 1: USER'S STATE ROUND IS NOT LIVE YET */}
           {!isUserInActiveState ? (
-            <div className="flex-1 flex flex-col items-center justify-center text-center px-4 py-6 animate-fade-in relative z-20 my-auto select-none">
+            <div className="flex-1 flex flex-col items-center justify-center text-center px-4 py-8 animate-fade-in relative z-20 my-auto select-none max-w-md mx-auto">
               
-              {/* Soft Floating Background Elements */}
-              <div className="absolute top-10 right-8 w-16 h-16 bg-pink-200/25 rounded-full blur-md pointer-events-none" />
-              <div className="absolute bottom-20 left-6 w-20 h-20 bg-rose-200/20 rounded-full blur-lg pointer-events-none" />
-
-              {/* 3D Hourglass Graphic Container */}
-              <div className="relative w-48 h-48 mx-auto mb-5 flex items-center justify-center select-none">
-                <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-pink-200/50 via-rose-100/60 to-pink-50/30 blur-2xl animate-pulse" />
-                <div className="w-40 h-40 rounded-full bg-white/90 backdrop-blur-md border border-pink-100 shadow-[0_12px_35px_rgba(255,182,193,0.35)] flex items-center justify-center relative z-10">
-                  <svg width="96" height="96" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-xl">
-                    <defs>
-                      {/* Top & Bottom Metallic Cap Gradients */}
-                      <linearGradient id="hg_cap_top" x1="15" y1="10" x2="85" y2="24" gradientUnits="userSpaceOnUse">
-                        <stop offset="0%" stopColor="#FAD0C4" />
-                        <stop offset="35%" stopColor="#FF9A9E" />
-                        <stop offset="70%" stopColor="#F472B6" />
-                        <stop offset="100%" stopColor="#BE185D" />
-                      </linearGradient>
-                      <linearGradient id="hg_cap_bottom" x1="15" y1="76" x2="85" y2="90" gradientUnits="userSpaceOnUse">
-                        <stop offset="0%" stopColor="#FAD0C4" />
-                        <stop offset="35%" stopColor="#FF9A9E" />
-                        <stop offset="70%" stopColor="#F472B6" />
-                        <stop offset="100%" stopColor="#BE185D" />
-                      </linearGradient>
-                      {/* Metallic Pillar Gradient */}
-                      <linearGradient id="hg_pillar" x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0%" stopColor="#DB2777" />
-                        <stop offset="30%" stopColor="#FCE7F3" />
-                        <stop offset="70%" stopColor="#F472B6" />
-                        <stop offset="100%" stopColor="#9D174D" />
-                      </linearGradient>
-                      {/* Glass Vessel Translucent Gradient */}
-                      <linearGradient id="hg_glass" x1="25" y1="20" x2="75" y2="80" gradientUnits="userSpaceOnUse">
-                        <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.9" />
-                        <stop offset="40%" stopColor="#FFF0F5" stopOpacity="0.4" />
-                        <stop offset="70%" stopColor="#FBCFE8" stopOpacity="0.5" />
-                        <stop offset="100%" stopColor="#F472B6" stopOpacity="0.8" />
-                      </linearGradient>
-                      {/* Sand Gradients */}
-                      <linearGradient id="hg_sand" x1="25" y1="20" x2="75" y2="80" gradientUnits="userSpaceOnUse">
-                        <stop offset="0%" stopColor="#FF6596" />
-                        <stop offset="50%" stopColor="#FF2E79" />
-                        <stop offset="100%" stopColor="#C2185B" />
-                      </linearGradient>
-                      {/* Drop Shadow Filter */}
-                      <filter id="hg_shadow" x="-20%" y="-20%" width="140%" height="140%">
-                        <feDropShadow dx="0" dy="6" stdDeviation="4" floodColor="#FF2E79" floodOpacity="0.25" />
-                      </filter>
-                    </defs>
-
-                    {/* Ground Ambient Shadow */}
-                    <ellipse cx="50" cy="89" rx="34" ry="4.5" fill="#FF2E79" opacity="0.2" filter="blur(2px)" />
-
-                    {/* 3D Bottom Base Cap */}
-                    <rect x="14" y="79" width="72" height="8" rx="4" fill="url(#hg_cap_bottom)" />
-                    <ellipse cx="50" cy="79" rx="36" ry="4.5" fill="#FFE4E6" opacity="0.8" />
-                    <ellipse cx="50" cy="79" rx="34" ry="3.5" fill="url(#hg_cap_bottom)" />
-
-                    {/* 3D Top Base Cap */}
-                    <rect x="14" y="13" width="72" height="8" rx="4" fill="url(#hg_cap_top)" />
-                    <ellipse cx="50" cy="13" rx="36" ry="4.5" fill="#FFE4E6" opacity="0.9" />
-                    <ellipse cx="50" cy="13" rx="34" ry="3.5" fill="url(#hg_cap_top)" />
-
-                    {/* Side Support Pillars (3D Brass/Rose-Gold Columns) */}
-                    <rect x="17" y="19" width="6" height="62" rx="3" fill="url(#hg_pillar)" />
-                    <rect x="77" y="19" width="6" height="62" rx="3" fill="url(#hg_pillar)" />
-
-                    {/* Glass Body Double Chamber Outer Silhouette */}
-                    <path d="M 27 21 C 27 36 43 45 47 49 C 48.5 50.5 48.5 50.5 47 52 C 43 56 27 65 27 79 H 73 C 73 65 57 56 53 52 C 51.5 50.5 51.5 50.5 53 49 C 57 45 73 36 73 21 Z" 
-                          fill="url(#hg_glass)" 
-                          stroke="#F472B6" 
-                          strokeWidth="2" 
-                          strokeLinejoin="round" 
-                          filter="url(#hg_shadow)" />
-
-                    {/* Top Chamber Sand */}
-                    <path d="M 30 30 C 30 38 43 45 48 49 C 49 50 49 50 48 50 C 43 45 30 38 30 30 Z" fill="url(#hg_sand)" />
-                    <ellipse cx="50" cy="30" rx="20" ry="3" fill="#FF85AD" opacity="0.9" />
-
-                    {/* Animated Falling Sand Stream */}
-                    <line x1="50" y1="49" x2="50" y2="74" stroke="#FF2E79" strokeWidth="2.5" strokeDasharray="3 3" strokeLinecap="round" className="animate-pulse" />
-
-                    {/* Bottom Chamber Accumulated Sand Mound */}
-                    <path d="M 30 79 C 34 71 66 71 70 79 Z" fill="url(#hg_sand)" />
-                    <ellipse cx="50" cy="79" rx="20" ry="3" fill="#D91656" opacity="0.6" />
-
-                    {/* Glossy Glass Specular Highlights */}
-                    <path d="M 30 24 C 30 32 38 38 42 42" stroke="white" strokeWidth="2.5" strokeLinecap="round" opacity="0.75" />
-                    <path d="M 70 58 C 70 66 62 72 58 76" stroke="white" strokeWidth="2.5" strokeLinecap="round" opacity="0.5" />
-                  </svg>
+              {/* Elegant Luxury Emblem */}
+              <div className="relative mb-6 flex items-center justify-center">
+                {/* Subtle Ambient Pulse Ring */}
+                <div className="absolute w-32 h-32 rounded-full bg-gradient-to-tr from-rose-200/40 via-pink-100/50 to-amber-100/30 blur-2xl pointer-events-none" />
+                
+                {/* Sleek Frosted Emblem Plate */}
+                <div className="relative w-28 h-28 rounded-3xl bg-white/90 backdrop-blur-xl border border-rose-100/80 shadow-[0_8px_30px_rgba(255,46,121,0.08)] flex items-center justify-center group">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-50 via-pink-50 to-white flex items-center justify-center border border-rose-100/60 shadow-inner">
+                    <Clock className="w-8 h-8 text-[#FF2E79] stroke-[1.75]" />
+                  </div>
                 </div>
               </div>
 
-              {/* Text Info */}
-              <span className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-slate-400 mb-1 block">
-                YOUR STATE ROUND IS NOT LIVE YET
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-display">
+              {/* Status Badge */}
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-50/80 border border-rose-200/50 text-[10.5px] font-bold uppercase tracking-[0.16em] text-[#FF2E79] mb-3">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#FF2E79] animate-pulse" />
+                Upcoming State Round
+              </div>
+
+              {/* Editorial Headline */}
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight font-display">
                 Next Round for <span className="text-[#FF2E79]">{user?.state || 'Uttar Pradesh'}</span>
               </h2>
-              <span className="text-xs font-semibold text-slate-400 mt-2 mb-3 block">
-                Starts in
-              </span>
 
-              {/* 4-Box Countdown Timer Card (Exact Match to Image 1 & 2) */}
-              <div className="bg-white/95 backdrop-blur-xl rounded-[28px] p-4 sm:p-5 shadow-[0_12px_35px_rgba(255,46,121,0.07)] border border-pink-100/80 max-w-xs sm:max-w-sm w-full mx-auto flex items-center justify-around">
+              <p className="text-xs text-slate-500 font-medium mt-1.5 mb-6">
+                Curated matchmaking opens in
+              </p>
+
+              {/* High-End Monospace Countdown Timer Card */}
+              <div className="bg-white/95 backdrop-blur-xl rounded-2xl p-4 sm:p-5 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-slate-200/70 w-full max-w-xs sm:max-w-sm flex items-center justify-around">
                 <div className="flex flex-col items-center">
-                  <span className="text-2xl sm:text-3xl font-black text-slate-900 font-mono tracking-tight">{countdown.days}</span>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase mt-0.5 tracking-wider">DAYS</span>
+                  <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-mono tracking-tight">{countdown.days}</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase mt-0.5 tracking-wider">Days</span>
                 </div>
                 <div className="h-8 w-[1px] bg-slate-100" />
                 <div className="flex flex-col items-center">
-                  <span className="text-2xl sm:text-3xl font-black text-slate-900 font-mono tracking-tight">{countdown.hours}</span>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase mt-0.5 tracking-wider">HOURS</span>
+                  <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-mono tracking-tight">{countdown.hours}</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase mt-0.5 tracking-wider">Hours</span>
                 </div>
                 <div className="h-8 w-[1px] bg-slate-100" />
                 <div className="flex flex-col items-center">
-                  <span className="text-2xl sm:text-3xl font-black text-slate-900 font-mono tracking-tight">{countdown.mins}</span>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase mt-0.5 tracking-wider">MINS</span>
+                  <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-mono tracking-tight">{countdown.mins}</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase mt-0.5 tracking-wider">Mins</span>
                 </div>
                 <div className="h-8 w-[1px] bg-slate-100" />
                 <div className="flex flex-col items-center">
-                  <span className="text-2xl sm:text-3xl font-black text-[#FF2E79] font-mono tracking-tight">{countdown.secs}</span>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase mt-0.5 tracking-wider">SECS</span>
+                  <span className="text-2xl sm:text-3xl font-extrabold text-[#FF2E79] font-mono tracking-tight">{countdown.secs}</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase mt-0.5 tracking-wider">Secs</span>
                 </div>
               </div>
 
-              <p className="text-xs text-slate-500 font-medium max-w-xs mx-auto mt-6 leading-relaxed">
-                We'll notify you as soon as the round goes live on your phone.
-              </p>
+              {/* Informative Push Notification Note */}
+              <div className="inline-flex items-center gap-2 mt-6 px-3.5 py-1.5 rounded-full bg-slate-50/90 border border-slate-200/60 text-[11px] font-medium text-slate-600">
+                <Bell className="w-3.5 h-3.5 text-[#FF2E79]" />
+                <span>You'll get a notification the instant the round goes live</span>
+              </div>
 
             </div>
           ) : (!isUserParticipating) ? (
 
-            /* CASE 2: USER'S STATE ROUND IS LIVE NOW -> RE-ENTER PROMPT (EXACT MATCH TO IMAGE 2) */
-            <div className="flex-1 flex flex-col items-center justify-center text-center px-4 py-6 animate-fade-in relative z-20 my-auto select-none">
+            /* CASE 2: USER'S STATE ROUND IS LIVE NOW -> RE-ENTER PROMPT */
+            <div className="flex-1 flex flex-col items-center justify-center text-center px-4 py-8 animate-fade-in relative z-20 my-auto select-none max-w-md mx-auto">
               
-              {/* 3D Floating Pink Hearts Graphic Container */}
-              <div className="relative w-44 h-44 mx-auto mb-6 flex items-center justify-center">
-                <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-pink-200/60 via-rose-100/80 to-pink-50/40 blur-xl animate-pulse" />
-                <div className="w-36 h-36 rounded-full bg-white/80 backdrop-blur-md border border-pink-100 shadow-[0_10px_30px_rgba(255,182,193,0.4)] flex items-center justify-center relative z-10">
-                  <svg width="76" height="76" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-lg">
-                    <path d="M48 22C41.5 22 37 27 35 30C33 27 28.5 22 22 22C13.5 22 8 28.5 8 37C8 51 27 64 35 68C43 64 62 51 62 37C62 28.5 56.5 22 48 22Z" fill="url(#heart_main_2)" />
-                    <path d="M22 25C17 25 12.5 29.5 12 35C13 31 16.5 27.5 21 27C23 26.8 24 25.5 22 25Z" fill="white" fillOpacity="0.6" />
-                    <path d="M58 38C53 38 49.5 42 48 44.5C46.5 42 43 38 38 38C31.5 38 27 43 27 49.5C27 60 41.5 70 48 73C54.5 70 69 60 69 49.5C69 43 64.5 38 58 38Z" fill="url(#heart_front_2)" />
-                    <path d="M38 40.5C34 40.5 30.5 44 30 48.5C31 45 33.5 42.5 37 42C38.5 41.8 39.5 40.8 38 40.5Z" fill="white" fillOpacity="0.75" />
-                    <defs>
-                      <linearGradient id="heart_main_2" x1="8" y1="22" x2="62" y2="68" gradientUnits="userSpaceOnUse">
-                        <stop stopColor="#FF5C93" />
-                        <stop offset="0.5" stopColor="#FF2E79" />
-                        <stop offset="1" stopColor="#D91656" />
-                      </linearGradient>
-                      <linearGradient id="heart_front_2" x1="27" y1="38" x2="69" y2="73" gradientUnits="userSpaceOnUse">
-                        <stop stopColor="#FFE0EB" />
-                        <stop offset="0.6" stopColor="#FFB3CB" />
-                        <stop offset="1" stopColor="#FF7CA8" />
-                      </linearGradient>
-                    </defs>
-                  </svg>
+              {/* Elegant Luxury Live Emblem */}
+              <div className="relative mb-6 flex items-center justify-center">
+                {/* Subtle Ambient Pulse Ring */}
+                <div className="absolute w-32 h-32 rounded-full bg-gradient-to-tr from-rose-200/50 via-pink-100/60 to-purple-100/40 blur-2xl pointer-events-none" />
+                
+                {/* Sleek Frosted Emblem Plate */}
+                <div className="relative w-28 h-28 rounded-3xl bg-white/90 backdrop-blur-xl border border-rose-100/80 shadow-[0_8px_30px_rgba(255,46,121,0.1)] flex items-center justify-center">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-500 to-[#FF2E79] flex items-center justify-center shadow-md shadow-rose-500/25">
+                    <Sparkles className="w-8 h-8 text-white stroke-[2]" />
+                  </div>
                 </div>
               </div>
 
-              {/* Text Info */}
-              <span className="text-[10.5px] font-extrabold uppercase tracking-[0.2em] text-slate-500 mb-1 block">
-                ROUND #{roundState?.roundNumber || 1} IS LIVE NOW
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-display">
-                <span className="text-[#FF2E79]">{user?.state || 'Uttar Pradesh'}</span> Round is Live!
+              {/* Live Badge */}
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200/60 text-[10.5px] font-bold uppercase tracking-[0.16em] text-emerald-700 mb-3">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+                Round #{roundState?.roundNumber || 1} • Live Now
+              </div>
+
+              {/* Editorial Headline */}
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight font-display">
+                <span className="text-[#FF2E79]">{user?.state || 'Uttar Pradesh'}</span> Round is Active
               </h2>
 
               <p className="text-xs text-slate-500 font-medium max-w-xs mx-auto mt-2 mb-6 leading-relaxed">
-                You can now enter the round and get matched with profiles from your state.
+                Matchmaking entries are live in your state. Enter now to explore verified profiles and connect.
               </p>
 
-              {/* Re-Enter Round Button */}
+              {/* Refined Luxury Button */}
               <button
                 onClick={() => setShowReEntryModal(true)}
-                className="w-full max-w-[240px] py-3.5 bg-gradient-to-r from-[#FF2E79] via-pink-600 to-rose-500 hover:from-rose-600 hover:to-pink-600 text-white font-extrabold text-sm rounded-full shadow-lg shadow-pink-300/60 flex items-center justify-center gap-2 active:scale-95 transition-all cursor-pointer"
+                className="w-full max-w-[240px] py-3.5 bg-gradient-to-r from-[#FF2E79] via-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-extrabold text-sm rounded-full shadow-lg shadow-rose-500/20 hover:shadow-xl hover:shadow-rose-500/30 flex items-center justify-center gap-2 active:scale-95 transition-all cursor-pointer"
               >
-                <span>Re-Enter Round</span>
+                <span>Enter Round Deck</span>
                 <ChevronRight className="w-4 h-4 stroke-[3]" />
               </button>
 

@@ -554,10 +554,11 @@ export default function AuthPage({ onLoginSuccess, activeState, showLoginInPhone
           <CupidLogo size="sm" showText={true} textColor="dark" textSubtitle={`${liveState} • ROUND ${liveRoundNum}`} />
         </div>
 
-        {/* Decorative Top-Right Cursive Handwriting */}
-        <div className="shrink-0 text-right pointer-events-none select-none">
-          <span className="font-cursive text-[#E085A3] font-medium text-[14px] sm:text-[16px] leading-tight block rotate-[-4deg]">
-            Good People<br />Brighter Stories
+        {/* Top-Right Trust Badge */}
+        <div className="shrink-0 text-right select-none">
+          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 bg-white/90 border border-slate-200/70 px-2.5 py-1 rounded-full shadow-2xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            Verified Match
           </span>
         </div>
       </div>

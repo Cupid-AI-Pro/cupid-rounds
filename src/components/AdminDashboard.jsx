@@ -896,10 +896,10 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
   // 2. MAIN ADMIN DASHBOARD VIEW (MATCHING IMAGE 2 EXACTLY)
   // ═══════════════════════════════════════════════════════════════════════════
   return (
-    <div className="min-h-screen bg-[#FFF5F8] flex flex-col md:flex-row text-slate-800 font-sans select-none">
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col md:flex-row text-slate-800 font-sans select-none">
       
       {/* MOBILE TOP HEADER BAR */}
-      <div className="md:hidden bg-white border-b border-[#FFE1EB] px-4 py-3 flex items-center justify-between sticky top-0 z-40">
+      <div className="md:hidden bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between sticky top-0 z-40">
         <div className="flex items-center gap-2">
           <CupidLogo size="sm" textColor="dark" />
           <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Admin</span>
@@ -908,16 +908,16 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 rounded-xl bg-rose-50 text-[#FF2E79] border border-rose-100"
+            className="p-2 rounded-xl bg-slate-100 text-slate-700 border border-slate-200"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
       </div>
 
-      {/* LEFT SIDEBAR PANEL (Matching Image 2) */}
+      {/* LEFT SIDEBAR PANEL */}
       <aside className={`
-        fixed md:sticky top-0 bottom-0 left-0 z-50 w-64 bg-white border-r border-[#FFE1EB] p-5 flex flex-col justify-between transition-transform duration-300 ease-in-out
+        fixed md:sticky top-0 bottom-0 left-0 z-50 w-64 bg-white border-r border-slate-200/80 p-5 flex flex-col justify-between transition-transform duration-300 ease-in-out
         ${mobileMenuOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full md:translate-x-0'}
       `}>
         <div className="space-y-6">
@@ -925,7 +925,7 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
           <div className="flex items-center justify-between">
             <div>
               <CupidLogo size="md" textColor="dark" />
-              <p className="text-[11px] font-bold text-slate-400 mt-0.5 tracking-wide">Admin Panel</p>
+              <p className="text-[11px] font-bold text-slate-400 mt-0.5 tracking-wide">Command Center</p>
             </div>
             <button 
               className="md:hidden text-slate-400 hover:text-slate-600"
@@ -949,8 +949,8 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                   }}
                   className={`w-full px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-between transition-all cursor-pointer ${
                     isActive
-                      ? 'bg-[#FFEBF2] text-[#FF2E79] shadow-xs'
-                      : 'text-slate-600 hover:bg-rose-50/50 hover:text-slate-900'
+                      ? 'bg-rose-50 text-[#FF2E79] shadow-2xs font-extrabold'
+                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -970,8 +970,9 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
 
         {/* Sidebar Footer */}
         <div className="pt-4 border-t border-slate-100 space-y-3">
-          <div className="text-center">
-            <p className="font-cursive text-sm text-[#FF2E79] font-bold">Good People Brighter Stories</p>
+          <div className="flex items-center justify-center gap-1.5 text-[11px] font-semibold text-slate-400">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            <span>Live Matchmaker Engine</span>
           </div>
 
           <button
@@ -996,7 +997,7 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
               placeholder="Search users, matches, reports..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-9 sm:h-10 pl-10 pr-4 rounded-full bg-white border border-[#FFE1EB] text-xs text-slate-700 focus:outline-none focus:border-[#FF2E79] shadow-2xs"
+              className="w-full h-9 sm:h-10 pl-10 pr-4 rounded-full bg-white border border-slate-200 text-xs text-slate-700 focus:outline-none focus:border-rose-400 shadow-2xs"
             />
           </div>
 
@@ -1030,7 +1031,7 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
               <button
                 type="button"
                 onClick={() => setActiveNav('verifications')}
-                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-[#FFE1EB] flex items-center justify-center relative text-slate-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center relative text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
                 title="Notifications / Pending Verifications"
               >
                 <Bell className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
@@ -1039,7 +1040,7 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                 )}
               </button>
 
-              <div className="flex items-center gap-2 bg-white border border-[#FFE1EB] px-2.5 py-1 rounded-full shadow-2xs">
+              <div className="flex items-center gap-2 bg-white border border-slate-200 px-2.5 py-1 rounded-full shadow-2xs">
                 <img
                   src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"
                   alt="Admin Profile"
@@ -1052,7 +1053,7 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
         </div>
 
         {/* ═══════════════════════════════════════════════════════════════════════
-            VIEW 1: MAIN DASHBOARD OVERVIEW (IMAGE 2 EXACT MATCH)
+            VIEW 1: MAIN DASHBOARD OVERVIEW
            ═══════════════════════════════════════════════════════════════════════ */}
         {activeNav === 'dashboard' && (
           <div className="space-y-4 sm:space-y-6">
@@ -1069,8 +1070,11 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
               </div>
 
               <div className="flex items-center gap-3">
-                <span className="font-cursive text-sm text-[#FF2E79] font-bold hidden md:inline">Good People Brighter Stories</span>
-                <div className="bg-white border border-[#FFE1EB] px-3 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold text-slate-700 flex items-center gap-1.5 shadow-2xs">
+                <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200/60 text-[11px] font-bold text-emerald-700">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Match Engine: Automated (4-Phase)
+                </div>
+                <div className="bg-white border border-slate-200 px-3 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold text-slate-700 flex items-center gap-1.5 shadow-2xs">
                   <Calendar className="w-3.5 h-3.5 text-[#FF2E79]" />
                   <span>{new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                 </div>
@@ -1110,9 +1114,9 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
               }).slice(0, 3);
 
               return (
-                <div className="bg-white rounded-3xl p-5 sm:p-6 border border-[#FFE1EB] shadow-xs space-y-5 text-slate-800">
+                <div className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs space-y-5 text-slate-800">
                   {/* Top Bar: Round Header & Quick Operational Controls */}
-                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-[#FFE1EB] pb-4">
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-slate-100 pb-4">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2.5 flex-wrap">
                         <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 ${
@@ -1125,7 +1129,7 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                         </span>
                         <h2 className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
                           <span>Cupid Round #{currentRoundNum}</span>
-                          <span className="text-[#FF2E79]">•</span>
+                          <span className="text-slate-300">•</span>
                           <span className="text-[#FF2E79] font-black">{currentActiveState}</span>
                         </h2>
                         <span className="text-xs text-slate-500 font-semibold">
@@ -1192,22 +1196,25 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
 
                   {/* Middle Grid: Dynamic Timer & Next Round Pipeline */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {/* Dynamic Live Phase Countdown Timer */}
-                    <div className="md:col-span-2 bg-[#FFF9FA] rounded-2xl p-4 sm:p-5 border border-[#FFE1EB] space-y-3.5">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    {/* Dynamic Live Phase Countdown Timer (Executive Dark Command Tile) */}
+                    <div className="md:col-span-2 bg-slate-950 text-white rounded-2xl p-5 sm:p-6 border border-slate-800/80 shadow-md space-y-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                         <div>
-                          <span className="text-[10px] font-black uppercase tracking-wider text-[#FF2E79]">Dynamic Phase Countdown</span>
-                          <h4 className="text-xs font-bold text-slate-800">{phaseInfo.title} Window</h4>
+                          <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+                            <span className="text-[10px] font-extrabold uppercase tracking-widest text-rose-400">Live Phase Countdown</span>
+                          </div>
+                          <h4 className="text-sm font-bold text-slate-100 mt-0.5">{phaseInfo.title} Window</h4>
                         </div>
                         {/* Quick Extend Timer Buttons */}
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="text-[10px] text-slate-400 font-bold mr-1">Extend:</span>
+                          <span className="text-[10px] text-slate-400 font-semibold mr-1">Extend:</span>
                           {[1, 2, 6, 12, 24].map((hrs) => (
                             <button
                               key={hrs}
                               type="button"
                               onClick={() => handleExtendCurrentTimer(hrs)}
-                              className="px-2.5 py-1 rounded-xl bg-white hover:bg-[#FF2E79] hover:text-white text-slate-700 text-[11px] font-black border border-pink-200 transition-colors shadow-2xs cursor-pointer"
+                              className="px-2.5 py-1 rounded-lg bg-slate-800/90 hover:bg-rose-500 hover:text-white text-slate-300 text-[11px] font-mono font-bold border border-slate-700 transition-colors shadow-2xs cursor-pointer"
                             >
                               +{hrs}h
                             </button>
@@ -1215,47 +1222,47 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                         </div>
                       </div>
 
-                      {/* Digital Ticking Clock Display in Cupid Light Aesthetic */}
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-2">
-                          <div className="bg-white border-2 border-pink-100 px-3.5 py-2 rounded-2xl text-center min-w-[56px] shadow-2xs">
-                            <span className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{phaseCountdown.hours}</span>
-                            <span className="block text-[9px] font-black text-slate-400 uppercase tracking-wider">Hours</span>
+                      {/* Digital Monospace Ticking Clock Display */}
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2 font-mono">
+                          <div className="bg-slate-900 border border-slate-800 px-3.5 py-2.5 rounded-xl text-center min-w-[62px] shadow-inner">
+                            <span className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">{phaseCountdown.hours}</span>
+                            <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Hours</span>
                           </div>
-                          <span className="text-2xl font-black text-[#FF2E79] animate-pulse">:</span>
-                          <div className="bg-white border-2 border-pink-100 px-3.5 py-2 rounded-2xl text-center min-w-[56px] shadow-2xs">
-                            <span className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{phaseCountdown.mins}</span>
-                            <span className="block text-[9px] font-black text-slate-400 uppercase tracking-wider">Mins</span>
+                          <span className="text-2xl font-bold text-rose-500 animate-pulse">:</span>
+                          <div className="bg-slate-900 border border-slate-800 px-3.5 py-2.5 rounded-xl text-center min-w-[62px] shadow-inner">
+                            <span className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">{phaseCountdown.mins}</span>
+                            <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Mins</span>
                           </div>
-                          <span className="text-2xl font-black text-[#FF2E79] animate-pulse">:</span>
-                          <div className="bg-white border-2 border-pink-200 px-3.5 py-2 rounded-2xl text-center min-w-[56px] shadow-2xs">
-                            <span className="text-2xl sm:text-3xl font-black text-[#FF2E79] tracking-tight">{phaseCountdown.secs}</span>
-                            <span className="block text-[9px] font-black text-[#FF2E79] uppercase tracking-wider">Secs</span>
+                          <span className="text-2xl font-bold text-rose-500 animate-pulse">:</span>
+                          <div className="bg-slate-900 border border-slate-800 px-3.5 py-2.5 rounded-xl text-center min-w-[62px] shadow-inner">
+                            <span className="text-2xl sm:text-3xl font-extrabold text-rose-400 tracking-tight">{phaseCountdown.secs}</span>
+                            <span className="block text-[9px] font-bold text-rose-400 uppercase tracking-widest mt-0.5">Secs</span>
                           </div>
                         </div>
 
-                        <div className="flex-1 hidden sm:block pl-3 border-l border-pink-100 text-xs text-slate-600 space-y-1">
-                          <p className="flex items-center gap-1.5 font-bold text-slate-800">
-                            <Clock className="w-3.5 h-3.5 text-[#FF2E79]" />
+                        <div className="flex-1 hidden sm:block pl-4 border-l border-slate-800 text-xs text-slate-400 space-y-1.5">
+                          <p className="flex items-center gap-2 font-semibold text-slate-200">
+                            <Clock className="w-3.5 h-3.5 text-rose-400" />
                             <span>Started: {new Date(roundState.phaseStartedAt || roundState.roundStartDate || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                           </p>
-                          <p className="text-[11px] text-slate-500 leading-relaxed">
-                            When timer reaches zero, round transitions automatically to the next phase across website & mobile app.
+                          <p className="text-[11px] text-slate-400 leading-relaxed">
+                            At zero, round rotates dynamically into the next phase across the mobile app and candidate decks.
                           </p>
                         </div>
                       </div>
 
-                      {/* Direct Phase Switch Fast Pills */}
-                      <div className="pt-2.5 border-t border-pink-100 flex items-center justify-between text-xs flex-wrap gap-2">
-                        <span className="text-slate-500 text-[11px] font-bold">Direct Phase Jump:</span>
-                        <div className="flex items-center gap-1.5 flex-wrap">
+                      {/* Direct Phase Switch Segmented Control */}
+                      <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs flex-wrap gap-2">
+                        <span className="text-slate-400 text-[11px] font-semibold">Phase Jump:</span>
+                        <div className="flex items-center gap-1.5 p-1 bg-slate-900/90 rounded-xl border border-slate-800 flex-wrap">
                           <button
                             type="button"
                             onClick={() => handleSwitchPhaseDirect(ROUND_PHASES.ENTRIES_COLLECTION)}
-                            className={`px-3 py-1 rounded-xl text-[10px] font-black uppercase transition-all cursor-pointer ${
+                            className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase transition-all cursor-pointer ${
                               currentPhase === ROUND_PHASES.ENTRIES_COLLECTION || currentPhase === 'entries_submission' 
-                                ? 'bg-[#FF2E79] text-white shadow-xs border border-[#FF2E79]' 
-                                : 'bg-white text-slate-700 border border-slate-200 hover:border-pink-300'
+                                ? 'bg-rose-500 text-white shadow-xs' 
+                                : 'text-slate-400 hover:text-white'
                             }`}
                           >
                             1. Entries (Day 1)
@@ -1263,10 +1270,10 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                           <button
                             type="button"
                             onClick={() => handleSwitchPhaseDirect(ROUND_PHASES.ELITE_MATCHING)}
-                            className={`px-3 py-1 rounded-xl text-[10px] font-black uppercase transition-all cursor-pointer ${
+                            className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase transition-all cursor-pointer ${
                               currentPhase === ROUND_PHASES.ELITE_MATCHING || currentPhase === 'live_matching' 
-                                ? 'bg-purple-600 text-white shadow-xs border border-purple-600' 
-                                : 'bg-white text-slate-700 border border-slate-200 hover:border-purple-300'
+                                ? 'bg-purple-600 text-white shadow-xs' 
+                                : 'text-slate-400 hover:text-white'
                             }`}
                           >
                             2. Elite (16h)
@@ -1274,10 +1281,10 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                           <button
                             type="button"
                             onClick={() => handleSwitchPhaseDirect(ROUND_PHASES.PREMIUM_MATCHING)}
-                            className={`px-3 py-1 rounded-xl text-[10px] font-black uppercase transition-all cursor-pointer ${
+                            className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase transition-all cursor-pointer ${
                               currentPhase === ROUND_PHASES.PREMIUM_MATCHING 
-                                ? 'bg-amber-600 text-white shadow-xs border border-amber-600' 
-                                : 'bg-white text-slate-700 border border-slate-200 hover:border-amber-300'
+                                ? 'bg-amber-600 text-white shadow-xs' 
+                                : 'text-slate-400 hover:text-white'
                             }`}
                           >
                             3. Premium (8h)
@@ -1285,10 +1292,10 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                           <button
                             type="button"
                             onClick={() => handleSwitchPhaseDirect(ROUND_PHASES.BASIC_SETTLEMENT)}
-                            className={`px-3 py-1 rounded-xl text-[10px] font-black uppercase transition-all cursor-pointer ${
+                            className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase transition-all cursor-pointer ${
                               currentPhase === ROUND_PHASES.BASIC_SETTLEMENT 
-                                ? 'bg-emerald-600 text-white shadow-xs border border-emerald-600' 
-                                : 'bg-white text-slate-700 border border-slate-200 hover:border-emerald-300'
+                                ? 'bg-emerald-600 text-white shadow-xs' 
+                                : 'text-slate-400 hover:text-white'
                             }`}
                           >
                             4. Settlement
@@ -1298,9 +1305,9 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                     </div>
 
                     {/* Next Round Rotation Card */}
-                    <div className="bg-[#FFF9FA] rounded-2xl p-4 sm:p-5 border border-[#FFE1EB] space-y-3 flex flex-col justify-between">
+                    <div className="bg-slate-50/80 rounded-2xl p-4 sm:p-5 border border-slate-200/80 space-y-3 flex flex-col justify-between">
                       <div>
-                        <span className="text-[10px] font-black uppercase tracking-wider text-purple-700 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-md">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-purple-700 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-md">
                           Next Round in Pipeline
                         </span>
                         <h4 className="text-base font-black text-slate-900 mt-2 flex items-center gap-1.5">
@@ -1312,7 +1319,7 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                         </p>
                       </div>
 
-                      <div className="p-3 rounded-xl bg-white border border-pink-100 text-[11px] text-slate-500 space-y-1">
+                      <div className="p-3 rounded-xl bg-white border border-slate-200/70 text-[11px] text-slate-500 space-y-1">
                         <p className="font-bold text-slate-800">10-Day Rotation Spacing</p>
                         <p>States rotate in order. You can toggle states ON/OFF in Round Controls.</p>
                       </div>
@@ -1320,7 +1327,7 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                       <button
                         type="button"
                         onClick={handleStartNextRound}
-                        className="w-full py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-black flex items-center justify-center gap-1.5 transition-all shadow-2xs cursor-pointer"
+                        className="w-full py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-2xs cursor-pointer"
                       >
                         <RefreshCw className="w-3.5 h-3.5" />
                         <span>Rotate State Now</span>
@@ -1331,10 +1338,10 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                   {/* Bottom Grid: Dynamic Active State Live Entries Breakdown & Live Matched Pairs Preview */}
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-1">
                     {/* Dynamic Active State Live Entries Card */}
-                    <div className="bg-[#FFF9FA] rounded-2xl p-4 sm:p-5 border border-[#FFE1EB] space-y-3">
+                    <div className="bg-slate-50/80 rounded-2xl p-4 sm:p-5 border border-slate-200/80 space-y-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-xl bg-pink-100 text-[#FF2E79] flex items-center justify-center font-black text-xs uppercase">
+                          <div className="w-8 h-8 rounded-xl bg-rose-100 text-[#FF2E79] flex items-center justify-center font-black text-xs uppercase">
                             {currentActiveState.split(' ').map(w => w[0]).join('').slice(0, 3)}
                           </div>
                           <div>
@@ -1342,31 +1349,31 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                             <p className="text-[10px] text-slate-500">Current round entry stats & plan tiers</p>
                           </div>
                         </div>
-                        <span className="px-3 py-1 rounded-full bg-pink-50 text-[#FF2E79] font-black text-xs border border-pink-200">
+                        <span className="px-3 py-1 rounded-full bg-white text-slate-700 font-bold text-xs border border-slate-200">
                           {liveStateEntries.length} Total Registered
                         </span>
                       </div>
 
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
-                        <div className="bg-white p-2.5 rounded-xl border border-pink-100 shadow-2xs">
+                        <div className="bg-white p-2.5 rounded-xl border border-slate-200/70 shadow-2xs">
                           <span className="text-[10px] text-slate-400 font-bold block uppercase">Males</span>
                           <span className="text-base font-black text-blue-600">{liveStateMaleCount}</span>
                         </div>
-                        <div className="bg-white p-2.5 rounded-xl border border-pink-100 shadow-2xs">
+                        <div className="bg-white p-2.5 rounded-xl border border-slate-200/70 shadow-2xs">
                           <span className="text-[10px] text-slate-400 font-bold block uppercase">Females</span>
                           <span className="text-base font-black text-pink-600">{liveStateFemaleCount}</span>
                         </div>
-                        <div className="bg-white p-2.5 rounded-xl border border-pink-100 shadow-2xs">
+                        <div className="bg-white p-2.5 rounded-xl border border-slate-200/70 shadow-2xs">
                           <span className="text-[10px] text-slate-400 font-bold block uppercase">Elite (₹449)</span>
                           <span className="text-base font-black text-purple-700">{liveStateEliteCount}</span>
                         </div>
-                        <div className="bg-white p-2.5 rounded-xl border border-pink-100 shadow-2xs">
+                        <div className="bg-white p-2.5 rounded-xl border border-slate-200/70 shadow-2xs">
                           <span className="text-[10px] text-slate-400 font-bold block uppercase">Premium (₹250)</span>
                           <span className="text-base font-black text-amber-700">{liveStatePremiumCount}</span>
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between text-[11px] text-slate-600 pt-2 border-t border-pink-100">
+                      <div className="flex items-center justify-between text-[11px] text-slate-600 pt-2 border-t border-slate-200/70">
                         <span>Auto-Approved / Verified: <strong className="text-emerald-700">{liveStateVerifiedCount}</strong></span>
                         <button
                           type="button"
@@ -1379,10 +1386,10 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                     </div>
 
                     {/* Live Matches Preview Card */}
-                    <div className="bg-[#FFF9FA] rounded-2xl p-4 sm:p-5 border border-[#FFE1EB] space-y-3">
+                    <div className="bg-slate-50/80 rounded-2xl p-4 sm:p-5 border border-slate-200/80 space-y-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-xl bg-pink-100 text-[#FF2E79] flex items-center justify-center font-black text-xs">
+                          <div className="w-8 h-8 rounded-xl bg-rose-100 text-[#FF2E79] flex items-center justify-center font-black text-xs">
                             <Heart className="w-4 h-4 fill-current" />
                           </div>
                           <div>
@@ -1401,7 +1408,7 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                       </div>
 
                       {activeMatchesSlice.length === 0 ? (
-                        <div className="p-4 rounded-xl bg-white border border-pink-100 text-center text-xs text-slate-500 space-y-2">
+                        <div className="p-4 rounded-xl bg-white border border-slate-200/70 text-center text-xs text-slate-500 space-y-2">
                           <p>No mutual matches generated yet.</p>
                           <button
                             type="button"
@@ -1414,12 +1421,12 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                       ) : (
                         <div className="space-y-2">
                           {activeMatchesSlice.map((pair, pIdx) => (
-                            <div key={pIdx} className="p-2.5 rounded-xl bg-white border border-pink-100 shadow-2xs flex items-center justify-between text-xs">
+                            <div key={pIdx} className="p-2.5 rounded-xl bg-white border border-slate-200/70 shadow-2xs flex items-center justify-between text-xs">
                               <div className="flex items-center gap-2">
                                 <img src={pair.userA.avatar} alt="" className="w-7 h-7 rounded-full object-cover border border-[#FF2E79]" />
                                 <span className="font-bold text-slate-900 text-[11px]">{pair.userA.name}</span>
                               </div>
-                              <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-pink-50 text-[#FF2E79] text-[10px] font-black border border-pink-200">
+                              <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-50 text-[#FF2E79] text-[10px] font-black border border-rose-200">
                                 <Heart className="w-3 h-3 fill-current text-[#FF2E79]" />
                                 <span>{pair.score || 95}%</span>
                               </div>
@@ -1432,7 +1439,7 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
                         </div>
                       )}
 
-                      <div className="flex items-center justify-between text-[11px] text-slate-500 pt-2 border-t border-pink-100">
+                      <div className="flex items-center justify-between text-[11px] text-slate-500 pt-2 border-t border-slate-200/70">
                         <span>Can assign 1 or multiple matches manually</span>
                         <button
                           type="button"
@@ -1452,26 +1459,26 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
               
               {/* Card 1: Total Users */}
-              <div className="bg-white p-3 sm:p-5 rounded-2xl border border-[#FFE1EB] shadow-xs flex items-center justify-between">
+              <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
                 <div className="space-y-0.5 sm:space-y-1">
-                  <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-pink-100/60 text-[#FF2E79] flex items-center justify-center">
+                  <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-rose-50 text-[#FF2E79] border border-rose-100 flex items-center justify-center">
                     <Users className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5" />
                   </div>
                   <p className="text-[10px] sm:text-xs text-slate-500 font-medium pt-0.5">Total Users</p>
-                  <h3 className="text-lg sm:text-2xl font-black text-slate-900 tracking-tight">{stats.totalUsers.toLocaleString()}</h3>
-                  <div className="flex items-center gap-0.5 text-[10px] sm:text-[11px] font-bold text-emerald-500">
+                  <h3 className="text-lg sm:text-2xl font-black text-slate-900 tracking-tight font-mono">{stats.totalUsers.toLocaleString()}</h3>
+                  <div className="flex items-center gap-0.5 text-[10px] sm:text-[11px] font-bold text-emerald-600">
                     <TrendingUp className="w-3 h-3" />
                     <span>Live</span>
                   </div>
                 </div>
                 {/* Sparkline SVG */}
-                <div className="w-12 h-8 sm:w-20 sm:h-12 text-[#FF2E79] shrink-0">
+                <div className="w-12 h-8 sm:w-20 sm:h-12 text-[#FF2E79] shrink-0 opacity-80">
                   <svg className="w-full h-full" viewBox="0 0 100 40">
                     <path
                       d="M0 30 Q25 35 50 15 T100 5"
                       fill="none"
                       stroke="currentColor"
-                      strokeWidth="3"
+                      strokeWidth="2.5"
                       strokeLinecap="round"
                     />
                   </svg>
@@ -1479,26 +1486,26 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
               </div>
 
               {/* Card 2: Total Matches */}
-              <div className="bg-white p-3 sm:p-5 rounded-2xl border border-[#FFE1EB] shadow-xs flex items-center justify-between">
+              <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
                 <div className="space-y-0.5 sm:space-y-1">
-                  <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-pink-100/60 text-[#FF2E79] flex items-center justify-center">
+                  <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-rose-50 text-[#FF2E79] border border-rose-100 flex items-center justify-center">
                     <Heart className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 fill-current" />
                   </div>
                   <p className="text-[10px] sm:text-xs text-slate-500 font-medium pt-0.5">Total Matches</p>
-                  <h3 className="text-lg sm:text-2xl font-black text-slate-900 tracking-tight">{stats.totalMatches.toLocaleString()}</h3>
-                  <div className="flex items-center gap-0.5 text-[10px] sm:text-[11px] font-bold text-emerald-500">
+                  <h3 className="text-lg sm:text-2xl font-black text-slate-900 tracking-tight font-mono">{stats.totalMatches.toLocaleString()}</h3>
+                  <div className="flex items-center gap-0.5 text-[10px] sm:text-[11px] font-bold text-emerald-600">
                     <TrendingUp className="w-3 h-3" />
                     <span>Live</span>
                   </div>
                 </div>
                 {/* Sparkline SVG */}
-                <div className="w-12 h-8 sm:w-20 sm:h-12 text-[#FF2E79] shrink-0">
+                <div className="w-12 h-8 sm:w-20 sm:h-12 text-[#FF2E79] shrink-0 opacity-80">
                   <svg className="w-full h-full" viewBox="0 0 100 40">
                     <path
                       d="M0 25 Q30 30 60 10 T100 15"
                       fill="none"
                       stroke="currentColor"
-                      strokeWidth="3"
+                      strokeWidth="2.5"
                       strokeLinecap="round"
                     />
                   </svg>
@@ -1506,26 +1513,26 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
               </div>
 
               {/* Card 3: New Signups */}
-              <div className="bg-white p-3 sm:p-5 rounded-2xl border border-[#FFE1EB] shadow-xs flex items-center justify-between">
+              <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
                 <div className="space-y-0.5 sm:space-y-1">
-                  <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-pink-100/60 text-[#FF2E79] flex items-center justify-center">
+                  <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-rose-50 text-[#FF2E79] border border-rose-100 flex items-center justify-center">
                     <UserPlus className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5" />
                   </div>
                   <p className="text-[10px] sm:text-xs text-slate-500 font-medium pt-0.5">New Signups</p>
-                  <h3 className="text-lg sm:text-2xl font-black text-slate-900 tracking-tight">{stats.newSignups}</h3>
-                  <div className="flex items-center gap-0.5 text-[10px] sm:text-[11px] font-bold text-emerald-500">
+                  <h3 className="text-lg sm:text-2xl font-black text-slate-900 tracking-tight font-mono">{stats.newSignups}</h3>
+                  <div className="flex items-center gap-0.5 text-[10px] sm:text-[11px] font-bold text-emerald-600">
                     <TrendingUp className="w-3 h-3" />
                     <span>Live</span>
                   </div>
                 </div>
                 {/* Sparkline SVG */}
-                <div className="w-12 h-8 sm:w-20 sm:h-12 text-[#FF2E79] shrink-0">
+                <div className="w-12 h-8 sm:w-20 sm:h-12 text-[#FF2E79] shrink-0 opacity-80">
                   <svg className="w-full h-full" viewBox="0 0 100 40">
                     <path
                       d="M0 35 Q30 20 60 25 T100 8"
                       fill="none"
                       stroke="currentColor"
-                      strokeWidth="3"
+                      strokeWidth="2.5"
                       strokeLinecap="round"
                     />
                   </svg>
@@ -1533,26 +1540,26 @@ export default function AdminDashboard({ activeState, onStateChange, onOpenApp, 
               </div>
 
               {/* Card 4: Revenue */}
-              <div className="bg-white p-3 sm:p-5 rounded-2xl border border-[#FFE1EB] shadow-xs flex items-center justify-between">
+              <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
                 <div className="space-y-0.5 sm:space-y-1">
-                  <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-pink-100/60 text-[#FF2E79] flex items-center justify-center font-bold text-xs sm:text-sm">
+                  <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-rose-50 text-[#FF2E79] border border-rose-100 flex items-center justify-center font-bold text-xs sm:text-sm">
                     ₹
                   </div>
                   <p className="text-[10px] sm:text-xs text-slate-500 font-medium pt-0.5">Revenue</p>
-                  <h3 className="text-base sm:text-2xl font-black text-slate-900 tracking-tight">₹{stats.revenue.toLocaleString()}</h3>
-                  <div className="flex items-center gap-0.5 text-[10px] sm:text-[11px] font-bold text-emerald-500">
+                  <h3 className="text-base sm:text-2xl font-black text-slate-900 tracking-tight font-mono">₹{stats.revenue.toLocaleString()}</h3>
+                  <div className="flex items-center gap-0.5 text-[10px] sm:text-[11px] font-bold text-emerald-600">
                     <TrendingUp className="w-3 h-3" />
                     <span>Live</span>
                   </div>
                 </div>
                 {/* Sparkline SVG */}
-                <div className="w-12 h-8 sm:w-20 sm:h-12 text-[#FF2E79] shrink-0">
+                <div className="w-12 h-8 sm:w-20 sm:h-12 text-[#FF2E79] shrink-0 opacity-80">
                   <svg className="w-full h-full" viewBox="0 0 100 40">
                     <path
                       d="M0 30 Q25 25 50 10 T100 2"
                       fill="none"
                       stroke="currentColor"
-                      strokeWidth="3"
+                      strokeWidth="2.5"
                       strokeLinecap="round"
                     />
                   </svg>

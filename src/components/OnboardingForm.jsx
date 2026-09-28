@@ -626,9 +626,10 @@ export default function OnboardingForm({ user, onComplete, onCancel }) {
 
           <CupidLogo size="xs" showText={true} textColor="dark" textSubtitle={`${user.state || 'DELHI NCR'} • ROUND ${roundState?.roundNumber || 1}`} />
 
-          <div className="text-right pointer-events-none select-none">
-            <span className="font-cursive text-[#FF2E79] font-bold text-sm sm:text-base leading-tight block rotate-[-3deg]">
-              Good People<br />Brighter Stories
+          <div className="text-right select-none">
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-slate-500 bg-white/90 border border-slate-200/70 px-2.5 py-1 rounded-full shadow-2xs">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#FF2E79]" />
+              Cupid Profile
             </span>
           </div>
         </div>

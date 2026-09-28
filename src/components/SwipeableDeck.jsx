@@ -213,12 +213,6 @@ export default function SwipeableDeck({
           )}
         </div>
 
-        {/* Cursive Decorative Overlay Text on Right */}
-        <div className="absolute top-1/4 right-5 z-20 pointer-events-none -rotate-6 text-right">
-          <p className="font-cursive text-2xl text-white/90 drop-shadow-[0_2px_10px_rgba(0,0,0,0.7)] font-bold tracking-wide">
-            Maybe you?
-          </p>
-        </div>
 
         {/* Bottom Details Overlay & Action Buttons */}
         <div className="absolute inset-x-0 bottom-0 pt-16 pb-4 px-4 bg-gradient-to-t from-black/95 via-black/55 to-transparent pointer-events-none z-20">
